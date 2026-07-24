@@ -225,7 +225,7 @@ Would rise with positive trust validation + PoC velocity data. Would drop if com
 | Users won't grant system permissions | **Critical** | Milestone 0 tests this before code. Onboarding explains "why" before OS prompt. |
 | Build scope 2-3x estimate | **Critical** | PoC checkpoint at M0.5. Pivot paths defined (web-first, buddy-only). |
 | Unsigned app kills install rate | High | Budget code signing from M3. Open source builds trust. |
-| Buddy doesn't prevent abandonment | High | Test core hypothesis cheaply (buddy-only PoC). 10-layer retention system as backup. |
+| Buddy doesn't prevent abandonment | High | Test core hypothesis cheaply (buddy-only PoC). 12-layer retention system as backup. |
 | Windows/Mac blocking diverge | Medium | Researched in M1 before core build starts. |
 | BYOK setup friction | Medium | Buddy works fully without AI. AI is enhancement only. |
 | Open-source-then-monetize trust gap | Medium | State plan transparently in README from day one. |

@@ -106,6 +106,7 @@ If the user dismisses the ritual (or doesn't open the app in the morning):
 - If user says no: Buddy stays idle. No punishment.
 - If user says yes: Runs the 60-second version
 - The ritual NEVER accumulates backlog. Missed days are just... missed.
+- **Shame-Free Reset integration**: If the user has overdue tasks piling up, the buddy surfaces the Fresh Start button: "I see some tasks from last week. Want to clear them and start fresh?" One click archives all overdue items with zero guilt."
 
 ## Advanced Ritual (v2)
 
@@ -130,7 +131,7 @@ When the user has more time/energy, the buddy can offer an expanded version:
 - **Goals**: Goal-linked tasks get priority in the "Single Win" suggestion
 - **Buddy**: Buddy runs the ritual — it's a conversation, not a form
 - **Done List**: Completed tasks from the ritual feed into the Done List on the dashboard — visible proof of progress throughout the day
-- **Blocking**: Focus block starts immediately after ritual completion"
+- **Blocking**: Focus block starts immediately after ritual completion
 
 ## Data Model
 

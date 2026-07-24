@@ -45,7 +45,8 @@
   <line x1="290" y1="383" x2="510" y2="383" stroke="#ccc" stroke-width="0.5"/>
   <text x="320" y="406" font-family="'Courier New', monospace" font-size="9" fill="#888">▶ Start Focus</text>
   <text x="420" y="406" font-family="'Courier New', monospace" font-size="9" fill="#888">＋ Add Task</text>
-  <text x="360" y="420" font-family="'Courier New', monospace" font-size="9" fill="#aaa">[ Fresh Start — clear overdue ]</text>
+  <rect x="320" y="412" width="160" height="16" rx="3" fill="none" stroke="#bbb" stroke-width="0.8"/>
+  <text x="400" y="424" text-anchor="middle" font-family="'Courier New', monospace" font-size="8" fill="#999">✉ Fresh Start — clear overdue</text>
 
   <!-- ── RIGHT COLUMN ── -->
   <!-- Blocking Status -->
