@@ -113,10 +113,10 @@ When the user has more time/energy, the buddy can offer an expanded version:
 
 ### Extended Ritual (3 minutes, optional)
 
-1. **Yesterday recap** (30s): "Yesterday you completed 2 of 3 tasks. Chem took 90 min (estimated 60)."
+1. **Yesterday recap** (30s): "Yesterday you completed 2 of 3 tasks." Shows the Done List from yesterday as positive reinforcement. Calls out what was completed before listing what carried over.
 2. **Today's priorities** (60s): "You have 3 tasks. Which one matters most?"
 3. **Timeboxing** (60s): Buddy suggests time blocks based on calendar availability
-4. **Obstacle check** (30s): "Anything that might get in the way today?"
+4. **Obstacle check** (30s): "Anything that might get in the way today?""
 
 ### Weekly Review (10 minutes, optional)
 1. Goal progress check
@@ -129,7 +129,8 @@ When the user has more time/energy, the buddy can offer an expanded version:
 - **Calendar**: Tasks auto-populated from calendar events
 - **Goals**: Goal-linked tasks get priority in the "Single Win" suggestion
 - **Buddy**: Buddy runs the ritual — it's a conversation, not a form
-- **Blocking**: Focus block starts immediately after ritual completion
+- **Done List**: Completed tasks from the ritual feed into the Done List on the dashboard — visible proof of progress throughout the day
+- **Blocking**: Focus block starts immediately after ritual completion"
 
 ## Data Model
 

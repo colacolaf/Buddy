@@ -22,19 +22,21 @@ ADHD productivity tools universally suffer from **abandonment after novelty fade
 
 ### 1.3 Why Existing Tools Fail
 
-1. **Shame-based mechanics** — broken streaks trigger avoidance, not motivation
+1. **Shame-based mechanics** — broken streaks, overdue badges, red numbers — all trigger avoidance, not motivation
 2. **Setup high → maintenance drag** — dopamine from building the system, not using it
-3. **No immediate feedback** — long feedback loops don't motivate ADHD brains
-4. **Time blindness unaddressed** — rigid alarms interrupt hyperfocus or get ignored
-5. **Feature overkill** — the system becomes the procrastination
-6. **Hard blocks cause panic** — being trapped triggers anxiety and uninstalls
+3. **No immediate feedback** — long feedback loops don't motivate ADHD brains; no celebration of what's been done
+4. **No positive reinforcement** — tools track remaining tasks, never completed ones, so you only ever see what's left undone
+5. **Time blindness unaddressed** — rigid alarms interrupt hyperfocus or get ignored
+6. **Feature overkill** — the system becomes the procrastination
+7. **Hard blocks cause panic** — being trapped triggers anxiety and uninstalls
 
 ### 1.4 What ADHD Communities Actually Want
 
 - **Conversational interfaces** over dashboards and menus
 - **Zero-maintenance** — tools that work without daily upkeep
 - **"Emergency utilities"** not "systems of record" — pull out when stuck, not live in daily
-- **Forgiveness-first design** — no guilt for missed days, easy restart
+- **Forgiveness-first design** — no guilt for missed days, easy restart, clear-overdue button
+- **See what you've DONE, not just what's left** — visible evidence of accomplishments for dopamine
 - **Low-cost, privacy-focused** — many effective tools are prohibitively expensive
 
 ### 1.5 Competitor Landscape
@@ -44,12 +46,12 @@ ADHD productivity tools universally suffer from **abandonment after novelty fade
 | Freedom | Cross-device blocker | $8.99/mo | No task system, no buddy, expensive |
 | Cold Turkey | Desktop blocker | $39 one-time | Desktop only, no task-gating, no AI |
 | Forest | Gamified focus timer | Free/$1.99 | Timer-based (time blindness problem), mobile-focused |
-| Tiimo | Visual planner | Subscription | Visual timeline but no blocking |
-| Sunsama | Daily planner | $16/mo | Great ritual, very expensive, no blocking |
+| Tiimo | Visual planner | Subscription | Visual timeline but no blocking, shame-based streaks |
+| Sunsama | Daily planner | $16/mo | Great ritual, very expensive, no blocking, no done list |
 | Focusmate | Body doubling | Free/$5/mo | Requires scheduling, human-dependent |
-| Inflow | CBT coaching | $199/yr | High cost, no blocking features |
+| Inflow | CBT coaching | $199/yr | High cost, no blocking features, no done list |
 
-**FocusPath's gap**: Free + open source + buddy accountability + task-gated blocking + AI calendar + planning ritual — an integrated suite no single competitor offers, at zero cost.
+**FocusPath's gap**: Free + open source + buddy accountability + task-gated blocking + AI calendar + planning ritual + done list + shame-free reset — an integrated suite no single competitor offers, at zero cost.
 
 ---
 
@@ -94,9 +96,10 @@ Would rise with positive trust validation + PoC velocity data. Would drop if com
 4. **Buddy is the architecture, not a feature.** The buddy is the retention engine, the interface, and the emotional core.
 5. **Conversational over dashboard.** Buddy asks questions, surfaces information. Menus are secondary.
 6. **Explain before asking.** Every permission request preceded by plain-language "why this is needed."
-7. **AI is enhancement, not requirement.** Buddy works fully without AI. AI adds intelligence, not basic function.
-8. **Local-first, BYOK for cloud.** No FocusPath servers. User brings own API key for AI features.
-9. **Free core forever.** Advanced features may be paid in the future — stated transparently from day one.
+7. **Positive reinforcement over negative tracking.** Show what's done, not just what's remaining. The Done List grows; the overdue list can vanish with one click.
+8. **AI is enhancement, not requirement.** Buddy works fully without AI. AI adds intelligence, not basic function.
+9. **Local-first, BYOK for cloud.** No FocusPath servers. User brings own API key for AI features.
+10. **Free core forever.** Advanced features may be paid in the future — stated transparently from day one.
 
 ---
 
@@ -111,9 +114,15 @@ Would rise with positive trust validation + PoC velocity data. Would drop if com
 | Task-gated unlock (partial tiers + override + stricter buddy) | ✅ | ✅ | ✅ |
 | Basic usage dashboard | ✅ | ✅ Expanded | ✅ |
 | 60-second daily planning ritual | ✅ Minimal | ✅ Full guided | ✅ |
+| Done List / Anti-To-Do (growing list of completed tasks) | ✅ | ✅ Expanded | ✅ |
+| Shame-Free Reset (one-click clear overdue) | ✅ | ✅ | ✅ |
 | AI calendar + task decomposition | — | ✅ | ✅ |
 | Implementation-intention goals | — | ✅ | ✅ |
 | Body doubling mode | — | ✅ | ✅ |
+| Energy-aware task filter | — | ✅ | ✅ |
+| Adaptive accountability (smart escalation) | — | ✅ | ✅ |
+| Transition buffer zones | — | ✅ | ✅ |
+| Behavioral activation / pleasant tasks | — | ✅ | ✅ |
 | Webcam phone detection | — | — | ✅ Opt-in module |
 | BYOK AI integration | ✅ | ✅ | ✅ |
 
@@ -121,18 +130,20 @@ Would rise with positive trust validation + PoC velocity data. Would drop if com
 
 ---
 
-## 5. 10-Layer Abandonment Prevention System
+## 5. 12-Layer Abandonment Prevention System
 
 1. **Buddy emotional attachment** — parasocial accountability; miss the buddy, not the app
 2. **Streak system WITH freezes** — 2-3 freezes/month prevent "all-or-nothing" quit
 3. **Forgiveness-first restart** — "Ready to jump back in?" — never "You missed 14 days"
-4. **Variable reward drops** — mystery buddy animations/themes after tasks
-5. **Seasonal novelty refresh** — buddy gets new themes every 6-8 weeks
-6. **Escalating-but-gentle urgency** — information, not guilt, as deadlines approach
-7. **Micro-task decomposition** — AI breaks tasks into 5 tiny steps
-8. **Body doubling mode (v2+)** — live focus rooms with other users
-9. **Set-it-and-forget-it automation** — recurring schedules, no daily decisions needed
-10. **Stricter-after-override loop** — manual override always available, but buddy tightens tomorrow
+4. **Shame-Free Reset button** — one-click archive of all overdue tasks. No guilt. Fresh start instantly. Available from dashboard and buddy context menu.
+5. **Done List / Anti-To-Do** — a growing, prominent list of what you've completed today. Counters "never enough" feeling with visible evidence of wins.
+6. **Variable reward drops** — mystery buddy animations/themes after tasks
+7. **Seasonal novelty refresh** — buddy gets new themes every 6-8 weeks
+8. **Escalating-but-gentle urgency** — information, not guilt, as deadlines approach
+9. **Micro-task decomposition** — AI breaks tasks into 5 tiny steps
+10. **Body doubling mode (v2+)** — live focus rooms with other users
+11. **Set-it-and-forget-it automation** — recurring schedules, no daily decisions needed
+12. **Stricter-after-override loop** — manual override always available, but buddy tightens tomorrow
 
 ---
 
@@ -188,6 +199,8 @@ Would rise with positive trust validation + PoC velocity data. Would drop if com
 - Electron shell, onboarding flow with permission explanation
 - System-wide blocking, usage tracking, alerts, friction unlock, task-gating
 - Basic dashboard + always-on-top badge
+- Done List widget (integrated into dashboard, stores completed tasks daily)
+- Shame-Free Reset button (one-click archive + buddy acknowledgment)
 - BYOK AI integration
 
 ### Milestone 3 — Test & ship v1 (2–3 weeks)
@@ -198,6 +211,7 @@ Would rise with positive trust validation + PoC velocity data. Would drop if com
 
 ### Milestone 4 — v2 (6–8 weeks)
 - Guided planning ritual, goals, calendar, adaptive reminders, expanded dashboard
+- Energy-aware task filter, adaptive accountability, transition buffers, pleasant tasks
 
 ### Milestone 5 — v3 (conditional)
 - Camera companion as separate opt-in module

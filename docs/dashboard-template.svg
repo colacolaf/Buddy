@@ -40,9 +40,12 @@
   <text x="400" y="270" text-anchor="middle" font-family="'Courier New', monospace" font-size="10" fill="#bbb">(character here)</text>
 
   <!-- Quick Actions -->
-  <rect x="275" y="356" width="250" height="52" rx="4" fill="none" stroke="#888" stroke-width="1.2"/>
+  <rect x="275" y="356" width="250" height="70" rx="4" fill="none" stroke="#888" stroke-width="1.2"/>
   <text x="400" y="376" text-anchor="middle" font-family="'Courier New', monospace" font-size="11" fill="#666">QUICK ACTIONS</text>
   <line x1="290" y1="383" x2="510" y2="383" stroke="#ccc" stroke-width="0.5"/>
+  <text x="320" y="406" font-family="'Courier New', monospace" font-size="9" fill="#888">▶ Start Focus</text>
+  <text x="420" y="406" font-family="'Courier New', monospace" font-size="9" fill="#888">＋ Add Task</text>
+  <text x="360" y="420" font-family="'Courier New', monospace" font-size="9" fill="#aaa">[ Fresh Start — clear overdue ]</text>
 
   <!-- ── RIGHT COLUMN ── -->
   <!-- Blocking Status -->
@@ -50,15 +53,27 @@
   <text x="647" y="126" text-anchor="middle" font-family="'Courier New', monospace" font-size="11" fill="#666">BLOCKING STATUS</text>
   <line x1="555" y1="134" x2="740" y2="134" stroke="#ccc" stroke-width="0.5"/>
 
-  <!-- Focus Stats -->
-  <rect x="540" y="210" width="215" height="78" rx="4" fill="none" stroke="#888" stroke-width="1.2"/>
+  <!-- Focus Stats + Done List (merged) -->
+  <rect x="540" y="210" width="215" height="135" rx="4" fill="none" stroke="#888" stroke-width="1.2"/>
   <text x="647" y="230" text-anchor="middle" font-family="'Courier New', monospace" font-size="11" fill="#666">TODAY'S FOCUS STATS</text>
   <line x1="555" y1="238" x2="740" y2="238" stroke="#ccc" stroke-width="0.5"/>
+  <text x="575" y="258" font-family="'Courier New', monospace" font-size="15" fill="#555">2h 15m</text>
+  <text x="575" y="272" font-family="'Courier New', monospace" font-size="8" fill="#aaa">focused</text>
+  <text x="660" y="258" font-family="'Courier New', monospace" font-size="15" fill="#555">3/5</text>
+  <text x="660" y="272" font-family="'Courier New', monospace" font-size="8" fill="#aaa">tasks done</text>
+  <line x1="630" y1="248" x2="630" y2="275" stroke="#ddd" stroke-width="0.5"/>
+  <!-- Done List -->
+  <text x="575" y="292" font-family="'Courier New', monospace" font-size="8" fill="#aaa">✓ DONE TODAY:</text>
+  <text x="575" y="306" font-family="'Courier New', monospace" font-size="8" fill="#888">☑ Chem Ch.4 practice — 10:30am</text>
+  <text x="575" y="318" font-family="'Courier New', monospace" font-size="8" fill="#888">☑ Email study group — 11:45am</text>
+  <text x="575" y="330" font-family="'Courier New', monospace" font-size="8" fill="#888">☑ Clean desk — 12:15pm</text>
 
   <!-- Tasks -->
-  <rect x="540" y="300" width="215" height="153" rx="4" fill="none" stroke="#888" stroke-width="1.2"/>
-  <text x="647" y="320" text-anchor="middle" font-family="'Courier New', monospace" font-size="11" fill="#666">TODAY'S TASKS</text>
-  <line x1="555" y1="328" x2="740" y2="328" stroke="#ccc" stroke-width="0.5"/>
+  <rect x="540" y="358" width="215" height="70" rx="4" fill="none" stroke="#888" stroke-width="1.2"/>
+  <text x="647" y="378" text-anchor="middle" font-family="'Courier New', monospace" font-size="11" fill="#666">REMAINING TASKS</text>
+  <line x1="555" y1="386" x2="740" y2="386" stroke="#ccc" stroke-width="0.5"/>
+  <text x="555" y="406" font-family="'Courier New', monospace" font-size="9" fill="#aaa">☐ History essay draft</text>
+  <text x="555" y="420" font-family="'Courier New', monospace" font-size="9" fill="#aaa">☐ Email professor</text>
 
   <!-- Navigation Bar -->
   <rect x="45" y="466" width="710" height="30" rx="4" fill="none" stroke="#888" stroke-width="1.2"/>

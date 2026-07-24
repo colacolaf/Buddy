@@ -59,7 +59,9 @@ FocusPath solves all three: escalating friction (never a hard wall), task-gated 
 | 1 task | +30 minutes leisure |
 | 2 tasks | +30 more minutes (60 total) |
 | 3+ tasks | Unlimited leisure for rest of day |
-| All daily tasks | Full unlock + buddy celebration |
+| All daily tasks | Full unlock + buddy celebration + Done List populates |
+
+Each completed task is recorded in the **Done List** on the dashboard — visible evidence of progress that persists all day, providing dopamine reinforcement every time the user glances at it.
 
 ### Configurable Threshold
 - User sets minimum tasks per day (e.g., "3 of 5 tasks = free browsing")
