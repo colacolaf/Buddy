@@ -19,9 +19,9 @@
   <rect x="40" y="82" width="720" height="46" rx="3" fill="#fafaf8" stroke="#888" stroke-width="1"/>
   <text x="400" y="98" text-anchor="middle" font-family="'Courier New', monospace" font-size="10" fill="#555">📅  THIS WEEK</text>
   <text x="400" y="112" text-anchor="middle" font-family="'Courier New', monospace" font-size="8" fill="#999">MON · TUE · WED · THU · FRI · SAT · SUN</text>
-  <text x="210" y="112" font-family="'Courier New', monospace" font-size="6" fill="#aaa">● 9am</text>
-  <text x="295" y="112" font-family="'Courier New', monospace" font-size="6" fill="#aaa">● 2pm</text>
-  <text x="580" y="112" font-family="'Courier New', monospace" font-size="6" fill="#aaa">● 7pm</text>
+  <text x="115" y="112" font-family="'Courier New', monospace" font-size="6" fill="#aaa">● 9am</text>
+  <text x="206" y="112" font-family="'Courier New', monospace" font-size="6" fill="#aaa">● 2pm</text>
+  <text x="570" y="112" font-family="'Courier New', monospace" font-size="6" fill="#aaa">● 7pm</text>
   <text x="400" y="122" text-anchor="middle" font-family="'Courier New', monospace" font-size="7" fill="#aaa">3 events this week — Standup · Dentist · Dinner</text>
 
   <!-- ═══════════ 2-COLUMN BELOW ═══════════ -->
