@@ -50,7 +50,7 @@ Does this work?
 
 **If no**: Block is marked as skipped. No guilt. No broken streak. Just... skipped.
 
-**When multiple blocks accumulate** (3+ missed in a row): Buddy offers Shame-Free Reset: "You've missed a few. Want me to clear the overdue blocks and start fresh? No questions asked." This archives all missed events and resets the schedule to a clean slate."
+**When multiple blocks accumulate** (3+ missed in a row): Buddy offers Shame-Free Reset: "You've missed a few. Want me to clear the overdue blocks and start fresh? No questions asked." This archives all missed events and resets the schedule to a clean slate.
 
 ### Conflict Detection
 

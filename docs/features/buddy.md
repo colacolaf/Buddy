@@ -53,7 +53,7 @@ The Buddy adapts its strictness based on:
 - Task overdue → "Still planning to study for chem today?"
 - Achievement unlocked → celebration
 - Done List milestone → "You've completed 3 tasks today! That's a streak!" (fires at 1, 3, 5, 10 completed tasks)
-- Shame-Free Reset triggered → Buddy acknowledges fresh start: "All cleared. Clean slate. Ready to set one thing for today?" |
+- Shame-Free Reset triggered → Buddy acknowledges fresh start: "All cleared. Clean slate. Ready to set one thing for today?"
 
 ### User Initiates
 - Click buddy → expand to interaction panel
