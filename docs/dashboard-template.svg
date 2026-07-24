@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 580" width="800" height="580">
+  <defs>
+    <filter id="shadow">
+      <feDropShadow dx="1" dy="2" stdDeviation="3" flood-color="#00000012"/>
+    </filter>
+  </defs>
+
+  <!-- Paper -->
+  <rect x="10" y="10" width="780" height="560" rx="3" fill="#ffffff" stroke="#ccc" stroke-width="0.8" filter="url(#shadow)"/>
+
+  <!-- Title -->
+  <text x="400" y="42" text-anchor="middle" font-family="'Courier New', monospace" font-size="14" fill="#555">Main Dashboard — Template</text>
+
+  <!-- ★ ALERTS (top banner, full width) -->
+  <rect x="45" y="60" width="710" height="32" rx="4" fill="none" stroke="#888" stroke-width="1.2"/>
+  <text x="400" y="81" text-anchor="middle" font-family="'Courier New', monospace" font-size="11" fill="#666">ALERTS &amp; NOTIFICATIONS</text>
+
+  <!-- ── LEFT COLUMN ── -->
+  <!-- Calendar -->
+  <rect x="45" y="106" width="215" height="210" rx="4" fill="none" stroke="#888" stroke-width="1.2"/>
+  <text x="152" y="126" text-anchor="middle" font-family="'Courier New', monospace" font-size="11" fill="#666">CALENDAR SNAPSHOT</text>
+  <line x1="60" y1="134" x2="245" y2="134" stroke="#ccc" stroke-width="0.5"/>
+
+  <!-- Goals -->
+  <rect x="45" y="328" width="215" height="125" rx="4" fill="none" stroke="#888" stroke-width="1.2"/>
+  <text x="152" y="348" text-anchor="middle" font-family="'Courier New', monospace" font-size="11" fill="#666">GOALS PROGRESS</text>
+  <line x1="60" y1="356" x2="245" y2="356" stroke="#ccc" stroke-width="0.5"/>
+
+  <!-- ── CENTER COLUMN ── -->
+  <!-- Single Win -->
+  <rect x="275" y="106" width="250" height="72" rx="4" fill="none" stroke="#777" stroke-width="1.4"/>
+  <text x="400" y="126" text-anchor="middle" font-family="'Courier New', monospace" font-size="12" fill="#555" font-weight="bold">★ TODAY'S SINGLE WIN</text>
+  <line x1="290" y1="134" x2="510" y2="134" stroke="#ccc" stroke-width="0.5"/>
+  <text x="400" y="158" text-anchor="middle" font-family="'Courier New', monospace" font-size="11" fill="#999">[ primary task goes here ]</text>
+
+  <!-- Buddy -->
+  <rect x="315" y="192" width="170" height="150" rx="6" fill="none" stroke="#555" stroke-width="1.6"/>
+  <text x="400" y="215" text-anchor="middle" font-family="'Courier New', monospace" font-size="12" fill="#555" font-weight="bold">BUDDY</text>
+  <line x1="340" y1="223" x2="460" y2="223" stroke="#ccc" stroke-width="0.5"/>
+  <text x="400" y="270" text-anchor="middle" font-family="'Courier New', monospace" font-size="10" fill="#bbb">(character here)</text>
+
+  <!-- Quick Actions -->
+  <rect x="275" y="356" width="250" height="52" rx="4" fill="none" stroke="#888" stroke-width="1.2"/>
+  <text x="400" y="376" text-anchor="middle" font-family="'Courier New', monospace" font-size="11" fill="#666">QUICK ACTIONS</text>
+  <line x1="290" y1="383" x2="510" y2="383" stroke="#ccc" stroke-width="0.5"/>
+
+  <!-- ── RIGHT COLUMN ── -->
+  <!-- Blocking Status -->
+  <rect x="540" y="106" width="215" height="92" rx="4" fill="none" stroke="#888" stroke-width="1.2"/>
+  <text x="647" y="126" text-anchor="middle" font-family="'Courier New', monospace" font-size="11" fill="#666">BLOCKING STATUS</text>
+  <line x1="555" y1="134" x2="740" y2="134" stroke="#ccc" stroke-width="0.5"/>
+
+  <!-- Focus Stats -->
+  <rect x="540" y="210" width="215" height="78" rx="4" fill="none" stroke="#888" stroke-width="1.2"/>
+  <text x="647" y="230" text-anchor="middle" font-family="'Courier New', monospace" font-size="11" fill="#666">TODAY'S FOCUS STATS</text>
+  <line x1="555" y1="238" x2="740" y2="238" stroke="#ccc" stroke-width="0.5"/>
+
+  <!-- Tasks -->
+  <rect x="540" y="300" width="215" height="153" rx="4" fill="none" stroke="#888" stroke-width="1.2"/>
+  <text x="647" y="320" text-anchor="middle" font-family="'Courier New', monospace" font-size="11" fill="#666">TODAY'S TASKS</text>
+  <line x1="555" y1="328" x2="740" y2="328" stroke="#ccc" stroke-width="0.5"/>
+
+  <!-- Navigation Bar -->
+  <rect x="45" y="466" width="710" height="30" rx="4" fill="none" stroke="#888" stroke-width="1.2"/>
+  <text x="400" y="486" text-anchor="middle" font-family="'Courier New', monospace" font-size="10" fill="#888">NAVIGATION: Dashboard · Calendar · Goals · Stats · Settings</text>
+
+  <!-- Footer -->
+  <text x="400" y="525" text-anchor="middle" font-family="'Courier New', monospace" font-size="8" fill="#ccc">3-column command center — buddy-centric — implement from this template</text>
+</svg>
