@@ -50,6 +50,8 @@ Does this work?
 
 **If no**: Block is marked as skipped. No guilt. No broken streak. Just... skipped.
 
+**When multiple blocks accumulate** (3+ missed in a row): Buddy offers Shame-Free Reset: "You've missed a few. Want me to clear the overdue blocks and start fresh? No questions asked." This archives all missed events and resets the schedule to a clean slate."
+
 ### Conflict Detection
 
 **User adds**: "Dentist appointment Tuesday at 7pm"
@@ -101,9 +103,11 @@ When a task is linked to a goal (see `goals.md`), the AI:
 |----------|-------------|
 | Task missed | Propose reschedule to next available slot |
 | Two tasks missed | Ask if priorities changed; offer to drop lowest-priority |
+| Three+ tasks missed | Offer Shame-Free Reset: "Want to archive the overdue ones and start clean?" |
 | All tasks missed | Buddy goes gentle: "Rough day. Want to try just one thing tomorrow?" |
 | Deadline approaching | Escalating-but-gentle urgency: "Chem exam in 3 days. You've done 2 of 4 sessions." |
 | User is sick/busy | "Snooze all" option pushes everything back proportionally |
+| Event completed on time | Populates the Done List on the dashboard with task name and completion time |
 
 ## Natural Language Processing
 
@@ -152,6 +156,7 @@ CREATE TABLE calendar_events (
   linked_task_id TEXT,
   is_ai_generated BOOLEAN DEFAULT 0,
   status TEXT DEFAULT 'scheduled', -- scheduled, completed, missed, skipped
+  completed_at INTEGER, -- timestamp used to populate Done List on dashboard
   created_at INTEGER,
   updated_at INTEGER
 );

@@ -125,10 +125,13 @@ After the 4-step flow, features are introduced contextually:
 | Trigger | Introduction |
 |---------|-------------|
 | First distraction detected | "I can block sites like this. Want to set that up?" |
-| Task completed | "Nice! Want to see your focus stats?" |
+| First task completed | "Nice! Check your Done List — every win gets recorded there." (Dashboard highlights the Done List widget) |
+| 3 tasks completed in one day | "Look at you! 3 tasks done today. Your Done List is really growing." |
+| First overdue task | "That task rolled over. No worries — you can hit Fresh Start anytime to clear overdue stuff and start clean." |
 | End of day | "Want me to help plan tomorrow?" |
 | 3 days of use | "I can learn your patterns if you want. Optional." |
 | First missed day | "Hey! No worries. Ready to jump back in?" |
+| First Shame-Free Reset used | "All clear. No guilt, no backlog. Just a clean slate. What's your one thing today?" |
 
 ## Permission Trust Architecture
 

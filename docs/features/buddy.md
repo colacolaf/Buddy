@@ -33,7 +33,7 @@ The Buddy has distinct emotional states tied to user behavior:
 | **Focused/Proud** | Extended productive session detected | Confident posture, occasional thumbs-up, "You're crushing it" |
 | **Concerned** | Distracting app detected >2 minutes | Head tilt, gentle nudge: "Hey, noticed you're on Reddit — chem chapter waiting?" |
 | **Strict** | Third distraction in a session | Arms crossed, firmer tone: "Bold move. You've got 2 tasks due today." |
-| **Celebratory** | Task marked complete | Victory animation, confetti, "TASK COMPLETE! That's the one that mattered today!" |
+| **Celebratory** | Task marked complete or Done List milestone reached | Victory animation, confetti, "TASK COMPLETE! That's the one that mattered today!" Also fires on Done List milestones: "3 tasks done! Look at your Done List growing!" |
 | **Welcoming** | App opened after absence | Warm wave: "Hey! Ready to jump back in?" — NEVER guilt |
 | **Gentle** | Multiple tasks missed, user override used | Smaller posture, softer voice: "Rough day. Want to just do one tiny thing?" |
 
@@ -52,6 +52,8 @@ The Buddy adapts its strictness based on:
 - Scheduled task approaching → "Chem study starts in 10 minutes"
 - Task overdue → "Still planning to study for chem today?"
 - Achievement unlocked → celebration
+- Done List milestone → "You've completed 3 tasks today! That's a streak!" (fires at 1, 3, 5, 10 completed tasks)
+- Shame-Free Reset triggered → Buddy acknowledges fresh start: "All cleared. Clean slate. Ready to set one thing for today?" |
 
 ### User Initiates
 - Click buddy → expand to interaction panel
@@ -110,6 +112,8 @@ The Buddy adapts its strictness based on:
 - [ ] Hardcoded productive/neutral/distracting classification
 - [ ] Speech bubble notifications
 - [ ] 10 voice lines across states
+- [ ] Done List milestone celebrations (1, 3, 5, 10 tasks)
+- [ ] Shame-Free Reset acknowledgment response
 
 ## v2 Enhancements
 

@@ -66,8 +66,9 @@ My plan to handle that: ___________
 ### Visual Representation
 - Active goals shown as progress trees
 - Each implementation step is a node
-- Completed nodes turn green, grow leaves
+- Completed nodes turn green, grow leaves — and simultaneously populate the Done List on the dashboard
 - Buddy tends the goal garden as metaphor
+- Done List shows today's completed steps across all goals, providing a cross-goal view of progress
 
 ### Goal-Aware Calendar
 - Calendar prioritizes goal-linked blocks
@@ -79,6 +80,7 @@ My plan to handle that: ___________
 - Streak freezes available (2-3/month)
 - Breaking streak → buddy goes gentle: "Still got a B+ trajectory. Let's pick it back up."
 - **Never shame-based**
+- If a goal becomes overwhelming (multiple missed steps), buddy offers Shame-Free Reset: "Want to archive the past-due steps and reset this goal? The deadline stays, but the backlog clears."
 
 ## Implementation Intention Template
 
