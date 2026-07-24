@@ -106,7 +106,7 @@ If the user dismisses the ritual (or doesn't open the app in the morning):
 - If user says no: Buddy stays idle. No punishment.
 - If user says yes: Runs the 60-second version
 - The ritual NEVER accumulates backlog. Missed days are just... missed.
-- **Shame-Free Reset integration**: If the user has overdue tasks piling up, the buddy surfaces the Fresh Start button: "I see some tasks from last week. Want to clear them and start fresh?" One click archives all overdue items with zero guilt."
+- **Shame-Free Reset integration**: If the user has overdue tasks piling up, the buddy surfaces the Fresh Start button: "I see some tasks from last week. Want to clear them and start fresh?" One click archives all overdue items with zero guilt.
 
 ## Advanced Ritual (v2)
 
