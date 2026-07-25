@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FocusPath — Calendar</title>
+<style>
+  /* ─────────────────────────────────────────────────────────
+     SAGE STONE PALETTE  —  Calm & Grounded, ADHD-friendly, AA
+     ───────────────────────────────────────────────────────── */
+  :root{
+    --bg:#EDEFEA; --surface:#F7F8F2; --surface-2:#FFFFFF; --surface-sunken:#E4E7DE;
+    --border:#D6DBCD; --border-strong:#C2C8B8;
+    --text:#2E332B; --text-muted:#5F655A; --text-faint:#6B7062;
+    --accent:#5E7A5E; --accent-hover:#4D6A4D; --accent-press:#436143; --accent-soft:#DCE6D6;
+    --amber:#C68B5C; --amber-soft:#F0E2D2;
+    --slate:#5E7A8A; --slate-soft:#DCE4E8;
+    --lavender:#9B7AA8; --lavender-soft:#E8DFEC;
+    --success:#6B9362; --warning:#C98A4B; --danger:#B5635C;
+    --shadow-sm:0 1px 2px rgba(46,51,43,.05), 0 2px 6px rgba(46,51,43,.05);
+    --shadow:0 1px 2px rgba(46,51,43,.05), 0 6px 18px rgba(46,51,43,.08);
+    --shadow-lg:0 2px 8px rgba(46,51,43,.07), 0 18px 48px rgba(46,51,43,.14);
+    --radius:14px; --radius-sm:9px; --radius-xs:6px;
+    --ease:cubic-bezier(.4,0,.2,1);
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+    --font-num:"SF Mono","ui-monospace","Menlo","Consolas",monospace;
+    --font-disp:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:var(--font-ui); color:var(--text);
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #E3E7DD 0%, transparent 60%),
+      radial-gradient(900px 500px at -10% 20%, #E7EBE0 0%, transparent 55%), var(--bg);
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; line-height:1.5;
+  }
+
+  /* ── Toolbar ── */
+  .toolbar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:14px; padding:12px 22px;
+    background:rgba(247,248,242,.82);
+    backdrop-filter:saturate(140%) blur(14px); -webkit-backdrop-filter:saturate(140%) blur(14px);
+    border-bottom:1px solid var(--border);
+  }
+  .brand{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:-.01em}
+  .brand .mark{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-hover));display:grid;place-items:center;color:#fff;box-shadow:var(--shadow-sm)}
+  .brand small{color:var(--text-muted); font-weight:500; margin-left:2px}
+  .toolbar .spacer{flex:1}
+  .btn{
+    font:inherit; font-size:13px; font-weight:600; cursor:pointer;
+    border:1px solid var(--border-strong); background:var(--surface-2);
+    color:var(--text); padding:8px 14px; border-radius:10px;
+    display:inline-flex; align-items:center; gap:8px;
+    transition:.16s var(--ease); box-shadow:var(--shadow-sm);
+  }
+  .btn:hover{transform:translateY(-1px); border-color:var(--accent); color:var(--accent-hover)}
+  .btn:active{transform:translateY(0)}
+  .btn.primary{background:var(--accent-hover); border-color:var(--accent-hover); color:#fff}
+  .btn.primary:hover{background:var(--accent-press); border-color:var(--accent-press); color:#fff}
+  .btn .ic{width:15px;height:15px}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+  /* ── Page shell ── */
+  .wrap{max-width:1180px; margin:0 auto; padding:34px 22px 120px}
+  .intro{max-width:680px}
+  .intro h1{font-size:30px; letter-spacing:-.02em; margin:0 0 8px}
+  .intro p{color:var(--text-muted); margin:0 0 6px; font-size:15px}
+  .intro .meta{color:var(--text-faint); font-size:13px}
+
+  /* ── Palette swatches ── */
+  .palette{display:grid; grid-template-columns:repeat(auto-fill,minmax(118px,1fr)); gap:10px; margin:22px 0 8px}
+  .sw{border:1px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; background:var(--surface-2); box-shadow:var(--shadow-sm)}
+  .sw .chip{height:46px}
+  .sw .lab{padding:7px 10px; font-size:11px}
+  .sw .lab b{display:block; font-weight:600; color:var(--text)}
+  .sw .lab span{color:var(--text-faint); font-family:var(--font-num); font-size:10.5px}
+
+  /* ── Section header ── */
+  .sec{margin-top:54px; scroll-margin-top:74px}
+  .sec-head{display:flex; align-items:baseline; gap:12px; margin-bottom:14px}
+  .sec-num{font-family:var(--font-num); font-size:12px; font-weight:600; color:var(--accent-hover); background:var(--accent-soft); padding:3px 9px; border-radius:999px}
+  .sec-title{font-size:19px; font-weight:700; letter-spacing:-.01em; margin:0}
+  .sec-sub{color:var(--text-muted); font-size:13.5px; margin:0}
+  .sec-head .right{margin-left:auto; display:flex; gap:8px; align-items:center}
+
+  /* ── Mock window frame ── */
+  .frame{background:var(--surface-2); border:1px solid var(--border-strong); border-radius:16px; box-shadow:var(--shadow-lg); overflow:hidden; position:relative}
+  .frame-bar{display:flex; align-items:center; gap:10px; padding:10px 14px; background:linear-gradient(180deg,#EFF1E9,#E9EBE2); border-bottom:1px solid var(--border)}
+  .lights{display:flex; gap:7px}
+  .lights i{width:11px;height:11px;border-radius:50%; display:block}
+  .lights .r{background:#E0726A} .lights .y{background:#E3B341} .lights .g{background:#7DB76C}
+  .frame-title{font-size:12.5px; color:var(--text-muted); font-weight:500; margin-left:4px}
+  .frame-bar .spacer{flex:1}
+  .frame-bar .mini{font-size:11px; color:var(--text-faint); border:1px solid var(--border); background:var(--surface-2); padding:4px 8px; border-radius:7px; cursor:pointer; transition:.15s var(--ease); display:inline-flex; align-items:center; gap:6px}
+  .frame-bar .mini:hover{color:var(--accent-hover); border-color:var(--accent)}
+  .frame:fullscreen{border-radius:0; border:none}
+  .frame:fullscreen .frame-bar{display:none}
+  .frame:fullscreen .frame-body{height:100vh}
+  .frame:fullscreen .cv{height:100%}
+  .frame-body{background:var(--bg)}
+
+  /* ═══════════════════════════════════════════════════════════
+     CALENDAR BAR #2 — Today Agenda Strip
+     ═══════════════════════════════════════════════════════════ */
+  .cal{background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px 18px}
+  .cal-head{display:flex; align-items:center; gap:10px; margin-bottom:14px}
+  .cal-head .mo{font-size:15px; font-weight:700; letter-spacing:-.01em}
+  .cal-head .mo span{color:var(--text-muted); font-weight:500}
+  .cal-head .spacer{flex:1}
+  .cal-head .readout{font-size:11.5px; color:var(--text-muted)}
+  .cal-head .readout b{color:var(--accent-hover)}
+  .iconbtn{width:30px; height:30px; border-radius:9px; border:1px solid var(--border); background:var(--surface-2); display:grid; place-items:center; cursor:pointer; color:var(--text-muted); transition:.15s var(--ease)}
+  .iconbtn:hover{color:var(--accent-hover); border-color:var(--accent); background:var(--accent-soft)}
+  .iconbtn .ic{width:15px;height:15px}
+  .iconbtn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .pill-add{font-size:12px; font-weight:600; color:var(--accent-hover); border:1px dashed var(--accent); background:var(--accent-soft); padding:6px 11px; border-radius:9px; cursor:pointer; transition:.15s var(--ease); display:inline-flex; align-items:center; gap:6px}
+  .pill-add:hover{background:var(--accent); color:#fff}
+  .pill-add:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+  .agenda{position:relative; padding-top:6px}
+  .agenda-track{position:relative; height:84px; background:var(--surface-sunken); border-radius:12px; border:1px solid var(--border); overflow:visible}
+  .agenda-hours{display:flex; justify-content:space-between; padding:0 2px; margin-bottom:6px}
+  .agenda-hours span{font-size:10px; color:var(--text-faint); font-family:var(--font-num); width:0; text-align:center}
+  .ag-block{position:absolute; top:8px; bottom:8px; border-radius:8px; padding:6px 8px; color:#fff; font-size:11px; line-height:1.25; overflow:hidden; box-shadow:var(--shadow-sm); cursor:pointer; transition:.15s var(--ease); min-width:0}
+  .ag-block:hover{transform:translateY(-2px); box-shadow:var(--shadow)}
+  .ag-block b{display:block; font-weight:600; font-size:11.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .ag-block small{opacity:.85; font-size:10px}
+  .ag-block.focus{background:linear-gradient(135deg,var(--accent),var(--accent-hover))}
+  .ag-block.slate{background:linear-gradient(135deg,#6E8C9C,var(--slate))}
+  .ag-block.amber{background:linear-gradient(135deg,#D69B6C,var(--amber))}
+  .ag-block.lavender{background:linear-gradient(135deg,#AC8DB8,var(--lavender))}
+  .ag-now{position:absolute; top:-4px; bottom:-4px; width:2px; background:var(--amber); z-index:5; border-radius:2px; box-shadow:0 0 0 4px rgba(198,139,92,.18)}
+  .ag-now::before{content:""; position:absolute; top:-5px; left:-4px; width:10px;height:10px;border-radius:50%; background:var(--amber); box-shadow:0 0 0 3px rgba(255,255,255,.9)}
+  .ag-now::after{content:"now"; position:absolute; top:-20px; left:6px; font-size:9.5px; font-weight:700; color:var(--amber); font-family:var(--font-num); letter-spacing:.05em}
+  .agenda-list{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
+  .agenda-list .it{flex:1; min-width:150px; border:1px solid var(--border); border-radius:10px; padding:9px 11px; background:var(--surface)}
+  .agenda-list .it .t{font-size:11px; color:var(--text-faint); font-family:var(--font-num)}
+  .agenda-list .it .n{font-size:13px; font-weight:600; margin-top:2px}
+  .agenda-list .it .bar{height:3px;border-radius:3px;margin-top:7px}
+  .agenda-empty{padding:22px 16px; text-align:center; color:var(--text-faint); font-size:12.5px}
+
+  /* ═══════════════════════════════════════════════════════════
+     FULL CALENDAR — 3 columns: detail LEFT · month CENTER · AI RIGHT
+     ═══════════════════════════════════════════════════════════ */
+  .cv{display:grid; grid-template-columns:280px 1fr 240px; background:var(--bg); height:720px}
+  .cv>*{min-width:0; min-height:0}
+
+  /* ── Calendar pane (center) ── */
+  .calpane{display:flex; flex-direction:column; gap:12px; padding:16px; background:var(--bg); min-width:0}
+  .calpane-head{display:flex; align-items:center; gap:10px}
+  .calpane-head .title{font-size:20px; font-weight:700; letter-spacing:-.01em; font-family:var(--font-disp)}
+  .calpane-head .title span{color:var(--text-muted); font-weight:500}
+  .calpane-head .spacer{flex:1}
+  .todaybtn{font:inherit; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border-strong); background:var(--surface-2); color:var(--text-muted); padding:6px 12px; border-radius:9px; transition:.15s var(--ease); box-shadow:var(--shadow-sm)}
+  .todaybtn:hover{color:var(--accent-hover); border-color:var(--accent)}
+  .todaybtn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+  .month{flex:1; display:flex; flex-direction:column; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; min-height:0}
+  .month-dow{display:grid; grid-template-columns:repeat(7,1fr); border-bottom:1px solid var(--border); background:var(--surface)}
+  .month-dow span{padding:9px 6px; font-size:10.5px; font-weight:700; letter-spacing:.08em; color:var(--text-faint); text-align:center; text-transform:uppercase}
+  .month-grid{flex:1; display:grid; grid-template-columns:repeat(7,1fr); grid-auto-rows:1fr; min-height:0}
+  .cell{border-right:1px solid var(--border); border-bottom:1px solid var(--border); padding:5px 6px; cursor:pointer; transition:.14s var(--ease); display:flex; flex-direction:column; gap:3px; min-width:0; overflow:hidden; background:transparent}
+  .cell:nth-child(7n){border-right:none}
+  .cell:hover{background:var(--surface-sunken)}
+  .cell.is-today{background:var(--accent-soft)}
+  .cell.is-selected{outline:2px solid var(--accent); outline-offset:-2px; background:var(--surface-2); z-index:2}
+  .cell:focus-visible{outline:2px solid var(--accent); outline-offset:-2px}
+  .cell.is-outside{color:var(--text-faint); background:rgba(0,0,0,.012)}
+  .cell.is-outside:hover{background:rgba(0,0,0,.025)}
+  .cell .dnum{font-size:12.5px; font-weight:600; font-family:var(--font-disp); width:22px; height:22px; display:grid; place-items:center; border-radius:50%; line-height:1}
+  .cell.is-today .dnum{background:var(--accent-hover); color:#fff}
+  .cell.is-selected .dnum{color:var(--accent-hover)}
+  .evs{display:flex; flex-direction:column; gap:2px; min-width:0}
+  .ev{font-size:9.5px; line-height:1.15; padding:2px 5px; border-radius:5px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; transition:.12s var(--ease)}
+  .ev:hover{filter:brightness(1.08)}
+  .ev .et{opacity:.85; font-family:var(--font-num); font-size:8.5px; margin-right:3px}
+  .ev.focus{background:var(--accent)} .ev.slate{background:var(--slate)} .ev.amber{background:var(--amber)} .ev.lavender{background:var(--lavender)}
+  .evmore{font-size:9px; color:var(--text-faint); padding-left:2px}
+
+  .callegend{display:flex; gap:14px; flex-wrap:wrap; padding:2px 2px 0}
+  .callegend span{display:inline-flex; align-items:center; gap:6px; font-size:11px; color:var(--text-muted)}
+  .callegend i{width:8px;height:8px;border-radius:50%}
+
+  /* ── Day detail pane (LEFT) ── */
+  .detail{background:var(--surface-2); border:none; border-right:1px solid var(--border); display:flex; flex-direction:column; min-height:0; overflow:hidden}
+  .detail-head{padding:14px 16px; border-bottom:1px solid var(--border); background:linear-gradient(180deg,var(--surface),var(--surface-2))}
+  .detail-head .ddow{font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent-hover)}
+  .detail-head .ddate{font-size:22px; font-weight:700; font-family:var(--font-disp); letter-spacing:-.01em; margin-top:2px}
+  .detail-head .dsub{font-size:12px; color:var(--text-muted); margin-top:3px}
+  .detail-body{flex:1; overflow:auto; padding:12px 14px; display:flex; flex-direction:column; gap:9px}
+  .evcard{border:1px solid var(--border); border-left-width:4px; border-radius:9px; padding:10px 12px; background:var(--surface); transition:.14s var(--ease); display:flex; flex-direction:column; gap:4px; position:relative}
+  .evcard:hover{box-shadow:var(--shadow-sm)}
+  .evcard.focus{border-left-color:var(--accent)} .evcard.slate{border-left-color:var(--slate)} .evcard.amber{border-left-color:var(--amber)} .evcard.lavender{border-left-color:var(--lavender)}
+  .evcard .et{font-size:11px; font-family:var(--font-num); color:var(--text-faint)}
+  .evcard .en{font-size:13.5px; font-weight:600; padding-right:24px}
+  .evcard .ed{font-size:11.5px; color:var(--text-muted)}
+  .evcard .del{position:absolute; top:8px; right:8px; width:22px;height:22px; border-radius:6px; border:none; background:transparent; cursor:pointer; color:var(--text-faint); display:grid; place-items:center; transition:.14s var(--ease); opacity:0}
+  .evcard:hover .del{opacity:1}
+  .evcard .del:hover{background:var(--danger); color:#fff}
+  .evcard .del .ic{width:14px;height:14px}
+  .evcard .del:focus-visible{outline:2px solid var(--accent); outline-offset:1px; opacity:1}
+  .empty-state{margin:auto; text-align:center; color:var(--text-faint); padding:30px 16px; max-width:220px}
+  .empty-state .ico{width:40px;height:40px;border-radius:50%; margin:0 auto 10px; background:var(--surface-sunken); display:grid; place-items:center; color:var(--text-faint)}
+  .empty-state .ico .ic{width:20px;height:20px}
+  .empty-state b{display:block; color:var(--text-muted); font-size:13px; margin-bottom:4px}
+  .empty-state span{font-size:11.5px}
+  .detail-add{padding:10px 14px; border-top:1px solid var(--border)}
+  .detail-add button{width:100%; justify-content:center}
+
+  /* ═══════════════════════════════════════════════════════════
+     AI SIDEBAR (RIGHT, narrow)
+     ═══════════════════════════════════════════════════════════ */
+  .ai{display:flex; flex-direction:column; min-height:0; background:linear-gradient(180deg,#F2F4EC,#EDEFEA); border-left:1px solid var(--border)}
+  .ai-head{display:flex; align-items:center; gap:9px; padding:13px 12px; border-bottom:1px solid var(--border); background:rgba(255,255,255,.5)}
+  .ai-head .ai-mark{width:30px;height:30px;border-radius:9px; background:linear-gradient(135deg,var(--accent),var(--accent-hover)); display:grid;place-items:center;color:#fff; box-shadow:var(--shadow-sm); flex:0 0 auto}
+  .ai-head .ai-mark .ic{width:17px;height:17px}
+  .ai-head .ai-name{font-size:13px; font-weight:700; letter-spacing:-.01em; min-width:0}
+  .ai-head .ai-name small{display:block; font-size:10px; color:var(--success); font-weight:600; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .ai-head .ai-name small .dot{display:inline-block; width:6px;height:6px;border-radius:50%; background:var(--success); margin-right:4px; vertical-align:1px}
+  .ai-head .spacer{flex:1}
+  .ai-settings{width:28px;height:28px;border-radius:7px; border:1px solid transparent; background:transparent; cursor:pointer; color:var(--text-muted); display:grid; place-items:center; transition:.15s var(--ease); flex:0 0 auto}
+  .ai-settings:hover{background:var(--surface-sunken); color:var(--text)}
+  .ai-settings:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .ai-settings .ic{width:16px;height:16px}
+
+  .ai-chat{flex:1; overflow:auto; padding:12px; display:flex; flex-direction:column; gap:9px}
+  .msg{display:flex; gap:8px; max-width:94%; animation:fadeIn .25s var(--ease)}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+  .msg .av{width:24px;height:24px;border-radius:7px; flex:0 0 auto; display:grid;place-items:center;color:#fff}
+  .msg .av .ic{width:13px;height:13px}
+  .msg.ai .av{background:linear-gradient(135deg,var(--accent),var(--accent-hover))}
+  .msg.me .av{background:var(--slate)}
+  .msg .bubble{font-size:12px; line-height:1.45; padding:9px 11px; border-radius:11px; background:var(--surface-2); border:1px solid var(--border); color:var(--text)}
+  .msg.me{align-self:flex-end; flex-direction:row-reverse}
+  .msg.me .bubble{background:var(--slate); color:#fff; border-color:var(--slate)}
+  .msg.ai .bubble b{color:var(--accent-hover)}
+  .msg.ai .bubble .plan{margin-top:8px; padding:8px; border:1px solid var(--border); border-radius:8px; background:var(--surface)}
+  .msg.ai .bubble .plan b{display:block; font-size:11px; margin-bottom:4px}
+  .msg.ai .bubble .plan .row{font-size:11px; color:var(--text-muted); padding:2px 0}
+  .msg.ai .bubble .plan .acts{margin-top:7px; display:flex; gap:6px}
+  .msg.ai .bubble .plan .acts button{font:inherit; font-size:10.5px; font-weight:600; padding:4px 9px; border-radius:7px; cursor:pointer; border:1px solid var(--accent); background:var(--accent-soft); color:var(--accent-hover); transition:.14s var(--ease)}
+  .msg.ai .bubble .plan .acts button:hover{background:var(--accent); color:#fff}
+  .msg.ai .bubble .plan .acts button:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
+
+  .recs{padding:0 12px 9px}
+  .recs .rec-label{font-size:9.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--text-faint); margin-bottom:7px; padding-left:2px}
+  .recs .rec-list{display:flex; flex-direction:column; gap:6px}
+  .rec{width:100%; text-align:left; font:inherit; font-size:11.5px; line-height:1.35; border:1px solid var(--border); background:var(--surface-2); color:var(--text); padding:8px 10px; border-radius:9px; cursor:pointer; display:flex; align-items:flex-start; gap:7px; transition:.14s var(--ease); box-shadow:var(--shadow-sm)}
+  .rec:hover{border-color:var(--accent); color:var(--accent-hover); transform:translateY(-1px)}
+  .rec:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .rec .rec-ico{width:14px;height:14px; flex:0 0 auto; color:var(--accent); margin-top:1px}
+  .rec.sent{opacity:.45; pointer-events:none}
+
+  .ai-input{border-top:1px solid var(--border); padding:10px 11px; background:rgba(255,255,255,.6); display:flex; gap:7px; align-items:flex-end}
+  .ai-input textarea{flex:1; font:inherit; font-size:12px; line-height:1.4; resize:none; border:1px solid var(--border); background:var(--surface-2); color:var(--text); border-radius:9px; padding:8px 10px; max-height:90px; min-height:36px; transition:.15s var(--ease); font-family:var(--font-ui)}
+  .ai-input textarea:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+  .sendbtn{width:36px; height:36px; border-radius:9px; flex:0 0 auto; border:none; background:var(--accent-hover); color:#fff; cursor:pointer; display:grid; place-items:center; transition:.15s var(--ease); box-shadow:var(--shadow-sm)}
+  .sendbtn:hover{background:var(--accent-press)}
+  .sendbtn:disabled{background:var(--border-strong); cursor:not-allowed}
+  .sendbtn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .sendbtn .ic{width:16px;height:16px}
+
+  /* ═══════════════════════════════════════════════════════════
+     EVENT MODAL
+     ═══════════════════════════════════════════════════════════ */
+  .overlay{position:fixed; inset:0; background:rgba(46,51,43,.32); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); z-index:200; display:none; align-items:center; justify-content:center; padding:20px; animation:fadeIn .2s var(--ease)}
+  .overlay.show{display:flex}
+  .modal{width:100%; max-width:420px; background:var(--surface-2); border:1px solid var(--border-strong); border-radius:18px; box-shadow:var(--shadow-lg); overflow:hidden; animation:popIn .22s var(--ease)}
+  @keyframes popIn{from{opacity:0; transform:translateY(12px) scale(.98)} to{opacity:1; transform:none}}
+  .modal-head{display:flex; align-items:center; gap:10px; padding:16px 18px; border-bottom:1px solid var(--border); background:linear-gradient(180deg,var(--surface),var(--surface-2))}
+  .modal-head .m-mark{width:30px;height:30px;border-radius:9px; background:linear-gradient(135deg,var(--accent),var(--accent-hover)); display:grid;place-items:center;color:#fff}
+  .modal-head .m-mark .ic{width:17px;height:17px}
+  .modal-head .m-title{font-size:16px; font-weight:700; letter-spacing:-.01em}
+  .modal-head .spacer{flex:1}
+  .modal-head .close{width:30px;height:30px;border-radius:8px; border:none; background:transparent; cursor:pointer; color:var(--text-muted); display:grid; place-items:center; transition:.14s var(--ease)}
+  .modal-head .close:hover{background:var(--surface-sunken); color:var(--text)}
+  .modal-head .close:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .modal-head .close .ic{width:18px;height:18px}
+  .modal-body{padding:16px 18px; display:flex; flex-direction:column; gap:14px}
+  .field{display:flex; flex-direction:column; gap:6px}
+  .field label{font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted)}
+  .field input, .field select, .field textarea{font:inherit; font-size:13px; border:1px solid var(--border); background:var(--surface-2); color:var(--text); border-radius:9px; padding:9px 11px; transition:.15s var(--ease); font-family:var(--font-ui); width:100%}
+  .field input:focus, .field select:focus, .field textarea:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+  .field textarea{resize:vertical; min-height:54px}
+  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .type-row{display:flex; gap:8px; flex-wrap:wrap}
+  .type-opt{flex:1; min-width:78px; display:flex; align-items:center; gap:7px; font:inherit; font-size:12px; font-weight:600; padding:8px 10px; border-radius:8px; cursor:pointer; border:1px solid var(--border); background:var(--surface-2); color:var(--text); transition:.14s var(--ease)}
+  .type-opt:hover{border-color:var(--border-strong)}
+  .type-opt:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .type-opt .swatch{width:14px;height:14px;border-radius:4px; flex:0 0 auto}
+  .type-opt.sel{border-color:var(--accent); background:var(--accent-soft); color:var(--accent-hover)}
+  .modal-foot{display:flex; gap:10px; padding:12px 18px 16px; justify-content:flex-end}
+  .modal-foot .btn{justify-content:center}
+
+  /* toast */
+  .toast{position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(20px); background:var(--text); color:#F7F8F2; padding:10px 16px; border-radius:999px; font-size:12.5px; font-weight:500; box-shadow:var(--shadow-lg); opacity:0; pointer-events:none; transition:.22s var(--ease); z-index:300}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+  footer.foot{margin-top:60px; padding-top:18px; border-top:1px solid var(--border); color:var(--text-faint); font-size:12px; text-align:center}
+  .note{font-size:12px;color:var(--text-faint);margin-top:6px}
+  .kbd{font-family:var(--font-num); font-size:11px; border:1px solid var(--border-strong); border-bottom-width:2px; border-radius:6px; padding:1px 6px; background:var(--surface-2); color:var(--text-muted)}
+</style>
+</head>
+<body>
+
+<!-- ───────────────────── Toolbar ───────────────────── -->
+<div class="toolbar">
+  <div class="brand">
+    <span class="mark"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></span>
+    FocusPath <small>· Calendar</small>
+  </div>
+  <div class="spacer"></div>
+  <button class="btn primary" id="globalFs">
+    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+    Fullscreen
+  </button>
+</div>
+
+<div class="wrap">
+
+  <!-- ───────────────────── Intro ───────────────────── -->
+  <section class="intro" id="pal">
+    <h1>FocusPath Calendar</h1>
+    <p>Final layout: <b>Bar #2 (Today Agenda Strip)</b> on the dashboard, plus the chosen fullscreen — a full month grid flanked by a <b>selected-day detail column</b> on the left and a narrow <b>AI scheduling sidebar</b> on the right.</p>
+    <p class="meta">Palette: <b>Sage Stone</b> — calm &amp; grounded. Demo date: Tue, Jul 22, 2025. Create, navigate, select, and delete events — every button works.</p>
+    <div class="palette" id="paletteRow"></div>
+    <p class="note">Tip: click a day to select it · <span class="kbd">+ Event</span> opens the new-event modal · hover an event card and click <span class="kbd">×</span> to delete · chat with the AI on the right · <span class="kbd">Esc</span> exits fullscreen/modal.</p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       CALENDAR BAR #2 — Today Agenda Strip (day-navigable)
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="sec" id="bar2">
+    <div class="sec-head">
+      <span class="sec-num">DASHBOARD BAR</span>
+      <div>
+        <h2 class="sec-title">Today Agenda Strip</h2>
+        <p class="sec-sub">Horizontal timeline for the focused day. Use ◀ / ▶ to move across days; + Event creates one.</p>
+      </div>
+    </div>
+    <div class="cal" id="bar2el"></div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       FULLSCREEN CALENDAR — detail LEFT · month CENTER · AI RIGHT
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="sec" id="fs">
+    <div class="sec-head">
+      <span class="sec-num">FULLSCREEN</span>
+      <div>
+        <h2 class="sec-title">Full Calendar — Detail · Month · AI</h2>
+        <p class="sec-sub">Selected-day events on the left, full month grid in the center, AI scheduling assistant on the right.</p>
+      </div>
+      <div class="right">
+        <button class="btn" data-fs="frameFs">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+          Expand
+        </button>
+      </div>
+    </div>
+    <div class="frame" id="frameFs">
+      <div class="frame-bar">
+        <span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+        <span class="frame-title">FocusPath — Calendar</span>
+        <span class="spacer"></span>
+        <span class="mini" data-fs="frameFs">⛶ Fullscreen</span>
+      </div>
+      <div class="frame-body">
+        <div class="cv">
+          <aside class="detail" id="detailPane"></aside>
+          <section class="calpane" id="calpane"></section>
+          <aside class="ai" id="aiPane"></aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    FocusPath calendar · Sage Stone palette · detail LEFT · month CENTER · AI RIGHT · create / navigate / select / delete events.
+  </footer>
+</div>
+
+<!-- ── Event modal ── -->
+<div class="overlay" id="overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-head">
+      <span class="m-mark" id="modalMark"></span>
+      <span class="m-title" id="modalTitle">New event</span>
+      <span class="spacer"></span>
+      <button class="close" id="modalClose" aria-label="Close">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label for="fTitle">Title</label>
+        <input id="fTitle" type="text" placeholder="e.g. Study chemistry Ch.5" maxlength="80" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="fDate">Date</label>
+          <input id="fDate" type="date" />
+        </div>
+        <div class="field">
+          <label for="fTime">Start time</label>
+          <input id="fTime" type="time" />
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="fDur">Duration</label>
+          <select id="fDur">
+            <option value="15">15 min</option>
+            <option value="30">30 min</option>
+            <option value="45">45 min</option>
+            <option value="60" selected>1 hour</option>
+            <option value="90">1.5 hours</option>
+            <option value="120">2 hours</option>
+            <option value="180">3 hours</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Type</label>
+          <div class="type-row" id="typeRow"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="fDesc">Notes <span style="font-weight:400;text-transform:none;color:var(--text-faint)">(optional)</span></label>
+        <textarea id="fDesc" placeholder="Any details, links, or reminders…" maxlength="240"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" type="button" id="modalCancel">Cancel</button>
+      <button class="btn primary" type="button" id="modalSave">Add event</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─────────────────────────────────────────────────────────
+   DATA
+   ───────────────────────────────────────────────────────── */
+const DOW_FULL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const DOW_SHORT = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+// Demo "today" = Tuesday, Jul 22, 2025
+const TODAY = new Date(2025, 6, 22); TODAY.setHours(0,0,0,0);
+
+// Live event store keyed by "YYYY-MM-DD" — starts as a copy of demo data.
+const EV = {
+  "2025-07-01":[{id:"e1",t:"9:00",title:"Standup",type:"slate",min:540,dur:30}],
+  "2025-07-03":[{id:"e2",t:"14:00",title:"Lab session",type:"focus",min:840,dur:90}],
+  "2025-07-07":[{id:"e3",t:"9:00",title:"Standup",type:"slate",min:540,dur:30},{id:"e4",t:"19:00",title:"Dinner w/ mom",type:"amber",min:1140,dur:60}],
+  "2025-07-08":[{id:"e5",t:"9:00",title:"Standup",type:"slate",min:540,dur:30}],
+  "2025-07-10":[{id:"e6",t:"13:00",title:"Focus · Ch.1 review",type:"focus",min:780,dur:60},{id:"e7",t:"15:00",title:"Dentist",type:"slate",min:900,dur:45}],
+  "2025-07-14":[{id:"e8",t:"9:00",title:"Standup",type:"slate",min:540,dur:30},{id:"e9",t:"19:00",title:"Study group",type:"lavender",min:1140,dur:60}],
+  "2025-07-15":[{id:"e10",t:"9:00",title:"Standup",type:"slate",min:540,dur:30}],
+  "2025-07-17":[{id:"e11",t:"13:00",title:"Focus · Ch.2 problems",type:"focus",min:780,dur:60}],
+  "2025-07-21":[{id:"e12",t:"9:00",title:"Standup",type:"slate",min:540,dur:30}],
+  "2025-07-22":[
+    {id:"e13",t:"1:00",title:"Focus · Chem Ch.4 practice",type:"focus",min:780,dur:60,desc:"Read pp.142–158 + problems 4.1–4.10. Linked to your “A in Chemistry” goal."},
+    {id:"e14",t:"2:30",title:"Dentist",type:"slate",min:870,dur:45,desc:"6-month checkup. Bring insurance card."},
+    {id:"e15",t:"7:00",title:"Dinner w/ friends",type:"amber",min:1140,dur:90,desc:"Noodles & Co. — Maya's birthday."}
+  ],
+  "2025-07-23":[{id:"e16",t:"10:00",title:"Gym",type:"amber",min:600,dur:60}],
+  "2025-07-24":[{id:"e17",t:"19:00",title:"Study group",type:"lavender",min:1140,dur:60}],
+  "2025-07-28":[{id:"e18",t:"9:00",title:"Standup",type:"slate",min:540,dur:30}],
+  "2025-07-29":[{id:"e19",t:"13:00",title:"Focus · Ch.3 review",type:"focus",min:780,dur:60}],
+  "2025-07-31":[{id:"e20",t:"15:00",title:"Chem exam prep",type:"focus",min:900,dur:120,desc:"Final review + summary sheet. Exam is Aug 1."}],
+};
+let eventSeq = 100;
+const TYPE_COLOR = {focus:"var(--accent)",slate:"var(--slate)",amber:"var(--amber)",lavender:"var(--lavender)"};
+const TYPE_LABEL = {focus:"Focus block",slate:"Appointment",amber:"Personal",lavender:"Reminder"};
+const TYPES = [["focus","Focus block","#5E7A5E"],["slate","Appointment","#5E7A8A"],["amber","Personal","#C68B5C"],["lavender","Reminder","#9B7AA8"]];
+
+function key(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+function evsFor(d){ return EV[key(d)]||[]; }
+function sameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+function fmtTime(min){ const h=Math.floor(min/60), m=min%60; const ap=h<12?"am":"pm"; const hr=h===0?12:(h>12?h-12:h); return `${hr}:${String(m).padStart(2,"0")}${ap}`; }
+
+/* ───────── Palette swatches ───────── */
+const PALETTE = [
+  ["Background","--bg","#EDEFEA"],["Surface","--surface","#F7F8F2"],["Card","--surface-2","#FFFFFF"],
+  ["Border","--border","#D6DBCD"],["Text","--text","#2E332B"],["Muted","--text-muted","#5F655A"],
+  ["Sage","--accent","#5E7A5E"],["Sage Dk","--accent-hover","#4D6A4D"],["Amber","--amber","#C68B5C"],
+  ["Slate","--slate","#5E7A8A"],["Lavender","--lavender","#9B7AA8"],["Success","--success","#6B9362"],
+];
+const palRow = document.getElementById("paletteRow");
+PALETTE.forEach(([n,tok,hx])=>{
+  const d=document.createElement("div"); d.className="sw";
+  d.innerHTML=`<div class="chip" style="background:${hx}"></div><div class="lab"><b>${n}</b><span>${hx}</span></div>`;
+  palRow.appendChild(d);
+});
+
+/* ───────── Icons ───────── */
+const IC = {
+  spark:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M5 19l.7 1.8L7.5 21l-1.8.7L5 23l-.7-1.3L2.5 21l1.8-.2z"/></svg>',
+  gear:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.2A1.6 1.6 0 0 0 7 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 2.6 14H2a2 2 0 1 1 0-4h.2A1.6 1.6 0 0 0 4 8.6a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 10 2.6V2a2 2 0 1 1 4 0v.2A1.6 1.6 0 0 0 16 4a1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.6 1.6 0 0 0 21.4 10H22a2 2 0 1 1 0 4h-.2a1.6 1.6 0 0 0-1.4 1z"/></svg>',
+  send:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>',
+  chevL:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
+  chevR:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>',
+  plus:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  cal:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>',
+  target:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>',
+  leaf:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg>',
+  bolt:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>',
+  trash:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>',
+};
+
+/* ───────── Toast ───────── */
+const toast = document.getElementById("toast");
+let toastT;
+function showToast(msg){ toast.textContent = msg; toast.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(()=>toast.classList.remove("show"), 1700); }
+
+/* ═══════════════════════════════════════════════════════════
+   GLOBAL STATE
+   ═══════════════════════════════════════════════════════════ */
+const FS = { view: new Date(TODAY), selected: new Date(TODAY) }; // fullscreen month + selected day
+const BAR = { day: new Date(TODAY) }; // bar's focused day
+
+/* ═══════════════════════════════════════════════════════════
+   CALENDAR BAR #2 — Today Agenda Strip (day-navigable)
+   ═══════════════════════════════════════════════════════════ */
+const AG_START = 8*60, AG_END = 22*60;
+function renderBar2(){
+  const el = document.getElementById("bar2el");
+  const day = BAR.day;
+  const evs = evsFor(day).slice().sort((a,b)=>a.min-b.min);
+  const span = AG_END - AG_START;
+  const pct = m => ((m-AG_START)/span)*100;
+  const isToday = sameDay(day, TODAY);
+  const hours = [8,10,12,14,16,18,20,22];
+  let blocks = evs.map(e=>{
+    const dur = e.dur||45;
+    const left = pct(e.min), w = pct(e.min+dur)-left;
+    return `<div class="ag-block ${e.type}" style="left:${left}%;width:${w}%" title="${e.title}" data-evid="${e.id}"><b>${e.title}</b><small>${e.t}${dur?` · ${dur}m`:""}</small></div>`;
+  }).join("");
+  let list;
+  if(evs.length===0){
+    list = `<div class="agenda-empty">Nothing on ${DOW_FULL[day.getDay()]}. A clean slate — click + Event to add something.</div>`;
+  } else {
+    list = evs.map(e=>`<div class="it" data-evid="${e.id}"><div class="t">${e.t}</div><div class="n">${e.title}</div><div class="bar" style="background:${TYPE_COLOR[e.type]}"></div></div>`).join("");
+  }
+  el.innerHTML = `<div class="cal-head">
+      <span class="mo">${isToday?"Today":DOW_FULL[day.getDay()]} <span>· ${MONTHS[day.getMonth()]} ${day.getDate()}, ${day.getFullYear()}</span></span>
+      <span class="spacer"></span>
+      <span class="readout"><b>${evs.length}</b> event${evs.length===1?"":"s"}${evs.length?` · next at ${evs[0].t}`:""}</span>
+      <button class="iconbtn" id="barPrev" aria-label="Previous day">${IC.chevL}</button>
+      <button class="iconbtn" id="barNext" aria-label="Next day">${IC.chevR}</button>
+      <button class="pill-add" id="barAdd">${IC.plus}Event</button>
+    </div>
+    <div class="agenda">
+      <div class="agenda-hours">${hours.map(h=>`<span>${h<=12?h:h-12}${h<12?"a":"p"}</span>`).join("")}</div>
+      <div class="agenda-track">${blocks}${isToday?`<div class="ag-now" style="left:${pct(13*60+45)}%"></div>`:""}</div>
+      <div class="agenda-list">${list}</div>
+    </div>`;
+  document.getElementById("barPrev").onclick = ()=>{ BAR.day.setDate(BAR.day.getDate()-1); renderBar2(); };
+  document.getElementById("barNext").onclick = ()=>{ BAR.day.setDate(BAR.day.getDate()+1); renderBar2(); };
+  document.getElementById("barAdd").onclick = ()=>openModal(new Date(BAR.day));
+  el.querySelectorAll(".ag-block, .agenda-list .it").forEach(b=>{
+    b.onclick = ()=>{ const e = findEv(b.getAttribute("data-evid")); if(e) showToast(`${e.title} · ${e.t}`); };
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FULL MONTH CALENDAR (fullscreen center)
+   ═══════════════════════════════════════════════════════════ */
+function renderCalpane(){
+  const el = document.getElementById("calpane");
+  const v = FS.view;
+  const year = v.getFullYear(), month = v.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const startWeekday = (firstDay.getDay()+6)%7; // Monday-first
+  let cells = "";
+  for(let i=0;i<42;i++){
+    const cellDate = new Date(year, month, i - startWeekday + 1); cellDate.setHours(0,0,0,0);
+    const outside = cellDate.getMonth() !== month;
+    const isToday = sameDay(cellDate, TODAY);
+    const isSel = sameDay(cellDate, FS.selected);
+    const evs = evsFor(cellDate);
+    const evChips = evs.slice(0,3).map(e=>`<span class="ev ${e.type}" data-evid="${e.id}"><span class="et">${e.t}</span>${e.title}</span>`).join("");
+    const more = evs.length>3 ? `<span class="evmore">+${evs.length-3} more</span>` : "";
+    const cls = `cell${outside?" is-outside":""}${isToday?" is-today":""}${isSel?" is-selected":""}`;
+    cells += `<div class="${cls}" role="button" tabindex="0" data-date="${key(cellDate)}">
+      <span class="dnum">${cellDate.getDate()}</span>
+      <span class="evs">${evChips}${more}</span>
+    </div>`;
+  }
+  el.innerHTML = `
+    <div class="calpane-head">
+      <button class="iconbtn" data-nav="prev" aria-label="Previous month">${IC.chevL}</button>
+      <span class="title">${MONTHS[month]} <span>${year}</span></span>
+      <button class="iconbtn" data-nav="next" aria-label="Next month">${IC.chevR}</button>
+      <span class="spacer"></span>
+      <button class="todaybtn" data-nav="today">Today</button>
+      <button class="pill-add" id="calAdd">${IC.plus}Event</button>
+    </div>
+    <div class="month">
+      <div class="month-dow">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=>`<span>${d}</span>`).join("")}</div>
+      <div class="month-grid">${cells}</div>
+    </div>
+    <div class="callegend">
+      <span><i style="background:var(--accent)"></i>Focus</span>
+      <span><i style="background:var(--slate)"></i>Appointment</span>
+      <span><i style="background:var(--amber)"></i>Personal</span>
+      <span><i style="background:var(--lavender)"></i>Reminder</span>
+    </div>
+  `;
+  el.querySelector('[data-nav="prev"]').onclick = ()=>{ FS.view = new Date(year, month-1, 1); renderCalpane(); renderDetail(); };
+  el.querySelector('[data-nav="next"]').onclick = ()=>{ FS.view = new Date(year, month+1, 1); renderCalpane(); renderDetail(); };
+  el.querySelector('[data-nav="today"]').onclick = ()=>{ FS.view = new Date(TODAY); FS.selected = new Date(TODAY); renderCalpane(); renderDetail(); showToast("Jumped to today"); };
+  document.getElementById("calAdd").onclick = ()=>openModal(new Date(FS.selected));
+  el.querySelectorAll(".cell").forEach(c=>{
+    const onPick = ()=>{
+      const [y,m,d] = c.getAttribute("data-date").split("-").map(Number);
+      FS.selected = new Date(y, m-1, d);
+      if(m-1 !== FS.view.getMonth() || y !== FS.view.getFullYear()) FS.view = new Date(y, m-1, 1);
+      renderCalpane(); renderDetail();
+      showToast(`${DOW_SHORT[FS.selected.getDay()]} ${MONTHS_SHORT[FS.selected.getMonth()]} ${FS.selected.getDate()} selected`);
+    };
+    c.onclick = onPick;
+    c.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "||e.key==="Spacebar"){ e.preventDefault(); onPick(); } };
+  });
+  el.querySelectorAll(".ev").forEach(chip=>{
+    chip.onclick = e=>{ e.stopPropagation(); const ev = findEv(chip.getAttribute("data-evid")); if(ev) showToast(`${ev.title} · ${ev.t}`); };
+  });
+}
+
+/* ───────── Day detail pane (LEFT) ───────── */
+function renderDetail(){
+  const el = document.getElementById("detailPane");
+  const d = FS.selected;
+  const evs = evsFor(d).slice().sort((a,b)=>a.min-b.min);
+  let body;
+  if(evs.length===0){
+    body = `<div class="empty-state"><div class="ico">${IC.cal}</div><b>Nothing scheduled</b><span>A clean day. Ask the AI to plan it, or click + Event.</span></div>`;
+  } else {
+    body = evs.map(e=>`<div class="evcard ${e.type}">
+      <span class="et">${e.t}${e.dur?` · ${e.dur}m`:""} · ${TYPE_LABEL[e.type]}</span>
+      <span class="en">${e.title}</span>
+      ${e.desc?`<span class="ed">${e.desc}</span>`:""}
+      <button class="del" data-del="${e.id}" aria-label="Delete event">${IC.trash}</button>
+    </div>`).join("");
+  }
+  el.innerHTML = `
+    <div class="detail-head">
+      <div class="ddow">${DOW_FULL[d.getDay()]}</div>
+      <div class="ddate">${MONTHS[d.getMonth()]} ${d.getDate()}</div>
+      <div class="dsub">${evs.length} event${evs.length===1?"":"s"}${evs.length?` · next at ${evs[0].t}`:""}</div>
+    </div>
+    <div class="detail-body">${body}</div>
+    <div class="detail-add"><button class="btn primary" id="detailAdd">${IC.plus}Add event on ${MONTHS_SHORT[d.getMonth()]} ${d.getDate()}</button></div>
+  `;
+  document.getElementById("detailAdd").onclick = ()=>openModal(new Date(d));
+  el.querySelectorAll(".del").forEach(btn=>{
+    btn.onclick = ()=>{ deleteEvent(btn.getAttribute("data-del")); };
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   AI SIDEBAR (RIGHT)
+   ═══════════════════════════════════════════════════════════ */
+const AI_GREETING = `Hey! I'm your FocusPath buddy. I can <b>schedule tasks</b>, <b>break down big goals</b>, and <b>reschedule missed blocks</b> — no guilt, ever. What's on your mind?`;
+const RECS = [
+  {ico:IC.target, q:"What should I focus on today?"},
+  {ico:IC.leaf, q:"Plan my study blocks for the chem exam"},
+  {ico:IC.bolt, q:"Reschedule anything I missed this week"},
+];
+const aiState = { messages:[{who:"ai",text:AI_GREETING}], sentRecs:new Set(), addedPlans:new Set() };
+
+function renderAI(){
+  const el = document.getElementById("aiPane");
+  const msgs = aiState.messages.map(m=>`<div class="msg ${m.who}"><div class="av">${m.who==="ai"?IC.spark:IC.target}</div><div class="bubble">${m.text}</div></div>`).join("");
+  el.innerHTML = `
+    <div class="ai-head">
+      <span class="ai-mark">${IC.spark}</span>
+      <div class="ai-name">AI Scheduler<small><span class="dot"></span>online · BYOK</small></div>
+      <span class="spacer"></span>
+      <button class="ai-settings" id="aiSettings" title="AI settings">${IC.gear}</button>
+    </div>
+    <div class="ai-chat" id="aiChat">${msgs}</div>
+    <div class="recs">
+      <div class="rec-label">Recommended for today</div>
+      <div class="rec-list">
+        ${RECS.map((r,i)=>`<button class="rec ${aiState.sentRecs.has(i)?"sent":""}" data-rec="${i}">${r.ico}<span>${r.q}</span></button>`).join("")}
+      </div>
+    </div>
+    <div class="ai-input">
+      <textarea id="aiInput" rows="1" placeholder="Ask me to schedule something…"></textarea>
+      <button class="sendbtn" id="aiSend" disabled>${IC.send}</button>
+    </div>
+  `;
+  document.getElementById("aiSettings").onclick = ()=>showToast("AI settings (demo)");
+  el.querySelectorAll(".rec").forEach(b=>{
+    b.onclick = ()=>{
+      const i = Number(b.getAttribute("data-rec"));
+      if(aiState.sentRecs.has(i)) return;
+      aiState.sentRecs.add(i);
+      sendUser(RECS[i].q);
+    };
+  });
+  const ta = document.getElementById("aiInput"), sb = document.getElementById("aiSend");
+  ta.addEventListener("input", ()=>{ ta.style.height="auto"; ta.style.height=Math.min(ta.scrollHeight,90)+"px"; sb.disabled = ta.value.trim().length===0; });
+  ta.addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); trySend(); } });
+  sb.onclick = trySend;
+  const c = document.getElementById("aiChat"); c.scrollTop = c.scrollHeight;
+}
+function trySend(){
+  const ta = document.getElementById("aiInput");
+  const v = ta.value.trim(); if(!v) return;
+  ta.value=""; ta.style.height="auto"; document.getElementById("aiSend").disabled = true;
+  sendUser(v);
+}
+function sendUser(text){
+  aiState.messages.push({who:"me", text});
+  renderAI();
+  focusInput();
+  setTimeout(()=>{ aiState.messages.push({who:"ai", text: aiReply(text)}); renderAI(); focusInput(); }, 650);
+}
+function focusInput(){ const ta = document.getElementById("aiInput"); if(ta) ta.focus(); }
+
+function aiReply(q){
+  const ql = q.toLowerCase();
+  if(ql.includes("today") || ql.includes("focus")){
+    return `Your one thing today: <b>Chem Ch.4 practice</b> at 1:00pm. You've got a free window 10–12am and after 3pm. Want me to lock in a 1-hour focus block?<div class="plan"><b>Suggested plan</b><div class="row">1:00–2:00pm · Focus · Chem Ch.4</div><div class="acts"><button data-aiadd="focus|13:00|60|Chem Ch.4 practice|Read pp.142–158">Add to calendar</button></div></div>`;
+  }
+  if(ql.includes("exam") || ql.includes("study") || ql.includes("chem")){
+    return `For the chem exam on <b>Aug 1</b>, I'd suggest 4 sessions. You've done Ch.1 (Jul 10) and Ch.2 (Jul 17). Next up:<div class="plan"><b>Suggested study blocks</b><div class="row">Jul 29 1:00pm · Focus · Ch.3 review (60m)</div><div class="row">Jul 31 3:00pm · Focus · Final exam prep (120m)</div><div class="acts"><button data-aiadd="focus|13:00|60|Ch.3 review|Review chapters 3 notes and problems">Add Ch.3 review</button></div></div>`;
+  }
+  if(ql.includes("miss") || ql.includes("reschedul")){
+    return `No worries — you missed the Jul 8 standup. I can quietly archive it and start fresh. <b>No streaks, no shame.</b> Want me to plan a lighter day tomorrow instead?`;
+  }
+  return `Tell me <b>what</b>, <b>when</b> (roughly), and <b>how long</b> — I'll find a slot that fits your calendar and energy. You approve before anything is committed.`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EVENT MODAL
+   ═══════════════════════════════════════════════════════════ */
+const overlay = document.getElementById("overlay");
+let modalType = "focus";
+let modalDate = new Date(TODAY);
+
+function openModal(date){
+  modalDate = new Date(date); modalDate.setHours(0,0,0,0);
+  modalType = "focus";
+  document.getElementById("modalTitle").textContent = `New event — ${MONTHS_SHORT[modalDate.getMonth()]} ${modalDate.getDate()}`;
+  document.getElementById("fTitle").value = "";
+  // wire Enter-to-save on title
+  const tIn = document.getElementById("fTitle");
+  tIn.onkeydown = e=>{ if(e.key==="Enter"){ e.preventDefault(); document.getElementById("modalSave").click(); } };
+  document.getElementById("fDate").value = key(modalDate);
+  document.getElementById("fTime").value = "13:00";
+  document.getElementById("fDur").value = "60";
+  document.getElementById("fDesc").value = "";
+  renderTypeRow();
+  overlay.classList.add("show");
+  setTimeout(()=>document.getElementById("fTitle").focus(), 50);
+}
+function closeModal(){ overlay.classList.remove("show"); }
+function renderTypeRow(){
+  const row = document.getElementById("typeRow");
+  row.innerHTML = TYPES.map(([id,label,hx])=>`<button type="button" class="type-opt ${id===modalType?"sel":""}" data-type="${id}"><span class="swatch" style="background:${hx}"></span>${label}</button>`).join("");
+  row.querySelectorAll(".type-opt").forEach(b=>{
+    b.onclick = ()=>{ modalType = b.getAttribute("data-type"); renderTypeRow(); };
+  });
+}
+document.getElementById("modalClose").onclick = closeModal;
+document.getElementById("modalCancel").onclick = closeModal;
+overlay.addEventListener("click", e=>{ if(e.target===overlay) closeModal(); });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape" && overlay.classList.contains("show")) closeModal(); });
+
+document.getElementById("modalSave").onclick = ()=>{
+  const title = document.getElementById("fTitle").value.trim();
+  const dateStr = document.getElementById("fDate").value;
+  const timeStr = document.getElementById("fTime").value;
+  const dur = parseInt(document.getElementById("fDur").value, 10);
+  const desc = document.getElementById("fDesc").value.trim();
+  if(!title){ document.getElementById("fTitle").focus(); showToast("Please add a title"); return; }
+  if(!dateStr){ showToast("Please pick a date"); return; }
+  if(!timeStr){ showToast("Please pick a time"); return; }
+  const [y,m,d] = dateStr.split("-").map(Number);
+  const [hh,mm] = timeStr.split(":").map(Number);
+  const min = hh*60 + mm;
+  const id = "u" + (++eventSeq);
+  const k = `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+  if(!EV[k]) EV[k] = [];
+  EV[k].push({ id, t: fmtTime(min), title, type: modalType, min, dur, desc: desc||undefined });
+  EV[k].sort((a,b)=>a.min-b.min);
+  closeModal();
+  // update view + selection to the event's date
+  const evDate = new Date(y, m-1, d);
+  FS.view = new Date(evDate); FS.selected = new Date(evDate);
+  // if the bar is on the same day, refresh it too
+  if(sameDay(BAR.day, evDate)) renderBar2();
+  renderCalpane(); renderDetail();
+  showToast(`Added “${title}” on ${MONTHS_SHORT[m-1]} ${d}`);
+};
+
+/* ───────── Delete event ───────── */
+function deleteEvent(id){
+  for(const k in EV){
+    const idx = EV[k].findIndex(e=>e.id===id);
+    if(idx>=0){ EV[k].splice(idx,1); if(EV[k].length===0) delete EV[k]; break; }
+  }
+  renderBar2(); renderCalpane(); renderDetail();
+  showToast("Event deleted");
+}
+function findEv(id){
+  for(const k in EV){ const e = EV[k].find(e=>e.id===id); if(e) return e; }
+  return null;
+}
+
+/* ───────── AI "add to calendar" buttons (delegated) ───────── */
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-aiadd]");
+  if(!b) return;
+  const planId = b.getAttribute("data-aiadd");
+  if(aiState.addedPlans.has(planId)){ showToast("Already added"); return; }
+  aiState.addedPlans.add(planId);
+  b.textContent = "Added ✓"; b.disabled = true; b.style.opacity = ".55";
+  const [type, time, dur, title, desc] = planId.split("|");
+  const [hh,mm] = time.split(":").map(Number);
+  const min = hh*60 + mm;
+  const id = "u" + (++eventSeq);
+  const d = new Date(FS.selected);
+  const k = key(d);
+  if(!EV[k]) EV[k] = [];
+  EV[k].push({ id, t: fmtTime(min), title, type, min, dur: parseInt(dur,10), desc });
+  EV[k].sort((a,b)=>a.min-b.min);
+  renderBar2(); renderCalpane(); renderDetail();
+  showToast(`Added “${title}” to ${MONTHS_SHORT[d.getMonth()]} ${d.getDate()}`);
+});
+
+/* ═══════════════════════════════════════════════════════════
+   FULLSCREEN
+   ═══════════════════════════════════════════════════════════ */
+function enterFs(id){ const el=document.getElementById(id); if(el.requestFullscreen) el.requestFullscreen(); }
+document.querySelectorAll("[data-fs]").forEach(b=> b.addEventListener("click", ()=> enterFs(b.getAttribute("data-fs"))) );
+document.getElementById("globalFs").addEventListener("click", ()=>{
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+  else document.exitFullscreen && document.exitFullscreen();
+});
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════════════ */
+function renderAll(){ renderBar2(); renderCalpane(); renderDetail(); renderAI(); }
+renderAll();
+</script>
+</body>
+</html>
