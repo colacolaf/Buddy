@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FocusPath — Stats &amp; Insights</title>
+<style>
+  :root{
+    --bg:#EDEFEA; --surface:#F7F8F2; --surface-2:#FFFFFF; --surface-sunken:#E4E7DE;
+    --border:#D6DBCD; --border-strong:#C2C8B8;
+    --text:#2E332B; --text-muted:#5F655A; --text-faint:#6B7062;
+    --accent:#5E7A5E; --accent-hover:#4D6A4D; --accent-press:#436143; --accent-soft:#DCE6D6;
+    --amber:#C68B5C; --amber-soft:#F0E2D2;
+    --slate:#5E7A8A; --slate-soft:#DCE4E8;
+    --lavender:#9B7AA8; --lavender-soft:#E8DFEC;
+    --success:#6B9362; --warning:#C98A4B; --danger:#B5635C; --danger-soft:#F0DBD9;
+    --shadow-sm:0 1px 2px rgba(46,51,43,.05), 0 2px 6px rgba(46,51,43,.05);
+    --shadow:0 1px 2px rgba(46,51,43,.05), 0 6px 18px rgba(46,51,43,.08);
+    --shadow-lg:0 2px 8px rgba(46,51,43,.07), 0 18px 48px rgba(46,51,43,.14);
+    --radius:14px; --radius-sm:9px; --radius-xs:6px;
+    --ease:cubic-bezier(.4,0,.2,1);
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+    --font-num:"SF Mono","ui-monospace","Menlo","Consolas",monospace;
+    --font-disp:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0}
+  body{font-family:var(--font-ui);color:var(--text);background:radial-gradient(1200px 600px at 80% -10%,#E3E7DD 0%,transparent 60%),radial-gradient(900px 500px at -10% 20%,#E7EBE0 0%,transparent 55%),var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+
+  .toolbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:12px 22px;background:rgba(247,248,242,.82);backdrop-filter:saturate(140%) blur(14px);border-bottom:1px solid var(--border)}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em}
+  .brand .mark{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-hover));display:grid;place-items:center;color:#fff}
+  .brand small{color:var(--text-muted);font-weight:500;margin-left:2px}
+  .toolbar .spacer{flex:1}
+  .btn{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);padding:8px 14px;border-radius:10px;display:inline-flex;align-items:center;gap:8px;transition:.16s var(--ease);box-shadow:var(--shadow-sm)}
+  .btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent-hover)}
+  .btn:active{transform:translateY(0)}
+  .btn.primary{background:var(--accent-hover);border-color:var(--accent-hover);color:#fff}
+  .btn.primary:hover{background:var(--accent-press);border-color:var(--accent-press);color:#fff}
+  .btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+  .btn .ic{width:15px;height:15px}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:34px 22px 120px}
+  .intro{max-width:680px}
+  .intro h1{font-size:30px;letter-spacing:-.02em;margin:0 0 8px}
+  .intro p{color:var(--text-muted);margin:0 0 6px;font-size:15px}
+  .intro .meta{color:var(--text-faint);font-size:13px}
+
+  .sec{margin-top:54px;scroll-margin-top:74px}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
+  .sec-num{font-family:var(--font-num);font-size:12px;font-weight:600;color:var(--accent-hover);background:var(--accent-soft);padding:3px 9px;border-radius:999px}
+  .sec-title{font-size:19px;font-weight:700;letter-spacing:-.01em;margin:0}
+  .sec-sub{color:var(--text-muted);font-size:13.5px;margin:0}
+
+  .frame{background:var(--surface-2);border:1px solid var(--border-strong);border-radius:16px;box-shadow:var(--shadow-lg);overflow:hidden;position:relative}
+  .frame-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(180deg,#EFF1E9,#E9EBE2);border-bottom:1px solid var(--border)}
+  .lights{display:flex;gap:7px} .lights i{width:11px;height:11px;border-radius:50%;display:block}
+  .lights .r{background:#E0726A} .lights .y{background:#E3B341} .lights .g{background:#7DB76C}
+  .frame-title{font-size:12.5px;color:var(--text-muted);font-weight:500;margin-left:4px}
+  .frame-bar .spacer{flex:1}
+  .frame:fullscreen{border-radius:0}
+  .frame:fullscreen .frame-bar{display:none}
+  .frame-body{background:var(--bg);height:620px;overflow:auto}
+
+  .panel{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .panel-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface)}
+  .panel-head .ph-title{font-size:14px;font-weight:700;letter-spacing:-.01em}
+  .panel-head .ph-sub{font-size:11px;color:var(--text-muted);margin-left:auto}
+  .panel-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+
+  /* Home widget */
+  .home-widget{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+  .hw-card{padding:14px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--border);display:flex;flex-direction:column;gap:6px;cursor:pointer;transition:.16s var(--ease)}
+  .hw-card:hover{border-color:var(--accent);background:var(--accent-soft);transform:translateY(-1px)}
+  .hw-card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .hw-label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);font-weight:600}
+  .hw-value{font-size:26px;font-weight:700;color:var(--accent-hover);font-family:var(--font-num)}
+  .hw-sub{font-size:12px;color:var(--text-muted)}
+  .hw-bar{height:6px;border-radius:999px;background:var(--surface-sunken);overflow:hidden;margin-top:auto}
+  .hw-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent-hover));transition:width .4s var(--ease)}
+
+  /* Charts */
+  .bar-chart{display:flex;align-items:flex-end;gap:8px;height:140px;padding:8px 0}
+  .bar{flex:1;border-radius:8px 8px 4px 4px;background:var(--accent-soft);transition:.3s var(--ease);position:relative;min-height:8px}
+  .bar:hover{background:var(--accent)}
+  .bar-label{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--text-muted)}
+  .bar-val{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:600;color:var(--text)}
+
+  .hbar{display:flex;align-items:center;gap:12px}
+  .hbar-track{flex:1;height:10px;background:var(--surface-sunken);border-radius:999px;overflow:hidden}
+  .hbar-fill{height:100%;border-radius:999px;background:var(--accent);transition:width .4s var(--ease)}
+  .hbar-label{font-size:12px;white-space:nowrap;width:90px}
+  .hbar-val{font-size:12px;color:var(--text-muted);width:40px;text-align:right;font-family:var(--font-num)}
+
+  .ring{position:relative;width:120px;height:120px;margin:0 auto}
+  .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+  .ring-bg{fill:none;stroke:var(--surface-sunken);stroke-width:10}
+  .ring-fg{fill:none;stroke:var(--accent);stroke-width:10;stroke-linecap:round;transition:stroke-dasharray .6s var(--ease)}
+  .ring-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+  .ring-text .big{font-size:24px;font-weight:700;font-family:var(--font-num)}
+  .ring-text .small{font-size:11px;color:var(--text-muted)}
+
+  .tabs{display:flex;gap:8px;border-bottom:1px solid var(--border);padding:0 16px}
+  .tab{padding:10px 14px;font-size:13px;font-weight:600;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:.14s var(--ease)}
+  .tab:hover{color:var(--accent-hover)}
+  .tab.active{color:var(--accent-hover);border-color:var(--accent)}
+
+  .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+  .metric{padding:14px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--border);text-align:center}
+  .metric .num{font-size:28px;font-weight:700;font-family:var(--font-num);color:var(--accent-hover)}
+  .metric .lab{font-size:12px;color:var(--text-muted);margin-top:4px}
+  .metric .delta{font-size:11px;color:var(--success);margin-top:2px}
+
+  .done-garden{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:8px}
+  .dg-item{width:32px;height:32px;border-radius:50%;background:var(--accent-soft);border:1px solid var(--accent);display:grid;place-items:center;font-size:14px}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--text);color:#F7F8F2;padding:10px 16px;border-radius:999px;font-size:12.5px;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.22s var(--ease);z-index:300}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  footer.foot{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);color:var(--text-faint);font-size:12px;text-align:center}
+
+  /* Template 6 special */
+  .reset-card{padding:24px;text-align:center;background:linear-gradient(135deg,var(--accent-soft),var(--surface));border:1px dashed var(--accent);border-radius:var(--radius)}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="brand">
+    <span class="mark"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+    FocusPath <small>· Stats &amp; Insights</small>
+  </div>
+</div>
+
+<div class="wrap">
+  <section class="intro">
+    <h1>Stats &amp; Insights — 6 Fullscreen Layouts</h1>
+    <p>ADHD-friendly stats that celebrate progress, avoid shame, and keep cognitive load low.</p>
+    <p class="meta">Palette: Sage Stone · Principles: positive reinforcement, forgiveness-first, progressive disclosure</p>
+  </section>
+
+  <!-- HOME WIDGET -->
+  <section class="sec" id="home">
+    <div class="sec-head"><span class="sec-num">HW</span><div><h2 class="sec-title">Home Widget</h2><p class="sec-sub">Glance view for the main dashboard.</p></div></div>
+    <div class="home-widget" id="homeWidget">
+      <div class="hw-card" role="button" tabindex="0" data-hw="Focus today: 3h 12m"><div class="hw-label">Focus today</div><div class="hw-value">3h 12m</div><div class="hw-sub">+42 min vs yesterday</div><div class="hw-bar"><div class="hw-fill" style="width:72%"></div></div></div>
+      <div class="hw-card" role="button" tabindex="0" data-hw="Tasks done: 5 of 7"><div class="hw-label">Tasks done</div><div class="hw-value">5 / 7</div><div class="hw-sub">2 remaining</div><div class="hw-bar"><div class="hw-fill" style="width:71%"></div></div></div>
+      <div class="hw-card" role="button" tabindex="0" data-hw="Streak: 12 days"><div class="hw-label">Streak</div><div class="hw-value">12 days</div><div class="hw-sub">1 freeze left</div><div class="hw-bar"><div class="hw-fill" style="width:80%"></div></div></div>
+      <div class="hw-card" role="button" tabindex="0" data-hw="Wins today: 8"><div class="hw-label">Wins today</div><div class="hw-value">8</div><div class="hw-sub">See Done List</div><div class="hw-bar"><div class="hw-fill" style="width:60%"></div></div></div>
+    </div>
+  </section>
+
+  <!-- T1: Momentum Feed (Single-Scroll Stack) -->
+  <section class="sec" id="t1">
+    <div class="sec-head"><span class="sec-num">01</span><div><h2 class="sec-title">Momentum Feed — Single-Scroll Stack</h2><p class="sec-sub">Everything that matters, one scroll. Celebrates today first.</p></div></div>
+    <div class="frame">
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Momentum Feed</span><span class="spacer"></span></div>
+      <div class="frame-body" style="padding:16px;display:flex;flex-direction:column;gap:16px;max-width:720px;margin:0 auto">
+        <div class="panel">
+          <div class="panel-head"><span class="ph-title">Today at a glance</span></div>
+          <div class="panel-body"><div class="metric-grid" id="t1-metrics"></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span class="ph-title">This week</span><span class="ph-sub">Focus hours per day</span></div>
+          <div class="panel-body"><div class="bar-chart" id="t1-chart"></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span class="ph-title">Done Garden</span></div>
+          <div class="panel-body"><div class="done-garden" id="t1-garden"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- T2: Trend Tabs (Tabbed Container) -->
+  <section class="sec" id="t2">
+    <div class="sec-head"><span class="sec-num">02</span><div><h2 class="sec-title">Trend Tabs — Tabbed Container</h2><p class="sec-sub">Today / Week / Month / Goals. Low decision fatigue.</p></div></div>
+    <div class="frame">
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Trend Tabs</span><span class="spacer"></span></div>
+      <div class="frame-body" style="display:flex;flex-direction:column">
+        <div class="tabs" id="t2-tabs"></div>
+        <div class="panel" style="border-radius:0;border-left:none;border-right:none;border-bottom:none;box-shadow:none">
+          <div class="panel-body" id="t2-body"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- T3: Buddy Insight (Split Panes) -->
+  <section class="sec" id="t3">
+    <div class="sec-head"><span class="sec-num">03</span><div><h2 class="sec-title">Buddy Insight — Split Panes</h2><p class="sec-sub">Buddy summary pinned left; detailed charts right.</p></div></div>
+    <div class="frame">
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Buddy Insight</span><span class="spacer"></span></div>
+      <div class="frame-body" style="display:grid;grid-template-columns:300px 1fr;gap:0">
+        <div style="border-right:1px solid var(--border);padding:16px;overflow:auto;background:var(--surface-2)" id="t3-left"></div>
+        <div style="padding:16px;overflow:auto" id="t3-right"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- T4: Command Center (Three-Column) -->
+  <section class="sec" id="t4">
+    <div class="sec-head"><span class="sec-num">04</span><div><h2 class="sec-title">Command Center — Three-Column</h2><p class="sec-sub">Metrics, trend chart, and buddy insights side by side.</p></div></div>
+    <div class="frame">
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Command Center</span><span class="spacer"></span></div>
+      <div class="frame-body" style="display:grid;grid-template-columns:220px 1fr 280px;gap:0">
+        <div style="border-right:1px solid var(--border);padding:16px;overflow:auto" id="t4-left"></div>
+        <div style="border-right:1px solid var(--border);padding:16px;overflow:auto" id="t4-mid"></div>
+        <div style="padding:16px;overflow:auto;background:var(--surface-2)" id="t4-right"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- T5: Focus Rings (Radial/Rings) -->
+  <section class="sec" id="t5">
+    <div class="sec-head"><span class="sec-num">05</span><div><h2 class="sec-title">Focus Rings — Radial Progress</h2><p class="sec-sub">Apple Fitness-style rings for daily goals.</p></div></div>
+    <div class="frame">
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Focus Rings</span><span class="spacer"></span></div>
+      <div class="frame-body" style="padding:16px;display:flex;flex-direction:column;gap:16px;max-width:720px;margin:0 auto">
+        <div class="panel" style="text-align:center;padding:24px">
+          <div id="t5-rings" style="display:flex;justify-content:center;gap:40px"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span class="ph-title">Category balance</span></div>
+          <div class="panel-body" id="t5-cats"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- T6: Gentle Review (Forgiveness-First) -->
+  <section class="sec" id="t6">
+    <div class="sec-head"><span class="sec-num">06</span><div><h2 class="sec-title">Gentle Review — Forgiveness First</h2><p class="sec-sub">No shame. Reset, celebrate, and move forward.</p></div></div>
+    <div class="frame">
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Gentle Review</span><span class="spacer"></span></div>
+      <div class="frame-body" style="padding:16px;display:flex;flex-direction:column;gap:16px;max-width:720px;margin:0 auto">
+        <div class="reset-card">
+          <div style="font-size:20px;font-weight:700;font-family:var(--font-disp);margin-bottom:6px">This week was uneven. That's okay.</div>
+          <p style="color:var(--text-muted);font-size:14px;margin:0 0 14px">Stats don't define you. They're just data. Use the reset when you need a clean slate.</p>
+          <button class="btn" id="t6-reset">Shame-Free Reset</button>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span class="ph-title">What went well</span></div>
+          <div class="panel-body" id="t6-wins"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span class="ph-title">One thing to try next week</span></div>
+          <div class="panel-body" id="t6-try"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">FocusPath Stats &amp; Insights prototype · 6 layout templates · Sage Stone palette · positive reinforcement · forgiveness-first.</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const toast=document.getElementById("toast");
+function showToast(m){toast.textContent=m;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1700);}
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML;}
+
+const weekData=[{d:"M",h:2.4},{d:"T",h:3.1},{d:"W",h:1.8},{d:"T",h:4.2},{d:"F",h:3.5},{d:"S",h:5.1},{d:"S",h:2.9}];
+const cats=[{n:"Study",v:12},{n:"Work",v:8},{n:"Creative",v:4},{n:"Rest",v:6},{n:"Admin",v:3}];
+const goals=[{t:"Chem A",p:35},{t:"Meditate",p:60},{t:"Essay",p:20}];
+
+function chartHTML(data){const max=Math.max(...data.map(x=>x.h)); return data.map((x)=>{
+  const pct=(x.h/max)*100;
+  return `<div class="bar" style="height:${pct}%" role="img" aria-label="${x.d}: ${x.h} hours"><div class="bar-val">${x.h}</div><div class="bar-label">${x.d}</div></div>`;
+}).join("");}
+
+function hbarHTML(item){return `<div class="hbar"><span class="hbar-label">${esc(item.n)}</span><div class="hbar-track"><div class="hbar-fill" style="width:${Math.min(item.v*5,100)}%"></div></div><span class="hbar-val">${item.v}h</span></div>`;}
+
+function ringHTML(value,max,color,label){const pct=Math.min(value/max,1);const dash=2*Math.PI*45;const offset=dash*(1-pct);return `<div class="ring"><svg viewBox="0 0 120 120"><circle class="ring-bg" cx="60" cy="60" r="45"/><circle class="ring-fg" cx="60" cy="60" r="45" stroke="${color}" style="stroke-dasharray:${dash};stroke-dashoffset:${offset}"/></svg><div class="ring-text"><div class="big">${value}</div><div class="small">${esc(label)}</div></div></div>`;}
+
+// T1
+function renderT1(){
+  document.getElementById("t1-metrics").innerHTML=`<div class="metric"><div class="num">3h 12m</div><div class="lab">Focus time</div><div class="delta">▲ 42 min</div></div>
+  <div class="metric"><div class="num">5/7</div><div class="lab">Tasks done</div><div class="delta">2 left</div></div>
+  <div class="metric"><div class="num">8</div><div class="lab">Wins logged</div><div class="delta">Done List</div></div>
+  <div class="metric"><div class="num">12</div><div class="lab">Day streak</div><div class="delta">1 freeze</div></div>`;
+  document.getElementById("t1-chart").innerHTML=chartHTML(weekData,"t1-chart");
+  document.getElementById("t1-garden").innerHTML=Array(8).fill("🌿").map(e=>`<div class="dg-item">${e}</div>`).join("");
+}
+
+// T2
+let t2tab=0;
+function renderT2(){
+  const tabs=["Today","Week","Month","Goals"];
+  document.getElementById("t2-tabs").innerHTML=tabs.map((t,i)=>`<div class="tab ${i===t2tab?"active":""}" data-i="${i}" role="button" tabindex="0" aria-pressed="${i===t2tab}">${t}</div>`).join("");
+  document.querySelectorAll("#t2-tabs .tab").forEach(el=>{
+    const activate=()=>{t2tab=+el.getAttribute("data-i");renderT2();};
+    el.onclick=activate;
+    el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();activate();}};
+  });
+  const body=document.getElementById("t2-body");
+  if(t2tab===0) body.innerHTML=`<div class="metric-grid"><div class="metric"><div class="num">3h 12m</div><div class="lab">Focus</div></div><div class="metric"><div class="num">5/7</div><div class="lab">Tasks</div></div><div class="metric"><div class="num">8</div><div class="lab">Wins</div></div><div class="metric"><div class="num">12</div><div class="lab">Streak</div></div></div>`;
+  if(t2tab===1){body.innerHTML=`<div style="height:160px"><div class="bar-chart">${chartHTML(weekData,"t2-chart")}</div></div><p style="font-size:13px;color:var(--text-muted)">You focused most on Friday and Saturday. Monday was lighter — no guilt, just data.</p>`;}
+  if(t2tab===2) body.innerHTML=`<div class="hbar">${[{n:"Study",v:12},{n:"Work",v:8},{n:"Creative",v:4},{n:"Rest",v:6},{n:"Admin",v:3}].map(hbarHTML).join("")}</div>`;
+  if(t2tab===3) body.innerHTML=`<div style="display:flex;flex-direction:column;gap:10px">${goals.map(g=>`<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${esc(g.t)}</span><span>${g.p}%</span></div><div style="height:8px;background:var(--surface-sunken);border-radius:999px;overflow:hidden"><div style="height:100%;width:${g.p}%;background:linear-gradient(90deg,var(--accent),var(--accent-hover));border-radius:999px"></div></div></div>`).join("")}</div>`;
+}
+
+// T3
+function renderT3(){
+  document.getElementById("t3-left").innerHTML=`<div style="text-align:center"><div style="font-size:60px;margin-bottom:10px">🐱</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">Sage says</div><p style="font-size:13px;color:var(--text-muted);line-height:1.5">You focused 3h 12m today. That's above your weekday average. The essay goal needs attention, but Chemistry is on track.</p><button class="btn primary" style="margin-top:14px" id="t3-nudge">What should I do now?</button></div>`;
+  document.getElementById("t3-nudge").onclick=()=>showToast("Try one 25-minute essay sprint");
+  document.getElementById("t3-right").innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="panel"><div class="panel-head"><span class="ph-title">Focus this week</span></div><div class="panel-body"><div class="bar-chart">${chartHTML(weekData,"t3-chart")}</div></div></div>
+    <div class="panel"><div class="panel-head"><span class="ph-title">Categories</span></div><div class="panel-body">${cats.map(hbarHTML).join("")}</div></div>
+  </div>`;
+}
+
+// T4
+function renderT4(){
+  document.getElementById("t4-left").innerHTML=`<div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Metrics</div>
+  <div class="metric-grid" style="grid-template-columns:1fr">${[{n:"3h 12m",l:"Focus"},{n:"5/7",l:"Tasks"},{n:"8",l:"Wins"},{n:"12",l:"Streak"}].map(m=>`<div class="metric"><div class="num">${m.n}</div><div class="lab">${m.l}</div></div>`).join("")}</div>`;
+  document.getElementById("t4-mid").innerHTML=`<div class="panel" style="box-shadow:none;border:none"><div class="panel-head"><span class="ph-title">Weekly trend</span></div><div class="panel-body"><div class="bar-chart">${chartHTML(weekData,"t4-chart")}</div></div></div>`;
+  document.getElementById("t4-right").innerHTML=`<div style="font-size:14px;font-weight:700;margin-bottom:10px">Buddy insight</div><p style="font-size:13px;color:var(--text-muted);line-height:1.5">You study best between 7pm and 9pm. Three of your best focus sessions happened after dinner. Consider blocking social sites during that window.</p><div class="done-garden">${Array(6).fill("🌿").map(e=>`<div class="dg-item">${e}</div>`).join("")}</div>`;
+}
+
+// T5
+function renderT5(){
+  document.getElementById("t5-rings").innerHTML=`${ringHTML(192,240,"#5E7A5E","focus min")}${ringHTML(5,7,"#C68B5C","tasks")}${ringHTML(12,14,"#9B7AA8","day streak")}`;
+  document.getElementById("t5-cats").innerHTML=cats.map(hbarHTML).join("");
+}
+
+// T6
+function renderT6(){
+  document.getElementById("t6-wins").innerHTML=`<ul style="margin:0;padding-left:18px;font-size:14px;color:var(--text-muted);line-height:1.7"><li>You logged 8 wins this week.</li><li>You focused over 3 hours on Friday.</li><li>You used Shame-Free Reset once and started fresh.</li></ul>`;
+  document.getElementById("t6-try").innerHTML=`<p style="font-size:14px;color:var(--text-muted);margin:0">Try a 25-minute focus block before opening social apps tomorrow. Buddy can start it for you.</p>`;
+  document.getElementById("t6-reset").onclick=()=>showToast("All overdue tasks cleared — fresh start!");
+}
+
+renderT1();renderT2();renderT3();renderT4();renderT5();renderT6();
+
+document.querySelectorAll(".hw-card").forEach(card=>{
+  const activate=()=>showToast(card.getAttribute("data-hw"));
+  card.onclick=activate;
+  card.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();activate();}};
+});
+</script>
+</body>
+</html>
