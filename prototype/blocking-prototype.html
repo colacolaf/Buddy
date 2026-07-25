@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FocusPath — Blocking</title>
+<style>
+  /* ═══ SAGE STONE PALETTE (same as calendar) ═══ */
+  :root{
+    --bg:#EDEFEA; --surface:#F7F8F2; --surface-2:#FFFFFF; --surface-sunken:#E4E7DE;
+    --border:#D6DBCD; --border-strong:#C2C8B8;
+    --text:#2E332B; --text-muted:#5F655A; --text-faint:#6B7062;
+    --accent:#5E7A5E; --accent-hover:#4D6A4D; --accent-press:#436143; --accent-soft:#DCE6D6;
+    --amber:#C68B5C; --amber-soft:#F0E2D2;
+    --slate:#5E7A8A; --slate-soft:#DCE4E8;
+    --lavender:#9B7AA8; --lavender-soft:#E8DFEC;
+    --success:#6B9362; --warning:#C98A4B; --danger:#B5635C; --danger-soft:#F0DBD9;
+    --shadow-sm:0 1px 2px rgba(46,51,43,.05), 0 2px 6px rgba(46,51,43,.05);
+    --shadow:0 1px 2px rgba(46,51,43,.05), 0 6px 18px rgba(46,51,43,.08);
+    --shadow-lg:0 2px 8px rgba(46,51,43,.07), 0 18px 48px rgba(46,51,43,.14);
+    --radius:14px; --radius-sm:9px; --radius-xs:6px;
+    --ease:cubic-bezier(.4,0,.2,1);
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+    --font-num:"SF Mono","ui-monospace","Menlo","Consolas",monospace;
+    --font-disp:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0}
+  body{font-family:var(--font-ui);color:var(--text);background:radial-gradient(1200px 600px at 80% -10%,#E3E7DD 0%,transparent 60%),radial-gradient(900px 500px at -10% 20%,#E7EBE0 0%,transparent 55%),var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+
+  /* ── Toolbar ── */
+  .toolbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:12px 22px;background:rgba(247,248,242,.82);backdrop-filter:saturate(140%) blur(14px);-webkit-backdrop-filter:saturate(140%) blur(14px);border-bottom:1px solid var(--border)}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em}
+  .brand .mark{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-hover));display:grid;place-items:center;color:#fff;box-shadow:var(--shadow-sm)}
+  .brand small{color:var(--text-muted);font-weight:500;margin-left:2px}
+  .toolbar .spacer{flex:1}
+  .btn{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);padding:8px 14px;border-radius:10px;display:inline-flex;align-items:center;gap:8px;transition:.16s var(--ease);box-shadow:var(--shadow-sm)}
+  .btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent-hover)}
+  .btn:active{transform:translateY(0)}
+  .btn.primary{background:var(--accent-hover);border-color:var(--accent-hover);color:#fff}
+  .btn.primary:hover{background:var(--accent-press);border-color:var(--accent-press);color:#fff}
+  .btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+  .btn .ic{width:15px;height:15px}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* ── Page shell ── */
+  .wrap{max-width:1180px;margin:0 auto;padding:34px 22px 120px}
+  .intro{max-width:680px}
+  .intro h1{font-size:30px;letter-spacing:-.02em;margin:0 0 8px}
+  .intro p{color:var(--text-muted);margin:0 0 6px;font-size:15px}
+  .intro .meta{color:var(--text-faint);font-size:13px}
+  .palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px;margin:22px 0 8px}
+  .sw{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;background:var(--surface-2);box-shadow:var(--shadow-sm)}
+  .sw .chip{height:46px} .sw .lab{padding:7px 10px;font-size:11px}
+  .sw .lab b{display:block;font-weight:600;color:var(--text)} .sw .lab span{color:var(--text-faint);font-family:var(--font-num);font-size:10.5px}
+
+  /* ── Sections ── */
+  .sec{margin-top:54px;scroll-margin-top:74px}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
+  .sec-num{font-family:var(--font-num);font-size:12px;font-weight:600;color:var(--accent-hover);background:var(--accent-soft);padding:3px 9px;border-radius:999px}
+  .sec-title{font-size:19px;font-weight:700;letter-spacing:-.01em;margin:0}
+  .sec-sub{color:var(--text-muted);font-size:13.5px;margin:0}
+  .sec-head .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+  /* ── Window frame ── */
+  .frame{background:var(--surface-2);border:1px solid var(--border-strong);border-radius:16px;box-shadow:var(--shadow-lg);overflow:hidden;position:relative}
+  .frame-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(180deg,#EFF1E9,#E9EBE2);border-bottom:1px solid var(--border)}
+  .lights{display:flex;gap:7px} .lights i{width:11px;height:11px;border-radius:50%;display:block}
+  .lights .r{background:#E0726A} .lights .y{background:#E3B341} .lights .g{background:#7DB76C}
+  .frame-title{font-size:12.5px;color:var(--text-muted);font-weight:500;margin-left:4px}
+  .frame-bar .spacer{flex:1}
+  .frame-bar .mini{font-size:11px;color:var(--text-faint);border:1px solid var(--border);background:var(--surface-2);padding:4px 8px;border-radius:7px;cursor:pointer;transition:.15s var(--ease);display:inline-flex;align-items:center;gap:6px}
+  .frame-bar .mini:hover{color:var(--accent-hover);border-color:var(--accent)}
+  .frame:fullscreen{border-radius:0;border:none}
+  .frame:fullscreen .frame-bar{display:none}
+  .frame:fullscreen .frame-body{height:100vh}
+  .frame:fullscreen .bv{height:100%}
+  .frame-body{background:var(--bg)}
+
+  /* ── Shared card/iconbtn ── */
+  .card{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px}
+  .iconbtn{width:30px;height:30px;border-radius:9px;border:1px solid var(--border);background:var(--surface-2);display:grid;place-items:center;cursor:pointer;color:var(--text-muted);transition:.15s var(--ease)}
+  .iconbtn:hover{color:var(--accent-hover);border-color:var(--accent);background:var(--accent-soft)}
+  .iconbtn .ic{width:15px;height:15px}
+  .iconbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .pill-add{font-size:12px;font-weight:600;color:var(--accent-hover);border:1px dashed var(--accent);background:var(--accent-soft);padding:6px 11px;border-radius:9px;cursor:pointer;transition:.15s var(--ease);display:inline-flex;align-items:center;gap:6px}
+  .pill-add:hover{background:var(--accent);color:#fff}
+  .pill-add:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* ═══════════════════════════════════════════════════════════
+     BLOCKING BAR WIDGETS — 3 templates
+     ═══════════════════════════════════════════════════════════ */
+
+  /* ── Status dot (shared) ── */
+  .stat-dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto;transition:.3s var(--ease)}
+  .stat-dot.active{background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .stat-dot.idle{background:var(--border-strong)}
+  .stat-dot.warning{background:var(--amber);box-shadow:0 0 0 3px var(--amber-soft)}
+  .stat-dot.locked{background:var(--danger);box-shadow:0 0 0 3px var(--danger-soft)}
+
+  /* ── Budget bar (shared) ── */
+  .budget-bar{height:8px;border-radius:999px;background:var(--surface-sunken);overflow:hidden;flex:1;min-width:0}
+  .budget-fill{height:100%;border-radius:999px;transition:width .4s var(--ease),background .3s var(--ease)}
+  .budget-fill.sage{background:linear-gradient(90deg,var(--accent),var(--accent-hover))}
+  .budget-fill.amber{background:linear-gradient(90deg,var(--amber),var(--warning))}
+  .budget-fill.red{background:linear-gradient(90deg,var(--danger),#9E504B)}
+
+  /* ── Bar 1: Compact (single row) ── */
+  .bar1{display:flex;align-items:center;gap:14px}
+  .bar1 .stat-info{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;white-space:nowrap}
+  .bar1 .budget-bar{max-width:200px}
+  .bar1 .budget-text{font-size:11px;color:var(--text-muted);font-family:var(--font-num);white-space:nowrap}
+
+  /* ── Bar 2: Medium (two-row) ── */
+  .bar2-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .bar2-head .stat-info{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
+  .bar2-head .timer{font-family:var(--font-num);font-size:18px;font-weight:700;color:var(--accent-hover);margin-left:auto}
+  .bar2-budget{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .bar2-budget .budget-bar{max-width:none}
+  .bar2-budget .budget-text{font-size:11px;color:var(--text-muted);font-family:var(--font-num);white-space:nowrap}
+  .bar2-cats{display:flex;gap:6px;flex-wrap:wrap}
+  .cat-chip{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;padding:4px 9px;border-radius:999px;border:1px solid var(--border);background:var(--surface)}
+  .cat-chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-hover)}
+  .cat-chip i{width:7px;height:7px;border-radius:50%}
+
+  /* ── Bar 3: Rich (split layout) ── */
+  .bar3{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .bar3-left{display:flex;flex-direction:column;gap:10px}
+  .bar3-right{display:flex;flex-direction:column;gap:10px;border-left:1px solid var(--border);padding-left:16px}
+  .bar3-stat{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
+  .bar3-sub{font-size:11.5px;color:var(--text-muted)}
+  .bar3-override{font-size:11px;color:var(--text-faint);text-decoration:underline;cursor:pointer;border:none;background:none;padding:0;transition:.14s var(--ease)}
+  .bar3-override:hover{color:var(--amber)}
+
+  /* ═══════════════════════════════════════════════════════════
+     FULLSCREEN BLOCKING — shared pieces
+     ═══════════════════════════════════════════════════════════ */
+  .bv{display:grid;background:var(--bg);height:720px}
+  .bv>*{min-width:0;min-height:0}
+
+  /* ── Status hero (shared) ── */
+  .status-hero{display:flex;flex-direction:column;gap:16px;padding:20px;background:radial-gradient(120% 100% at 0% 0%,var(--accent-soft) 0%,transparent 60%),var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+  .status-hero .sh-top{display:flex;align-items:center;gap:12px}
+  .status-hero .sh-state{font-size:22px;font-weight:700;font-family:var(--font-disp);letter-spacing:-.01em}
+  .status-hero .sh-sub{font-size:13px;color:var(--text-muted);margin-top:2px}
+  .status-hero .sh-timer{margin-left:auto;font-family:var(--font-num);font-size:32px;font-weight:700;color:var(--accent-hover);line-height:1}
+  .status-hero .sh-budget{display:flex;align-items:center;gap:12px}
+  .status-hero .sh-budget .budget-bar{height:12px}
+  .status-hero .sh-budget .budget-text{font-size:12px;color:var(--text-muted);font-family:var(--font-num);white-space:nowrap}
+  .status-hero .sh-actions{display:flex;gap:10px;flex-wrap:wrap}
+  .status-hero .sh-cats{display:flex;gap:6px;flex-wrap:wrap}
+
+  /* ── Section panels ── */
+  .panel{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden}
+  .panel-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface)}
+  .panel-head .ph-title{font-size:14px;font-weight:700;letter-spacing:-.01em}
+  .panel-head .ph-sub{font-size:11px;color:var(--text-muted);margin-left:auto}
+  .panel-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+
+  /* ── Category toggle row ── */
+  .cat-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);transition:.14s var(--ease)}
+  .cat-row:hover{border-color:var(--border-strong)}
+  .cat-row.on{border-color:var(--accent);background:var(--accent-soft)}
+  .cat-row .cat-dot{width:12px;height:12px;border-radius:4px;flex:0 0 auto}
+  .cat-row .cat-name{font-size:13px;font-weight:600}
+  .cat-row .cat-count{font-size:11px;color:var(--text-faint);font-family:var(--font-num)}
+  .cat-row .cat-sites{font-size:11px;color:var(--text-muted);margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+  .toggle{position:relative;width:42px;height:24px;border-radius:999px;border:1px solid var(--border-strong);background:var(--surface-sunken);cursor:pointer;transition:.2s var(--ease);flex:0 0 auto}
+  .toggle.on{background:var(--accent);border-color:var(--accent)}
+  .toggle::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:var(--shadow-sm);transition:.2s var(--ease)}
+  .toggle.on::after{left:20px}
+  .toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* ── Blocked site list ── */
+  .site-list{display:flex;flex-direction:column;gap:5px}
+  .site-item{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;background:var(--surface);font-size:12px;transition:.12s var(--ease)}
+  .site-item:hover{background:var(--surface-sunken)}
+  .site-item .site-dom{font-family:var(--font-num);font-size:11.5px;color:var(--text)}
+  .site-item .site-cat{font-size:10px;color:var(--text-faint);margin-left:auto}
+  .site-del{width:22px;height:22px;border-radius:6px;border:none;background:transparent;cursor:pointer;color:var(--text-faint);display:grid;place-items:center;transition:.14s var(--ease);opacity:0;flex:0 0 auto}
+  .site-item:hover .site-del{opacity:1}
+  .site-del:hover{background:var(--danger);color:#fff}
+  .site-del:focus-visible{outline:2px solid var(--accent);outline-offset:1px;opacity:1}
+  .site-del .ic{width:13px;height:13px}
+  .site-add{display:flex;gap:8px;margin-top:4px}
+  .site-add input{flex:1;font:inherit;font-size:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:8px;padding:7px 10px;transition:.15s var(--ease)}
+  .site-add input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .site-add select{font:inherit;font-size:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:8px;padding:7px 8px;cursor:pointer}
+  .site-add button{font:inherit;font-size:12px;font-weight:600;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-hover);border-radius:8px;padding:7px 12px;cursor:pointer;transition:.14s var(--ease)}
+  .site-add button:hover{background:var(--accent);color:#fff}
+  .site-add button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* ── Budget slider ── */
+  .budget-config{display:flex;flex-direction:column;gap:10px}
+  .budget-config .bc-row{display:flex;align-items:center;gap:14px}
+  .budget-config .bc-label{font-size:13px;font-weight:600;white-space:nowrap}
+  .budget-config .bc-val{font-family:var(--font-num);font-size:18px;font-weight:700;color:var(--accent-hover);margin-left:auto}
+  .budget-config input[type=range]{width:100%;height:6px;-webkit-appearance:none;appearance:none;background:var(--surface-sunken);border-radius:999px;outline:none}
+  .budget-config input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent-hover);cursor:pointer;box-shadow:var(--shadow-sm);transition:.14s var(--ease)}
+  .budget-config input[type=range]::-webkit-slider-thumb:hover{background:var(--accent-press);transform:scale(1.1)}
+  .budget-config input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--accent-hover);cursor:pointer;border:none;box-shadow:var(--shadow-sm)}
+  .budget-config input[type=range]:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+  .budget-tiers{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .tier-chip{font-size:10.5px;font-weight:600;padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);transition:.14s var(--ease)}
+  .tier-chip:hover{border-color:var(--accent);color:var(--accent-hover)}
+  .tier-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* ── Schedule grid ── */
+  .sched-grid{display:grid;grid-template-columns:44px repeat(7,1fr);gap:3px}
+  .sched-grid .sg-corner{} 
+  .sched-grid .sg-dow{font-size:10px;font-weight:700;text-align:center;color:var(--text-faint);padding:4px 0;letter-spacing:.05em;text-transform:uppercase}
+  .sched-grid .sg-hour{font-size:9px;color:var(--text-faint);font-family:var(--font-num);text-align:right;padding-right:6px;display:flex;align-items:center;justify-content:flex-end}
+  .sched-cell{height:22px;border-radius:4px;cursor:pointer;transition:.12s var(--ease);border:1px solid transparent}
+  .sched-cell:hover{border-color:var(--accent)}
+  .sched-cell.on{background:var(--accent-soft);border-color:var(--accent)}
+  .sched-cell.off{background:var(--surface-sunken)}
+  .sched-cell:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+  /* ── Settings toggles ── */
+  .set-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
+  .set-row .set-name{font-size:13px;font-weight:600}
+  .set-row .set-desc{font-size:11px;color:var(--text-muted);margin-top:2px}
+  .set-row .set-info{flex:1;min-width:0}
+  .set-row select{font:inherit;font-size:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:8px;padding:6px 10px;cursor:pointer}
+
+  /* ── Tabs (FS1) ── */
+  .tabs{display:flex;gap:2px;padding:0 16px;border-bottom:1px solid var(--border);background:var(--surface)}
+  .tab{font:inherit;font-size:13px;font-weight:600;padding:12px 16px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;transition:.14s var(--ease);border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tab:hover{color:var(--text)}
+  .tab.active{color:var(--accent-hover);border-bottom-color:var(--accent)}
+  .tab:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .tab-pane{display:none;padding:16px;overflow:auto}
+  .tab-pane.active{display:flex;flex-direction:column;gap:14px}
+
+  /* ── FS layouts ── */
+  .fs1{grid-template-columns:1fr;height:100%}
+  .fs1 .fs1-body{display:flex;flex-direction:column;overflow:hidden}
+  .fs2{grid-template-columns:1fr;height:100%;overflow:auto}
+  .fs2 .fs2-inner{padding:16px;display:flex;flex-direction:column;gap:16px;max-width:760px;margin:0 auto}
+  .fs3{grid-template-columns:340px 1fr;height:100%}
+  .fs3 .fs3-left{padding:16px;display:flex;flex-direction:column;gap:14px;overflow:auto;border-right:1px solid var(--border)}
+  .fs3 .fs3-right{padding:16px;display:flex;flex-direction:column;gap:14px;overflow:auto}
+
+  /* ── Override modal ── */
+  .overlay{position:fixed;inset:0;background:rgba(46,51,43,.32);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+  .overlay.show{display:flex;animation:fadeIn .2s var(--ease)}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .modal{width:100%;max-width:400px;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:18px;box-shadow:var(--shadow-lg);overflow:hidden;animation:popIn .22s var(--ease)}
+  @keyframes popIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+  .modal-head{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--amber-soft),var(--surface-2))}
+  .modal-head .m-mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--amber),var(--warning));display:grid;place-items:center;color:#fff;flex:0 0 auto}
+  .modal-head .m-mark .ic{width:17px;height:17px}
+  .modal-head .m-title{font-size:16px;font-weight:700}
+  .modal-head .spacer{flex:1}
+  .modal-head .close{width:30px;height:30px;border-radius:8px;border:none;background:transparent;cursor:pointer;color:var(--text-muted);display:grid;place-items:center;transition:.14s var(--ease)}
+  .modal-head .close:hover{background:var(--surface-sunken);color:var(--text)}
+  .modal-head .close:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .modal-head .close .ic{width:18px;height:18px}
+  .modal-body{padding:18px;display:flex;flex-direction:column;gap:14px}
+  .modal-body .mb-sub{font-size:13px;color:var(--text-muted)}
+  .modal-body input{font:inherit;font-size:14px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:9px;padding:10px 12px;width:100%;transition:.15s var(--ease)}
+  .modal-body input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .modal-body .countdown{font-family:var(--font-num);font-size:28px;font-weight:700;color:var(--amber);text-align:center;padding:8px}
+  .modal-foot{display:flex;gap:10px;padding:12px 18px 16px;justify-content:flex-end}
+
+  /* ── Toast ── */
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--text);color:#F7F8F2;padding:10px 16px;border-radius:999px;font-size:12.5px;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.22s var(--ease);z-index:300}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  footer.foot{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);color:var(--text-faint);font-size:12px;text-align:center}
+  .note{font-size:12px;color:var(--text-faint);margin-top:6px}
+  .kbd{font-family:var(--font-num);font-size:11px;border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:6px;padding:1px 6px;background:var(--surface-2);color:var(--text-muted)}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="brand">
+    <span class="mark"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+    FocusPath <small>· Blocking</small>
+  </div>
+  <div class="spacer"></div>
+  <button class="btn primary" id="globalFs">
+    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+    Fullscreen
+  </button>
+</div>
+
+<div class="wrap">
+  <section class="intro">
+    <h1>FocusPath Blocking — Prototype</h1>
+    <p>Three <b>bar widgets</b> for dashboard status, then three <b>fullscreen</b> blocking-management templates. Calm, progress-based friction (no alarms, no panic). Toggle categories, start sessions, adjust your leisure budget, manage blocked sites, schedule focus hours, and use the escape hatch.</p>
+    <p class="meta">Palette: <b>Sage Stone</b> · No AI sidebar (per Counsel review — settings need a concierge, not a co-pilot). Every button is functional.</p>
+    <div class="palette" id="paletteRow"></div>
+    <p class="note">Tip: toggle categories on/off · drag the budget slider · click schedule cells · <span class="kbd">Take a break</span> opens the friction modal · <span class="kbd">Esc</span> exits fullscreen/modal.</p>
+  </section>
+
+  <!-- ═══ BAR WIDGETS ═══ -->
+  <section class="sec" id="bar1sec">
+    <div class="sec-head"><span class="sec-num">BAR · 1</span><div><h2 class="sec-title">Compact — Status + Budget</h2><p class="sec-sub">Single row. Glanceable: status dot, budget bar, minutes left. Minimal cognitive load.</p></div></div>
+    <div class="card" id="bar1el"></div>
+  </section>
+  <section class="sec" id="bar2sec">
+    <div class="sec-head"><span class="sec-num">BAR · 2</span><div><h2 class="sec-title">Medium — Status + Timer + Categories</h2><p class="sec-sub">Two rows: active session timer + budget bar + live category chips.</p></div></div>
+    <div class="card" id="bar2el"></div>
+  </section>
+  <section class="sec" id="bar3sec">
+    <div class="sec-head"><span class="sec-num">BAR · 3</span><div><h2 class="sec-title">Rich — Split Status + Detail</h2><p class="sec-sub">Split layout: status left, budget + categories + override link right.</p></div></div>
+    <div class="card" id="bar3el"></div>
+  </section>
+
+  <!-- ═══ FULLSCREEN 1: Tabbed ═══ -->
+  <section class="sec" id="fs1sec">
+    <div class="sec-head"><span class="sec-num">FULLSCREEN · 1</span><div><h2 class="sec-title">Tabbed — Status / Lists / Schedule / Settings</h2><p class="sec-sub">Four tabs: live status, block-list management, weekly schedule, friction & budget settings.</p></div>
+      <div class="right"><button class="btn" data-fs="frame1"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>Expand</button></div></div>
+    <div class="frame" id="frame1">
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Blocking · Tabbed</span><span class="spacer"></span><span class="mini" data-fs="frame1">⛶ Fullscreen</span></div>
+      <div class="frame-body"><div class="bv fs1"><div class="fs1-body" id="fs1body"></div></div></div>
+    </div>
+  </section>
+
+  <!-- ═══ FULLSCREEN 2: Single scroll ═══ -->
+  <section class="sec" id="fs2sec">
+    <div class="sec-head"><span class="sec-num">FULLSCREEN · 2</span><div><h2 class="sec-title">Single Scroll — All Sections Stacked</h2><p class="sec-sub">Everything in one vertical scroll: status hero, categories, sites, schedule, settings.</p></div>
+      <div class="right"><button class="btn" data-fs="frame2"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>Expand</button></div></div>
+    <div class="frame" id="frame2">
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Blocking · Scroll</span><span class="spacer"></span><span class="mini" data-fs="frame2">⛶ Fullscreen</span></div>
+      <div class="frame-body"><div class="bv fs2"><div class="fs2-inner" id="fs2body"></div></div></div>
+    </div>
+  </section>
+
+  <!-- ═══ FULLSCREEN 3: Split panes ═══ -->
+  <section class="sec" id="fs3sec">
+    <div class="sec-head"><span class="sec-num">FULLSCREEN · 3</span><div><h2 class="sec-title">Split Panes — Live Status + Config</h2><p class="sec-sub">Status hero pinned left, configuration (categories, sites, schedule, settings) scrolling right.</p></div>
+      <div class="right"><button class="btn" data-fs="frame3"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>Expand</button></div></div>
+    <div class="frame" id="frame3">
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Blocking · Split</span><span class="spacer"></span><span class="mini" data-fs="frame3">⛶ Fullscreen</span></div>
+      <div class="frame-body"><div class="bv fs3"><div class="fs3-left" id="fs3left"></div><div class="fs3-right" id="fs3right"></div></div></div>
+    </div>
+  </section>
+
+  <footer class="foot">FocusPath blocking prototype · Sage Stone palette · calm progress-based friction · no AI sidebar (settings = concierge not co-pilot) · all buttons functional.</footer>
+</div>
+
+<!-- Override modal -->
+<div class="overlay" id="overlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head"><span class="m-mark" id="ovMark"></span><span class="m-title" id="ovTitle">Take a break</span><span class="spacer"></span><button class="close" id="ovClose" aria-label="Close"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body" id="ovBody"></div>
+    <div class="modal-foot" id="ovFoot"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══ DATA ═══ */
+const PALETTE=[["Background","--bg","#EDEFEA"],["Surface","--surface","#F7F8F2"],["Card","--surface-2","#FFFFFF"],["Border","--border","#D6DBCD"],["Text","--text","#2E332B"],["Muted","--text-muted","#5F655A"],["Sage","--accent","#5E7A5E"],["Sage Dk","--accent-hover","#4D6A4D"],["Amber","--amber","#C68B5C"],["Slate","--slate","#5E7A8A"],["Lavender","--lavender","#9B7AA8"],["Danger","--danger","#B5635C"]];
+const palRow=document.getElementById("paletteRow");
+PALETTE.forEach(([n,t,hx])=>{const d=document.createElement("div");d.className="sw";d.innerHTML=`<div class="chip" style="background:${hx}"></div><div class="lab"><b>${n}</b><span>${hx}</span></div>`;palRow.appendChild(d);});
+
+const IC={
+  shield:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  play:'<svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  stop:'<svg class="ic" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>',
+  pause:'<svg class="ic" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>',
+  plus:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  trash:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>',
+  coffee:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4z"/></svg>',
+  clock:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  list:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
+  cal:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>',
+  gear:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.2A1.6 1.6 0 0 0 7 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 2.6 14H2a2 2 0 1 1 0-4h.2A1.6 1.6 0 0 0 4 8.6a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 10 2.6V2a2 2 0 1 1 4 0v.2A1.6 1.6 0 0 0 16 4a1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.6 1.6 0 0 0 21.4 10H22a2 2 0 1 1 0 4h-.2a1.6 1.6 0 0 0-1.4 1z"/></svg>',
+  target:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>',
+  chevL:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
+  chevR:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>',
+};
+
+/* ═══ STATE ═══ */
+const CATEGORIES=[
+  {id:"social",name:"Social Media",color:"#5E7A8A",on:true,sites:["reddit.com","twitter.com","instagram.com","tiktok.com","facebook.com"]},
+  {id:"video",name:"Video & Streaming",color:"#C68B5C",on:true,sites:["youtube.com","netflix.com","twitch.tv","hulu.com"]},
+  {id:"gaming",name:"Gaming",color:"#9B7AA8",on:false,sites:["steampowered.com","epicgames.com","discord.com"]},
+  {id:"news",name:"News & Entertainment",color:"#5E7A5E",on:false,sites:["cnn.com","buzzfeed.com","reddit.com/r/all"]},
+  {id:"shopping",name:"Shopping",color:"#B5635C",on:false,sites:["amazon.com","ebay.com"]},
+];
+let customSites=[]; // {domain, catId}
+let budgetMax=60; // minutes
+let budgetUsed=18; // minutes
+let sessionActive=false;
+let sessionSeconds=0;
+let sessionTimer=null;
+let schedule={}; // "day-hour" -> true
+const DOW_MIN=["M","T","W","T","F","S","S"];
+const DOW_FULL=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const HOURS=[9,10,11,12,13,14,15,16,17]; // 9am-5pm
+
+/* ═══ HELPERS ═══ */
+const toast=document.getElementById("toast");let toastT;
+function showToast(m){toast.textContent=m;toast.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>toast.classList.remove("show"),1700);}
+function allBlockedSites(){let n=0;CATEGORIES.forEach(c=>{if(c.on)n+=c.sites.length;});n+=customSites.length;return n;}
+function activeCats(){return CATEGORIES.filter(c=>c.on);}
+function budgetPct(){return Math.min(100,(budgetUsed/budgetMax)*100);}
+function budgetColor(){const p=budgetPct();if(p>85)return"red";if(p>60)return"amber";return"sage";}
+function budgetState(){const p=budgetPct();if(p>=100)return"locked";if(p>85)return"warning";return sessionActive?"active":"idle";}
+function fmtMin(m){if(m>=60){const h=Math.floor(m/60),r=m%60;return r?`${h}h ${r}m`:`${h}h`;}return `${m}m`;}
+function fmtSec(s){const m=Math.floor(s/60),sec=s%60;return`${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;}
+
+/* ═══ BARS ═══ */
+function renderBar1(){
+  const el=document.getElementById("bar1el");
+  const st=budgetState();const col=budgetColor();const remain=Math.max(0,budgetMax-budgetUsed);
+  el.innerHTML=`<div class="bar1">
+    <div class="stat-info"><span class="stat-dot ${st}"></span>${sessionActive?"Focus block active":"Blocking idle"}</div>
+    <div class="budget-bar"><div class="budget-fill ${col}" style="width:${budgetPct()}%"></div></div>
+    <span class="budget-text">${fmtMin(remain)} left of ${fmtMin(budgetMax)}</span>
+    <button class="btn ${sessionActive?"":"primary"}" style="padding:6px 12px;font-size:12px" id="b1toggle">${sessionActive?IC.stop+`Stop`:IC.play+`Start focus`}</button>
+  </div>`;
+  document.getElementById("b1toggle").onclick=toggleSession;
+}
+function renderBar2(){
+  const el=document.getElementById("bar2el");
+  const st=budgetState();const col=budgetColor();const remain=Math.max(0,budgetMax-budgetUsed);
+  const cats=activeCats();
+  el.innerHTML=`<div class="bar2-head">
+    <div class="stat-info"><span class="stat-dot ${st}"></span>${sessionActive?"Focusing — distractions blocked":"Blocking ready"}</div>
+    <span class="timer" id="b2timer">${sessionActive?fmtSec(sessionSeconds):"00:00"}</span>
+    <button class="btn ${sessionActive?"":"primary"}" style="padding:6px 12px;font-size:12px" id="b2toggle">${sessionActive?IC.stop+`Stop`:IC.play+`Start`}</button>
+  </div>
+  <div class="bar2-budget"><div class="budget-bar"><div class="budget-fill ${col}" style="width:${budgetPct()}%"></div></div><span class="budget-text">${budgetUsed}m used · ${fmtMin(remain)} left</span></div>
+  <div class="bar2-cats">${cats.length?cats.map(c=>`<span class="cat-chip on"><i style="background:${c.color}"></i>${c.name}</span>`).join(""):'<span class="cat-chip">No categories active</span>'}</div>`;
+  document.getElementById("b2toggle").onclick=toggleSession;
+}
+function renderBar3(){
+  const el=document.getElementById("bar3el");
+  const st=budgetState();const col=budgetColor();const remain=Math.max(0,budgetMax-budgetUsed);
+  const cats=activeCats();
+  el.innerHTML=`<div class="bar3">
+    <div class="bar3-left">
+      <div class="bar3-stat"><span class="stat-dot ${st}"></span>${sessionActive?"Focus block active":"Blocking idle"}</div>
+      <div class="bar3-sub">${allBlockedSites()} sites blocked across ${cats.length} categor${cats.length===1?"y":"ies"}</div>
+      <div class="bar3-sub" style="font-family:var(--font-num);font-size:13px;color:var(--accent-hover);font-weight:700">${sessionActive?fmtSec(sessionSeconds):"—"}</div>
+      <button class="btn ${sessionActive?"":"primary"}" style="padding:6px 12px;font-size:12px;align-self:flex-start" id="b3toggle">${sessionActive?IC.stop+`Stop session`:IC.play+`Start focus`}</button>
+    </div>
+    <div class="bar3-right">
+      <div class="bar3-sub" style="font-weight:600;color:var(--text);font-size:12px">Leisure budget</div>
+      <div class="bar2-budget"><div class="budget-bar"><div class="budget-fill ${col}" style="width:${budgetPct()}%"></div></div><span class="budget-text">${fmtMin(remain)} left</span></div>
+      <div class="bar2-cats">${cats.length?cats.slice(0,4).map(c=>`<span class="cat-chip on"><i style="background:${c.color}"></i>${c.name}</span>`).join(""):""}</div>
+      <button class="bar3-override" id="b3override">Take a break (5 min) →</button>
+    </div>
+  </div>`;
+  document.getElementById("b3toggle").onclick=toggleSession;
+  document.getElementById("b3override").onclick=()=>openOverride();
+}
+
+/* ═══ SESSION ═══ */
+function toggleSession(){
+  sessionActive=!sessionActive;
+  if(sessionActive){
+    sessionSeconds=0;
+    sessionTimer=setInterval(()=>{sessionSeconds++;updateTimers();},1000);
+    showToast("Focus block started — distractions blocked");
+  }else{
+    clearInterval(sessionTimer);sessionTimer=null;
+    showToast("Focus block ended");
+  }
+  renderBars();renderAll();
+}
+function updateTimers(){
+  const t=document.getElementById("b2timer");if(t&&sessionActive)t.textContent=fmtSec(sessionSeconds);
+  const t3=document.querySelectorAll(".bar3-sub[style*='font-num']");t3.forEach(e=>{if(sessionActive)e.textContent=fmtSec(sessionSeconds);});
+  // update FS status heroes
+  document.querySelectorAll("[data-hero-timer]").forEach(e=>{if(sessionActive)e.textContent=fmtSec(sessionSeconds);else if(e.textContent!=="—")e.textContent="—";});
+}
+function renderBars(){renderBar1();renderBar2();renderBar3();}
+
+/* ═══ SHARED COMPONENT BUILDERS ═══ */
+function statusHeroHTML(idSuffix){
+  const st=budgetState();const col=budgetColor();const remain=Math.max(0,budgetMax-budgetUsed);
+  const cats=activeCats();
+  return `<div class="status-hero">
+    <div class="sh-top">
+      <span class="stat-dot ${st}" style="width:14px;height:14px"></span>
+      <div><div class="sh-state">${sessionActive?"Focus Block Active":"Blocking Idle"}</div><div class="sh-sub">${allBlockedSites()} sites blocked · ${cats.length} categor${cats.length===1?"y":"ies"} active</div></div>
+      <span class="sh-timer" data-hero-timer>${sessionActive?fmtSec(sessionSeconds):"—"}</span>
+    </div>
+    <div class="sh-budget"><span class="budget-text" style="font-weight:600">Leisure budget</span><div class="budget-bar"><div class="budget-fill ${col}" style="width:${budgetPct()}%"></div></div><span class="budget-text">${budgetUsed}m / ${fmtMin(budgetMax)} · ${fmtMin(remain)} left</span></div>
+    <div class="sh-actions">
+      <button class="btn ${sessionActive?"danger":"primary"}" data-session-btn>${sessionActive?IC.stop+"Stop session":IC.play+"Start focus block"}</button>
+      <button class="btn" data-override-btn>${IC.coffee}Take a break</button>
+    </div>
+    <div class="sh-cats">${cats.length?cats.map(c=>`<span class="cat-chip on"><i style="background:${c.color}"></i>${c.name}</span>`).join(""):'<span class="cat-chip">No categories active — toggle some below</span>'}</div>
+  </div>`;
+}
+function wireStatusHero(container){
+  const sb=container.querySelector("[data-session-btn]");if(sb)sb.onclick=toggleSession;
+  const ob=container.querySelector("[data-override-btn]");if(ob)ob.onclick=openOverride;
+}
+
+function categoriesHTML(){
+  return CATEGORIES.map(c=>`<div class="cat-row ${c.on?"on":""}" data-cat="${c.id}">
+    <span class="cat-dot" style="background:${c.color}"></span>
+    <span class="cat-name">${c.name}</span>
+    <span class="cat-count">${c.sites.length} sites</span>
+    <span class="cat-sites">${c.sites.slice(0,3).join(", ")}${c.sites.length>3?"…":""}</span>
+    <div class="toggle ${c.on?"on":""}" data-cat-toggle="${c.id}" role="switch" aria-checked="${c.on}" tabindex="0" aria-label="Toggle ${c.name}"></div>
+  </div>`).join("");
+}
+function wireCategories(container){
+  container.querySelectorAll("[data-cat-toggle]").forEach(t=>{
+    const catId=t.getAttribute("data-cat-toggle");
+    const flip=()=>{const c=CATEGORIES.find(x=>x.id===catId);if(!c)return;c.on=!c.on;t.setAttribute("aria-checked",c.on);renderAll();showToast(`${c.name} ${c.on?"blocked":"unblocked"}`);};
+    t.onclick=flip;
+    t.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();flip();}};
+  });
+}
+
+function sitesHTML(){
+  let items=CATEGORIES.filter(c=>c.on).flatMap(c=>c.sites.map(s=>({dom:s,cat:c.name})));
+  items=items.concat(customSites.map(s=>({dom:s.domain,cat:CATEGORIES.find(c=>c.id===s.catId)?.name||"Custom"})));
+  const list=items.slice(0,30).map(s=>`<div class="site-item"><span class="site-dom">${s.dom}</span><span class="site-cat">${s.cat}</span>${customSites.find(cs=>cs.domain===s.dom)?`<button class="site-del" data-del-site="${s.dom}">${IC.trash}</button>`:""}</div>`).join("");
+  return `<div class="site-list">${list||'<div style="font-size:12px;color:var(--text-faint);padding:8px">No blocked sites — toggle a category above.</div>'}</div>
+  <div class="site-add"><input type="text" id="siteInput" placeholder="e.g. pinterest.com" /><select id="siteCatSel">${CATEGORIES.map(c=>`<option value="${c.id}">${c.name}</option>`).join("")}</select><button id="siteAddBtn">${IC.plus}Add</button></div>`;
+}
+function wireSites(container){
+  const btn=container.querySelector("#siteAddBtn");if(!btn)return;
+  const inp=container.querySelector("#siteInput");const sel=container.querySelector("#siteCatSel");
+  const add=()=>{const v=inp.value.trim().replace(/^https?:\/\//,"").replace(/\/$/,"");if(!v){showToast("Enter a domain");return;}if(customSites.find(s=>s.domain===v)||CATEGORIES.some(c=>c.sites.includes(v))){showToast("Already blocked");return;}customSites.push({domain:v,catId:sel.value});inp.value="";renderAll();showToast(`Added ${v} to blocked list`);};
+  btn.onclick=add;
+  inp.onkeydown=e=>{if(e.key==="Enter")add();};
+  container.querySelectorAll("[data-del-site]").forEach(b=>{b.onclick=()=>{customSites=customSites.filter(s=>s.domain!==b.getAttribute("data-del-site"));renderAll();showToast("Site removed");};});
+}
+
+function budgetConfigHTML(){
+  return `<div class="budget-config">
+    <div class="bc-row"><span class="bc-label">Daily leisure budget</span><span class="bc-val" id="bcVal">${fmtMin(budgetMax)}</span></div>
+    <input type="range" id="budgetSlider" min="15" max="180" step="15" value="${budgetMax}" />
+    <div class="bc-row"><span class="bc-label">Used today</span><span class="bc-val" style="color:var(--text-muted);font-size:14px">${budgetUsed}m · ${Math.round(budgetPct())}%</span></div>
+    <div class="budget-tiers">
+      <button class="tier-chip" data-budget="30">30m</button>
+      <button class="tier-chip" data-budget="45">45m</button>
+      <button class="tier-chip" data-budget="60">1h</button>
+      <button class="tier-chip" data-budget="90">1.5h</button>
+      <button class="tier-chip" data-budget="120">2h</button>
+    </div>
+  </div>`;
+}
+function wireBudget(container){
+  const sl=container.querySelector("#budgetSlider");if(!sl)return;
+  const val=container.querySelector("#bcVal");
+  sl.oninput=()=>{budgetMax=parseInt(sl.value,10);val.textContent=fmtMin(budgetMax);renderBars();};
+  sl.onchange=()=>{renderAll();};
+  container.querySelectorAll("[data-budget]").forEach(b=>{b.onclick=()=>{budgetMax=parseInt(b.getAttribute("data-budget"),10);renderAll();showToast(`Budget set to ${fmtMin(budgetMax)}`);};});
+}
+
+function scheduleHTML(){
+  let html=`<div class="sched-grid">`;
+  html+=`<div class="sg-corner"></div>`;
+  DOW_FULL.forEach(d=>html+=`<div class="sg-dow">${d}</div>`);
+  HOURS.forEach(h=>{
+    html+=`<div class="sg-hour">${h<=12?h:h-12}${h<12?"a":"p"}</div>`;
+    DOW_FULL.forEach((d,di)=>{
+      const k=`${di}-${h}`;const on=!!schedule[k];
+      html+=`<div class="sched-cell ${on?"on":"off"}" data-sched="${k}" role="button" tabindex="0" aria-label="${d} ${h}:00"></div>`;
+    });
+  });
+  html+=`</div>`;
+  return html;
+}
+function wireSchedule(container){
+  container.querySelectorAll("[data-sched]").forEach(c=>{
+    const flip=()=>{const k=c.getAttribute("data-sched");schedule[k]=!schedule[k];c.className=`sched-cell ${schedule[k]?"on":"off"}`;showToast(`Focus hours ${schedule[k]?"added":"removed"}`);};
+    c.onclick=flip;
+    c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();flip();}};
+  });
+}
+
+function settingsHTML(){
+  return `<div class="set-row"><div class="set-info"><div class="set-name">Friction level</div><div class="set-desc">How much resistance before a blocked site loads</div></div>
+    <select id="setFriction"><option value="1">Gentle nudge</option><option value="2" selected>Active warning</option><option value="3">Soft lock (typed sentence)</option><option value="4">Task-gated (no bypass)</option></select></div>
+  <div class="set-row"><div class="set-info"><div class="set-name">Override delay</div><div class="set-desc">Seconds to wait before override takes effect</div></div>
+    <select id="setDelay"><option value="10">10 seconds</option><option value="30" selected>30 seconds</option><option value="60">1 minute</option></select></div>
+  <div class="set-row"><div class="set-info"><div class="set-name">Stricter after override</div><div class="set-desc">Buddy tightens rules tomorrow if you override today</div></div>
+    <div class="toggle on" id="setStricter" role="switch" aria-checked="true" tabindex="0"></div></div>
+  <div class="set-row"><div class="set-info"><div class="set-name">Crash recovery watchdog</div><div class="set-desc">Restores hosts file if FocusPath crashes</div></div>
+    <div class="toggle on" id="setWatchdog" role="switch" aria-checked="true" tabindex="0"></div></div>
+  <div class="set-row"><div class="set-info"><div class="set-name">Auto-unblock on quit</div><div class="set-desc">All blocks lift when you close FocusPath</div></div>
+    <div class="toggle on" id="setAutounblock" role="switch" aria-checked="true" tabindex="0"></div></div>`;
+}
+function wireSettings(container){
+  container.querySelectorAll(".toggle").forEach(t=>{
+    const flip=()=>{t.classList.toggle("on");t.setAttribute("aria-checked",t.classList.contains("on"));showToast("Setting updated");};
+    t.onclick=flip;t.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();flip();}};
+  });
+  container.querySelectorAll("select").forEach(s=>{s.onchange=()=>showToast("Setting updated");});
+}
+
+function panelWrap(title,icon,sub,bodyHTML){
+  return `<div class="panel"><div class="panel-head">${icon}<span class="ph-title">${title}</span><span class="ph-sub">${sub}</span></div><div class="panel-body">${bodyHTML}</div></div>`;
+}
+
+/* ═══ FULLSCREEN 1: Tabbed ═══ */
+function renderFs1(){
+  const el=document.getElementById("fs1body");
+  el.innerHTML=`
+    <div class="tabs" id="fs1tabs">
+      <button class="tab active" data-tab="status">${IC.shield}Status</button>
+      <button class="tab" data-tab="lists">${IC.list}Block Lists</button>
+      <button class="tab" data-tab="sched">${IC.cal}Schedule</button>
+      <button class="tab" data-tab="settings">${IC.gear}Settings</button>
+    </div>
+    <div class="tab-pane active" data-pane="status" id="fs1status"></div>
+    <div class="tab-pane" data-pane="lists" id="fs1lists"></div>
+    <div class="tab-pane" data-pane="sched" id="fs1sched"></div>
+    <div class="tab-pane" data-pane="settings" id="fs1settings"></div>
+  `;
+  // wire tabs
+  el.querySelectorAll(".tab").forEach(t=>{
+    t.onclick=()=>{
+      el.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+      el.querySelectorAll(".tab-pane").forEach(x=>x.classList.remove("active"));
+      t.classList.add("active");
+      el.querySelector(`[data-pane="${t.getAttribute("data-tab")}"]`).classList.add("active");
+    };
+  });
+  fillFs1();
+}
+function fillFs1(){
+  const sc=document.getElementById("fs1status");sc.innerHTML=statusHeroHTML();wireStatusHero(sc);
+  const li=document.getElementById("fs1lists");
+  li.innerHTML=panelWrap("Block Categories",IC.shield,`${activeCats().length} of ${CATEGORIES.length} active`,categoriesHTML())+panelWrap("Blocked Sites",IC.list,`${allBlockedSites()} total`,sitesHTML());
+  wireCategories(li);wireSites(li);
+  const sd=document.getElementById("fs1sched");sd.innerHTML=panelWrap("Focus Hours",IC.cal,"Click cells to toggle",scheduleHTML());wireSchedule(sd);
+  const se=document.getElementById("fs1settings");se.innerHTML=panelWrap("Friction & Safety",IC.gear,"",budgetConfigHTML())+panelWrap("Override & Recovery",IC.shield,"",settingsHTML());wireBudget(se);wireSettings(se);
+}
+
+/* ═══ FULLSCREEN 2: Single scroll ═══ */
+function renderFs2(){
+  const el=document.getElementById("fs2body");
+  el.innerHTML=statusHeroHTML()+panelWrap("Block Categories",IC.shield,`${activeCats().length} of ${CATEGORIES.length} active`,categoriesHTML())+panelWrap("Blocked Sites",IC.list,`${allBlockedSites()} total`,sitesHTML())+panelWrap("Focus Hours",IC.cal,"Click cells to toggle",scheduleHTML())+panelWrap("Leisure Budget",IC.target,"",budgetConfigHTML())+panelWrap("Friction & Safety",IC.gear,"",settingsHTML());
+  wireStatusHero(el);wireCategories(el);wireSites(el);wireSchedule(el);wireBudget(el);wireSettings(el);
+}
+
+/* ═══ FULLSCREEN 3: Split panes ═══ */
+function renderFs3(){
+  const left=document.getElementById("fs3left");
+  left.innerHTML=statusHeroHTML()+panelWrap("Leisure Budget",IC.target,"",budgetConfigHTML());
+  wireStatusHero(left);wireBudget(left);
+  const right=document.getElementById("fs3right");
+  right.innerHTML=panelWrap("Block Categories",IC.shield,`${activeCats().length} of ${CATEGORIES.length} active`,categoriesHTML())+panelWrap("Blocked Sites",IC.list,`${allBlockedSites()} total`,sitesHTML())+panelWrap("Focus Hours",IC.cal,"Click cells to toggle",scheduleHTML())+panelWrap("Friction & Safety",IC.gear,"",settingsHTML());
+  wireCategories(right);wireSites(right);wireSchedule(right);wireSettings(right);
+}
+
+/* ═══ OVERRIDE MODAL ═══ */
+const overlay=document.getElementById("overlay");
+function openOverride(){
+  document.getElementById("ovTitle").textContent="Take a break";
+  document.getElementById("ovMark").innerHTML=IC.coffee;
+  document.getElementById("ovBody").innerHTML=`
+    <p class="mb-sub">You're about to unlock distractions for <b>5 minutes</b>. Type the sentence below to confirm — this is a deliberate pause, not an impulse.</p>
+    <input type="text" id="ovInput" placeholder="Type: I will return to my tasks" />
+    <div class="countdown" id="ovCountdown" style="display:none">30</div>`;
+  document.getElementById("ovFoot").innerHTML=`<button class="btn" type="button" id="ovCancel">Cancel</button><button class="btn primary" type="button" id="ovConfirm" disabled>Confirm break</button>`;
+  overlay.classList.add("show");
+  const inp=document.getElementById("ovInput");const conf=document.getElementById("ovConfirm");
+  inp.oninput=()=>{conf.disabled=inp.value.trim().toLowerCase()!=="i will return to my tasks";};
+  inp.onkeydown=e=>{if(e.key==="Enter"&&!conf.disabled)startCountdown();};
+  conf.onclick=startCountdown;
+  document.getElementById("ovCancel").onclick=closeOverride;
+  setTimeout(()=>inp.focus(),50);
+}
+let ovTimer=null,ovCount=30;
+function startCountdown(){
+  const body=document.getElementById("ovBody");const foot=document.getElementById("ovFoot");
+  body.innerHTML=`<p class="mb-sub">Unlocking in…</p><div class="countdown" id="ovCountdown">${ovCount}</div>`;
+  foot.innerHTML=`<button class="btn" type="button" id="ovCancelWait">Cancel</button>`;
+  document.getElementById("ovCancelWait").onclick=()=>{clearInterval(ovTimer);closeOverride();};
+  const cd=document.getElementById("ovCountdown");
+  ovTimer=setInterval(()=>{ovCount--;cd.textContent=ovCount;if(ovCount<=0){clearInterval(ovTimer);grantBreak();}},1000);
+}
+function grantBreak(){
+  budgetUsed=Math.max(0,budgetUsed-5);
+  closeOverride();
+  renderAll();
+  showToast("5-minute break granted — stay kind to yourself");
+}
+function closeOverride(){overlay.classList.remove("show");clearInterval(ovTimer);ovCount=30;}
+document.getElementById("ovClose").onclick=closeOverride;
+overlay.addEventListener("click",e=>{if(e.target===overlay)closeOverride();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&overlay.classList.contains("show"))closeOverride();});
+
+/* ═══ FULLSCREEN ═══ */
+function enterFs(id){const el=document.getElementById(id);if(el.requestFullscreen)el.requestFullscreen();}
+document.querySelectorAll("[data-fs]").forEach(b=>b.addEventListener("click",()=>enterFs(b.getAttribute("data-fs"))));
+document.getElementById("globalFs").addEventListener("click",()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();else document.exitFullscreen&&document.exitFullscreen();});
+
+/* ═══ RENDER ALL ═══ */
+function renderAll(){renderBars();renderFs1();renderFs2();renderFs3();}
+// seed some schedule
+[0,1,2,3,4].forEach(d=>HOURS.slice(0,4).forEach(h=>schedule[`${d}-${h}`]=true));
+renderAll();
+</script>
+</body>
+</html>
