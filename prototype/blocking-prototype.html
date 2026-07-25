@@ -87,7 +87,7 @@
   .pill-add:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
   /* ═══════════════════════════════════════════════════════════
-     BLOCKING BAR WIDGETS — 3 templates
+     BLOCKING BAR WIDGET — Rich split layout (final)
      ═══════════════════════════════════════════════════════════ */
 
   /* ── Status dot (shared) ── */
@@ -104,24 +104,6 @@
   .budget-fill.amber{background:linear-gradient(90deg,var(--amber),var(--warning))}
   .budget-fill.red{background:linear-gradient(90deg,var(--danger),#9E504B)}
 
-  /* ── Bar 1: Compact (single row) ── */
-  .bar1{display:flex;align-items:center;gap:14px}
-  .bar1 .stat-info{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;white-space:nowrap}
-  .bar1 .budget-bar{max-width:200px}
-  .bar1 .budget-text{font-size:11px;color:var(--text-muted);font-family:var(--font-num);white-space:nowrap}
-
-  /* ── Bar 2: Medium (two-row) ── */
-  .bar2-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-  .bar2-head .stat-info{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
-  .bar2-head .timer{font-family:var(--font-num);font-size:18px;font-weight:700;color:var(--accent-hover);margin-left:auto}
-  .bar2-budget{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-  .bar2-budget .budget-bar{max-width:none}
-  .bar2-budget .budget-text{font-size:11px;color:var(--text-muted);font-family:var(--font-num);white-space:nowrap}
-  .bar2-cats{display:flex;gap:6px;flex-wrap:wrap}
-  .cat-chip{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;padding:4px 9px;border-radius:999px;border:1px solid var(--border);background:var(--surface)}
-  .cat-chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-hover)}
-  .cat-chip i{width:7px;height:7px;border-radius:50%}
-
   /* ── Bar 3: Rich (split layout) ── */
   .bar3{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   .bar3-left{display:flex;flex-direction:column;gap:10px}
@@ -130,6 +112,13 @@
   .bar3-sub{font-size:11.5px;color:var(--text-muted)}
   .bar3-override{font-size:11px;color:var(--text-faint);text-decoration:underline;cursor:pointer;border:none;background:none;padding:0;transition:.14s var(--ease)}
   .bar3-override:hover{color:var(--amber)}
+  .bar2-budget{display:flex;align-items:center;gap:10px}
+  .bar2-budget .budget-bar{max-width:none;height:8px}
+  .bar2-budget .budget-text{font-size:11px;color:var(--text-muted);font-family:var(--font-num);white-space:nowrap}
+  .bar2-cats{display:flex;gap:6px;flex-wrap:wrap}
+  .cat-chip{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;padding:4px 9px;border-radius:999px;border:1px solid var(--border);background:var(--surface)}
+  .cat-chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-hover)}
+  .cat-chip i{width:7px;height:7px;border-radius:50%}
 
   /* ═══════════════════════════════════════════════════════════
      FULLSCREEN BLOCKING — shared pieces
@@ -206,7 +195,6 @@
 
   /* ── Schedule grid ── */
   .sched-grid{display:grid;grid-template-columns:44px repeat(7,1fr);gap:3px}
-  .sched-grid .sg-corner{} 
   .sched-grid .sg-dow{font-size:10px;font-weight:700;text-align:center;color:var(--text-faint);padding:4px 0;letter-spacing:.05em;text-transform:uppercase}
   .sched-grid .sg-hour{font-size:9px;color:var(--text-faint);font-family:var(--font-num);text-align:right;padding-right:6px;display:flex;align-items:center;justify-content:flex-end}
   .sched-cell{height:22px;border-radius:4px;cursor:pointer;transition:.12s var(--ease);border:1px solid transparent}
@@ -222,23 +210,9 @@
   .set-row .set-info{flex:1;min-width:0}
   .set-row select{font:inherit;font-size:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:8px;padding:6px 10px;cursor:pointer}
 
-  /* ── Tabs (FS1) ── */
-  .tabs{display:flex;gap:2px;padding:0 16px;border-bottom:1px solid var(--border);background:var(--surface)}
-  .tab{font:inherit;font-size:13px;font-weight:600;padding:12px 16px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;transition:.14s var(--ease);border-bottom:2px solid transparent;margin-bottom:-1px}
-  .tab:hover{color:var(--text)}
-  .tab.active{color:var(--accent-hover);border-bottom-color:var(--accent)}
-  .tab:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
-  .tab-pane{display:none;padding:16px;overflow:auto}
-  .tab-pane.active{display:flex;flex-direction:column;gap:14px}
-
-  /* ── FS layouts ── */
-  .fs1{grid-template-columns:1fr;height:100%}
-  .fs1 .fs1-body{display:flex;flex-direction:column;overflow:hidden}
+  /* ── FS2 layout ── */
   .fs2{grid-template-columns:1fr;height:100%;overflow:auto}
   .fs2 .fs2-inner{padding:16px;display:flex;flex-direction:column;gap:16px;max-width:760px;margin:0 auto}
-  .fs3{grid-template-columns:340px 1fr;height:100%}
-  .fs3 .fs3-left{padding:16px;display:flex;flex-direction:column;gap:14px;overflow:auto;border-right:1px solid var(--border)}
-  .fs3 .fs3-right{padding:16px;display:flex;flex-direction:column;gap:14px;overflow:auto}
 
   /* ── Override modal ── */
   .overlay{position:fixed;inset:0;background:rgba(46,51,43,.32);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
@@ -286,35 +260,17 @@
 
 <div class="wrap">
   <section class="intro">
-    <h1>FocusPath Blocking — Prototype</h1>
-    <p>Three <b>bar widgets</b> for dashboard status, then three <b>fullscreen</b> blocking-management templates. Calm, progress-based friction (no alarms, no panic). Toggle categories, start sessions, adjust your leisure budget, manage blocked sites, schedule focus hours, and use the escape hatch.</p>
+    <h1>FocusPath Blocking — Final Prototype</h1>
+    <p><b>Bar 3 (Rich split)</b> for dashboard status and <b>Fullscreen 2 (Single scroll)</b> for blocking management. Calm, progress-based friction (no alarms, no panic). Toggle categories, start sessions, adjust your leisure budget, manage blocked sites, schedule focus hours, and use the escape hatch.</p>
     <p class="meta">Palette: <b>Sage Stone</b> · No AI sidebar (per Counsel review — settings need a concierge, not a co-pilot). Every button is functional.</p>
     <div class="palette" id="paletteRow"></div>
     <p class="note">Tip: toggle categories on/off · drag the budget slider · click schedule cells · <span class="kbd">Take a break</span> opens the friction modal · <span class="kbd">Esc</span> exits fullscreen/modal.</p>
   </section>
 
-  <!-- ═══ BAR WIDGETS ═══ -->
-  <section class="sec" id="bar1sec">
-    <div class="sec-head"><span class="sec-num">BAR · 1</span><div><h2 class="sec-title">Compact — Status + Budget</h2><p class="sec-sub">Single row. Glanceable: status dot, budget bar, minutes left. Minimal cognitive load.</p></div></div>
-    <div class="card" id="bar1el"></div>
-  </section>
-  <section class="sec" id="bar2sec">
-    <div class="sec-head"><span class="sec-num">BAR · 2</span><div><h2 class="sec-title">Medium — Status + Timer + Categories</h2><p class="sec-sub">Two rows: active session timer + budget bar + live category chips.</p></div></div>
-    <div class="card" id="bar2el"></div>
-  </section>
+  <!-- ═══ BAR WIDGET ═══ -->
   <section class="sec" id="bar3sec">
     <div class="sec-head"><span class="sec-num">BAR · 3</span><div><h2 class="sec-title">Rich — Split Status + Detail</h2><p class="sec-sub">Split layout: status left, budget + categories + override link right.</p></div></div>
     <div class="card" id="bar3el"></div>
-  </section>
-
-  <!-- ═══ FULLSCREEN 1: Tabbed ═══ -->
-  <section class="sec" id="fs1sec">
-    <div class="sec-head"><span class="sec-num">FULLSCREEN · 1</span><div><h2 class="sec-title">Tabbed — Status / Lists / Schedule / Settings</h2><p class="sec-sub">Four tabs: live status, block-list management, weekly schedule, friction & budget settings.</p></div>
-      <div class="right"><button class="btn" data-fs="frame1"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>Expand</button></div></div>
-    <div class="frame" id="frame1">
-      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Blocking · Tabbed</span><span class="spacer"></span><span class="mini" data-fs="frame1">⛶ Fullscreen</span></div>
-      <div class="frame-body"><div class="bv fs1"><div class="fs1-body" id="fs1body"></div></div></div>
-    </div>
   </section>
 
   <!-- ═══ FULLSCREEN 2: Single scroll ═══ -->
@@ -322,18 +278,8 @@
     <div class="sec-head"><span class="sec-num">FULLSCREEN · 2</span><div><h2 class="sec-title">Single Scroll — All Sections Stacked</h2><p class="sec-sub">Everything in one vertical scroll: status hero, categories, sites, schedule, settings.</p></div>
       <div class="right"><button class="btn" data-fs="frame2"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>Expand</button></div></div>
     <div class="frame" id="frame2">
-      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Blocking · Scroll</span><span class="spacer"></span><span class="mini" data-fs="frame2">⛶ Fullscreen</span></div>
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Blocking</span><span class="spacer"></span><span class="mini" data-fs="frame2">⛶ Fullscreen</span></div>
       <div class="frame-body"><div class="bv fs2"><div class="fs2-inner" id="fs2body"></div></div></div>
-    </div>
-  </section>
-
-  <!-- ═══ FULLSCREEN 3: Split panes ═══ -->
-  <section class="sec" id="fs3sec">
-    <div class="sec-head"><span class="sec-num">FULLSCREEN · 3</span><div><h2 class="sec-title">Split Panes — Live Status + Config</h2><p class="sec-sub">Status hero pinned left, configuration (categories, sites, schedule, settings) scrolling right.</p></div>
-      <div class="right"><button class="btn" data-fs="frame3"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>Expand</button></div></div>
-    <div class="frame" id="frame3">
-      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Blocking · Split</span><span class="spacer"></span><span class="mini" data-fs="frame3">⛶ Fullscreen</span></div>
-      <div class="frame-body"><div class="bv fs3"><div class="fs3-left" id="fs3left"></div><div class="fs3-right" id="fs3right"></div></div></div>
     </div>
   </section>
 
@@ -355,7 +301,7 @@
 /* ═══ DATA ═══ */
 const PALETTE=[["Background","--bg","#EDEFEA"],["Surface","--surface","#F7F8F2"],["Card","--surface-2","#FFFFFF"],["Border","--border","#D6DBCD"],["Text","--text","#2E332B"],["Muted","--text-muted","#5F655A"],["Sage","--accent","#5E7A5E"],["Sage Dk","--accent-hover","#4D6A4D"],["Amber","--amber","#C68B5C"],["Slate","--slate","#5E7A8A"],["Lavender","--lavender","#9B7AA8"],["Danger","--danger","#B5635C"]];
 const palRow=document.getElementById("paletteRow");
-PALETTE.forEach(([n,t,hx])=>{const d=document.createElement("div");d.className="sw";d.innerHTML=`<div class="chip" style="background:${hx}"></div><div class="lab"><b>${n}</b><span>${hx}</span></div>`;palRow.appendChild(d);});
+PALETTE.forEach(([n,hx])=>{const d=document.createElement("div");d.className="sw";d.innerHTML=`<div class="chip" style="background:${hx}"></div><div class="lab"><b>${n}</b><span>${hx}</span></div>`;palRow.appendChild(d);});
 
 const IC={
   shield:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
@@ -370,8 +316,6 @@ const IC={
   cal:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>',
   gear:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.2A1.6 1.6 0 0 0 7 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 2.6 14H2a2 2 0 1 1 0-4h.2A1.6 1.6 0 0 0 4 8.6a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 10 2.6V2a2 2 0 1 1 4 0v.2A1.6 1.6 0 0 0 16 4a1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.6 1.6 0 0 0 21.4 10H22a2 2 0 1 1 0 4h-.2a1.6 1.6 0 0 0-1.4 1z"/></svg>',
   target:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>',
-  chevL:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
-  chevR:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>',
 };
 
 /* ═══ STATE ═══ */
@@ -389,7 +333,6 @@ let sessionActive=false;
 let sessionSeconds=0;
 let sessionTimer=null;
 let schedule={}; // "day-hour" -> true
-const DOW_MIN=["M","T","W","T","F","S","S"];
 const DOW_FULL=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const HOURS=[9,10,11,12,13,14,15,16,17]; // 9am-5pm
 
@@ -404,31 +347,7 @@ function budgetState(){const p=budgetPct();if(p>=100)return"locked";if(p>85)retu
 function fmtMin(m){if(m>=60){const h=Math.floor(m/60),r=m%60;return r?`${h}h ${r}m`:`${h}h`;}return `${m}m`;}
 function fmtSec(s){const m=Math.floor(s/60),sec=s%60;return`${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;}
 
-/* ═══ BARS ═══ */
-function renderBar1(){
-  const el=document.getElementById("bar1el");
-  const st=budgetState();const col=budgetColor();const remain=Math.max(0,budgetMax-budgetUsed);
-  el.innerHTML=`<div class="bar1">
-    <div class="stat-info"><span class="stat-dot ${st}"></span>${sessionActive?"Focus block active":"Blocking idle"}</div>
-    <div class="budget-bar"><div class="budget-fill ${col}" style="width:${budgetPct()}%"></div></div>
-    <span class="budget-text">${fmtMin(remain)} left of ${fmtMin(budgetMax)}</span>
-    <button class="btn ${sessionActive?"":"primary"}" style="padding:6px 12px;font-size:12px" id="b1toggle">${sessionActive?IC.stop+`Stop`:IC.play+`Start focus`}</button>
-  </div>`;
-  document.getElementById("b1toggle").onclick=toggleSession;
-}
-function renderBar2(){
-  const el=document.getElementById("bar2el");
-  const st=budgetState();const col=budgetColor();const remain=Math.max(0,budgetMax-budgetUsed);
-  const cats=activeCats();
-  el.innerHTML=`<div class="bar2-head">
-    <div class="stat-info"><span class="stat-dot ${st}"></span>${sessionActive?"Focusing — distractions blocked":"Blocking ready"}</div>
-    <span class="timer" id="b2timer">${sessionActive?fmtSec(sessionSeconds):"00:00"}</span>
-    <button class="btn ${sessionActive?"":"primary"}" style="padding:6px 12px;font-size:12px" id="b2toggle">${sessionActive?IC.stop+`Stop`:IC.play+`Start`}</button>
-  </div>
-  <div class="bar2-budget"><div class="budget-bar"><div class="budget-fill ${col}" style="width:${budgetPct()}%"></div></div><span class="budget-text">${budgetUsed}m used · ${fmtMin(remain)} left</span></div>
-  <div class="bar2-cats">${cats.length?cats.map(c=>`<span class="cat-chip on"><i style="background:${c.color}"></i>${c.name}</span>`).join(""):'<span class="cat-chip">No categories active</span>'}</div>`;
-  document.getElementById("b2toggle").onclick=toggleSession;
-}
+/* ═══ BAR 3 ═══ */
 function renderBar3(){
   const el=document.getElementById("bar3el");
   const st=budgetState();const col=budgetColor();const remain=Math.max(0,budgetMax-budgetUsed);
@@ -467,13 +386,13 @@ function toggleSession(){
 function updateTimers(){
   const t=document.getElementById("b2timer");if(t&&sessionActive)t.textContent=fmtSec(sessionSeconds);
   const t3=document.querySelectorAll(".bar3-sub[style*='font-num']");t3.forEach(e=>{if(sessionActive)e.textContent=fmtSec(sessionSeconds);});
-  // update FS status heroes
   document.querySelectorAll("[data-hero-timer]").forEach(e=>{if(sessionActive)e.textContent=fmtSec(sessionSeconds);else if(e.textContent!=="—")e.textContent="—";});
 }
-function renderBars(){renderBar1();renderBar2();renderBar3();}
+function renderBars(){renderBar3();}
 
 /* ═══ SHARED COMPONENT BUILDERS ═══ */
-function statusHeroHTML(idSuffix){
+function panelWrap(title,ico,sub,body){return `<div class="panel"><div class="panel-head">${ico}<span class="ph-title">${title}</span>${sub?`<span class="ph-sub">${sub}</span>`:""}</div><div class="panel-body">${body}</div></div>`;}
+function statusHeroHTML(){
   const st=budgetState();const col=budgetColor();const remain=Math.max(0,budgetMax-budgetUsed);
   const cats=activeCats();
   return `<div class="status-hero">
@@ -553,7 +472,7 @@ function wireBudget(container){
 
 function scheduleHTML(){
   let html=`<div class="sched-grid">`;
-  html+=`<div class="sg-corner"></div>`;
+  html+=`<div></div>`;
   DOW_FULL.forEach(d=>html+=`<div class="sg-dow">${d}</div>`);
   HOURS.forEach(h=>{
     html+=`<div class="sg-hour">${h<=12?h:h-12}${h<12?"a":"p"}</div>`;
@@ -566,70 +485,37 @@ function scheduleHTML(){
   return html;
 }
 function wireSchedule(container){
-  container.querySelectorAll("[data-sched]").forEach(c=>{
-    const flip=()=>{const k=c.getAttribute("data-sched");schedule[k]=!schedule[k];c.className=`sched-cell ${schedule[k]?"on":"off"}`;showToast(`Focus hours ${schedule[k]?"added":"removed"}`);};
-    c.onclick=flip;
-    c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();flip();}};
+  container.querySelectorAll("[data-sched]").forEach(cell=>{
+    const flip=()=>{const k=cell.getAttribute("data-sched");schedule[k]=!schedule[k];renderAll();};
+    cell.onclick=flip;
+    cell.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();flip();}};
   });
 }
 
 function settingsHTML(){
-  return `<div class="set-row"><div class="set-info"><div class="set-name">Friction level</div><div class="set-desc">How much resistance before a blocked site loads</div></div>
-    <select id="setFriction"><option value="1">Gentle nudge</option><option value="2" selected>Active warning</option><option value="3">Soft lock (typed sentence)</option><option value="4">Task-gated (no bypass)</option></select></div>
-  <div class="set-row"><div class="set-info"><div class="set-name">Override delay</div><div class="set-desc">Seconds to wait before override takes effect</div></div>
-    <select id="setDelay"><option value="10">10 seconds</option><option value="30" selected>30 seconds</option><option value="60">1 minute</option></select></div>
-  <div class="set-row"><div class="set-info"><div class="set-name">Stricter after override</div><div class="set-desc">Buddy tightens rules tomorrow if you override today</div></div>
-    <div class="toggle on" id="setStricter" role="switch" aria-checked="true" tabindex="0"></div></div>
-  <div class="set-row"><div class="set-info"><div class="set-name">Crash recovery watchdog</div><div class="set-desc">Restores hosts file if FocusPath crashes</div></div>
-    <div class="toggle on" id="setWatchdog" role="switch" aria-checked="true" tabindex="0"></div></div>
-  <div class="set-row"><div class="set-info"><div class="set-name">Auto-unblock on quit</div><div class="set-desc">All blocks lift when you close FocusPath</div></div>
-    <div class="toggle on" id="setAutounblock" role="switch" aria-checked="true" tabindex="0"></div></div>`;
+  return `<div class="set-row">
+    <div class="set-info"><div class="set-name">Friction level</div><div class="set-desc">How hard it is to override a focus block.</div></div>
+    <select id="fricSel"><option>Gentle reminder</option><option selected>Typed sentence</option><option>Wait 60 s</option></select>
+  </div>
+  <div class="set-row">
+    <div class="set-info"><div class="set-name">Override delay</div><div class="set-desc">Countdown before a break unlocks.</div></div>
+    <select id="delaySel"><option>0 s</option><option>15 s</option><option selected>30 s</option><option>60 s</option></select>
+  </div>
+  <div class="set-row">
+    <div class="set-info"><div class="set-name">Auto-unlock after</div><div class="set-desc">Re-enable blocking once break ends.</div></div>
+    <select id="autoSel"><option>Never</option><option selected>After break</option><option>Next focus hour</option></select>
+  </div>
+  <div class="set-row">
+    <div class="set-info"><div class="set-name">Crash recovery</div><div class="set-desc">Restore blocks after browser/app restart.</div></div>
+    <div class="toggle on" role="switch" aria-checked="true" tabindex="0"></div>
+  </div>`;
 }
 function wireSettings(container){
-  container.querySelectorAll(".toggle").forEach(t=>{
-    const flip=()=>{t.classList.toggle("on");t.setAttribute("aria-checked",t.classList.contains("on"));showToast("Setting updated");};
-    t.onclick=flip;t.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();flip();}};
+  container.querySelectorAll(".set-row .toggle").forEach(t=>{
+    const flip=()=>{const on=t.classList.contains("on");t.classList.toggle("on");t.setAttribute("aria-checked",!on);};
+    t.onclick=flip;
+    t.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();flip();}};
   });
-  container.querySelectorAll("select").forEach(s=>{s.onchange=()=>showToast("Setting updated");});
-}
-
-function panelWrap(title,icon,sub,bodyHTML){
-  return `<div class="panel"><div class="panel-head">${icon}<span class="ph-title">${title}</span><span class="ph-sub">${sub}</span></div><div class="panel-body">${bodyHTML}</div></div>`;
-}
-
-/* ═══ FULLSCREEN 1: Tabbed ═══ */
-function renderFs1(){
-  const el=document.getElementById("fs1body");
-  el.innerHTML=`
-    <div class="tabs" id="fs1tabs">
-      <button class="tab active" data-tab="status">${IC.shield}Status</button>
-      <button class="tab" data-tab="lists">${IC.list}Block Lists</button>
-      <button class="tab" data-tab="sched">${IC.cal}Schedule</button>
-      <button class="tab" data-tab="settings">${IC.gear}Settings</button>
-    </div>
-    <div class="tab-pane active" data-pane="status" id="fs1status"></div>
-    <div class="tab-pane" data-pane="lists" id="fs1lists"></div>
-    <div class="tab-pane" data-pane="sched" id="fs1sched"></div>
-    <div class="tab-pane" data-pane="settings" id="fs1settings"></div>
-  `;
-  // wire tabs
-  el.querySelectorAll(".tab").forEach(t=>{
-    t.onclick=()=>{
-      el.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-      el.querySelectorAll(".tab-pane").forEach(x=>x.classList.remove("active"));
-      t.classList.add("active");
-      el.querySelector(`[data-pane="${t.getAttribute("data-tab")}"]`).classList.add("active");
-    };
-  });
-  fillFs1();
-}
-function fillFs1(){
-  const sc=document.getElementById("fs1status");sc.innerHTML=statusHeroHTML();wireStatusHero(sc);
-  const li=document.getElementById("fs1lists");
-  li.innerHTML=panelWrap("Block Categories",IC.shield,`${activeCats().length} of ${CATEGORIES.length} active`,categoriesHTML())+panelWrap("Blocked Sites",IC.list,`${allBlockedSites()} total`,sitesHTML());
-  wireCategories(li);wireSites(li);
-  const sd=document.getElementById("fs1sched");sd.innerHTML=panelWrap("Focus Hours",IC.cal,"Click cells to toggle",scheduleHTML());wireSchedule(sd);
-  const se=document.getElementById("fs1settings");se.innerHTML=panelWrap("Friction & Safety",IC.gear,"",budgetConfigHTML())+panelWrap("Override & Recovery",IC.shield,"",settingsHTML());wireBudget(se);wireSettings(se);
 }
 
 /* ═══ FULLSCREEN 2: Single scroll ═══ */
@@ -637,16 +523,6 @@ function renderFs2(){
   const el=document.getElementById("fs2body");
   el.innerHTML=statusHeroHTML()+panelWrap("Block Categories",IC.shield,`${activeCats().length} of ${CATEGORIES.length} active`,categoriesHTML())+panelWrap("Blocked Sites",IC.list,`${allBlockedSites()} total`,sitesHTML())+panelWrap("Focus Hours",IC.cal,"Click cells to toggle",scheduleHTML())+panelWrap("Leisure Budget",IC.target,"",budgetConfigHTML())+panelWrap("Friction & Safety",IC.gear,"",settingsHTML());
   wireStatusHero(el);wireCategories(el);wireSites(el);wireSchedule(el);wireBudget(el);wireSettings(el);
-}
-
-/* ═══ FULLSCREEN 3: Split panes ═══ */
-function renderFs3(){
-  const left=document.getElementById("fs3left");
-  left.innerHTML=statusHeroHTML()+panelWrap("Leisure Budget",IC.target,"",budgetConfigHTML());
-  wireStatusHero(left);wireBudget(left);
-  const right=document.getElementById("fs3right");
-  right.innerHTML=panelWrap("Block Categories",IC.shield,`${activeCats().length} of ${CATEGORIES.length} active`,categoriesHTML())+panelWrap("Blocked Sites",IC.list,`${allBlockedSites()} total`,sitesHTML())+panelWrap("Focus Hours",IC.cal,"Click cells to toggle",scheduleHTML())+panelWrap("Friction & Safety",IC.gear,"",settingsHTML());
-  wireCategories(right);wireSites(right);wireSchedule(right);wireSettings(right);
 }
 
 /* ═══ OVERRIDE MODAL ═══ */
@@ -693,7 +569,7 @@ document.querySelectorAll("[data-fs]").forEach(b=>b.addEventListener("click",()=
 document.getElementById("globalFs").addEventListener("click",()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();else document.exitFullscreen&&document.exitFullscreen();});
 
 /* ═══ RENDER ALL ═══ */
-function renderAll(){renderBars();renderFs1();renderFs2();renderFs3();}
+function renderAll(){renderBars();renderFs2();}
 // seed some schedule
 [0,1,2,3,4].forEach(d=>HOURS.slice(0,4).forEach(h=>schedule[`${d}-${h}`]=true));
 renderAll();
