@@ -76,14 +76,18 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
   /* Calendar */
+  .cal-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
   .cal-day{display:flex;flex-direction:column;gap:8px}
   .cal-event{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);transition:.14s var(--ease)}
   .cal-event:hover{border-color:var(--accent)}
+  .cal-event.conflict{border-left:4px solid var(--danger);background:var(--danger-soft)}
   .cal-time{font-family:var(--font-num);font-size:12px;color:var(--text-muted);min-width:70px}
   .cal-block{flex:1}
   .cal-title{font-size:13px;font-weight:600}
   .cal-sub{font-size:12px;color:var(--text-muted)}
   .cal-free{padding:14px 12px;border:1px dashed var(--border-strong);border-radius:10px;background:var(--surface);text-align:center;color:var(--text-muted);font-size:13px}
+  .cal-suggest{padding:14px 12px;border:1px dashed var(--accent);border-radius:10px;background:var(--accent-soft);text-align:center;color:var(--accent-hover);font-size:13px;cursor:pointer;transition:.14s var(--ease)}
+  .cal-suggest:hover{background:var(--accent);color:#fff}
 
   .capacity-wrap{background:var(--surface-sunken);border-radius:999px;height:10px;overflow:hidden;margin:8px 0 4px}
   .capacity-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent-hover));transition:width .3s var(--ease)}
@@ -95,6 +99,9 @@
 
   .intention-row{display:flex;gap:8px;align-items:center}
   .intention-row .input{flex:1}
+
+  .file-input{display:none}
+  .conflict-banner{font-size:12px;color:var(--danger);background:var(--danger-soft);border:1px solid var(--danger);border-radius:9px;padding:8px 12px}
 
   footer.foot{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);color:var(--text-faint);font-size:12px;text-align:center}
 </style>
@@ -111,7 +118,7 @@
 <div class="wrap">
   <section class="intro">
     <h1>60-Second Micro-Plan</h1>
-    <p>Anchor today's calendar, pick one win, split it into steps, set an intention, and launch.</p>
+    <p>Import your calendar, spot conflicts, get a focus-block suggestion, pick one win, and launch.</p>
     <p class="meta">Palette: Sage Stone · Forgiveness-first · One decision at a time</p>
   </section>
 
@@ -124,19 +131,19 @@
       <div class="split-right">
         <!-- Anchor -->
         <div class="panel">
-          <div class="panel-head"><span class="ph-title">Step 1 — Anchor</span><span class="ph-sub">Today's full schedule</span></div>
+          <div class="panel-head"><span class="ph-title">Step 1 — Anchor</span><span class="ph-sub">Import or demo your calendar</span></div>
           <div class="panel-body">
-            <div class="cal-day" id="cal-day">
-              <div class="cal-event"><span class="cal-time">8:00am</span><div class="cal-block"><div class="cal-title">Morning routine</div><div class="cal-sub">1 hr · hard commitment</div></div></div>
-              <div class="cal-event"><span class="cal-time">9:30am</span><div class="cal-block"><div class="cal-title">CS lecture</div><div class="cal-sub">1.5 hrs · hard commitment</div></div></div>
-              <div class="cal-free">2 hours free · perfect for a focus block</div>
-              <div class="cal-event"><span class="cal-time">12:00pm</span><div class="cal-block"><div class="cal-title">Lunch</div><div class="cal-sub">1 hr · hard commitment</div></div></div>
-              <div class="cal-free">1 hour free · buffer / small tasks</div>
-              <div class="cal-event"><span class="cal-time">2:00pm</span><div class="cal-block"><div class="cal-title">Dentist appointment</div><div class="cal-sub">1 hr · hard commitment</div></div></div>
-              <div class="cal-free">1.5 hours free · afternoon focus window</div>
-              <div class="cal-event"><span class="cal-time">6:00pm</span><div class="cal-block"><div class="cal-title">Dinner w/ friends</div><div class="cal-sub">2 hrs · hard commitment</div></div></div>
+            <div class="cal-controls">
+              <input type="file" id="ics-file" class="file-input" accept=".ics,.csv,.txt">
+              <button class="btn btn-sm" id="btn-upload">📁 Upload .ics</button>
+              <button class="btn btn-sm" id="btn-demo">📅 Load demo calendar</button>
+              <span id="cal-source" style="font-size:12px;color:var(--text-muted)">Demo data loaded</span>
             </div>
-            <div class="capacity-label"><span>Free time today: 4.5 hrs</span><span id="cap-text">Task estimate: 0h</span></div>
+            <div id="conflict-area"></div>
+            <div class="cal-day" id="cal-day">
+              <!-- rendered by JS -->
+            </div>
+            <div class="capacity-label"><span id="free-label">Free time today: --</span><span id="cap-text">Task estimate: 0h</span></div>
             <div class="capacity-wrap"><div class="capacity-fill" id="cap-fill" style="width:0%"></div></div>
           </div>
         </div>
@@ -181,7 +188,7 @@
     </div>
   </div>
 
-  <footer class="foot">FocusPath 60-Second Micro-Plan prototype · Sage Stone palette · forgiveness-first.</footer>
+  <footer class="foot">FocusPath 60-Second Micro-Plan prototype · ICS import · conflict detection · focus-block suggestions · Sage Stone palette.</footer>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -195,6 +202,130 @@ function makeChip(el, handler){
   el.addEventListener("click", handler);
   el.addEventListener("keydown", (e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();handler(e);}});
 }
+
+// Demo events
+const demoEvents=[
+  {title:"Morning routine",start:"08:00",end:"09:00",type:"hard"},
+  {title:"CS lecture",start:"09:30",end:"11:00",type:"hard"},
+  {title:"Lunch",start:"12:00",end:"13:00",type:"hard"},
+  {title:"Dentist appointment",start:"14:00",end:"15:00",type:"hard"},
+  {title:"Dinner w/ friends",start:"18:00",end:"20:00",type:"hard"},
+];
+
+function parseTime(t){const[h,m]=t.split(":").map(Number);return h*60+m;}
+function formatTime(min){const h=Math.floor(min/60),m=min%60;const ampm=h>=12?"pm":"am";const disp=h%12||12;return `${disp}:${m.toString().padStart(2,"0")}${ampm}`;}
+function duration(a,b){return (parseTime(b)-parseTime(a))/60;}
+
+function parseICS(text){
+  const events=[];
+  const vevents=text.split("BEGIN:VEVENT");
+  for(let i=1;i<vevents.length;i++){
+    const block=vevents[i];
+    const get=(name)=>{const m=block.match(new RegExp(name+":([\\s\\S]*?)(?:\\r?\\n[A-Z]|END:VEVENT)"));return m?m[1].trim():null;};
+    let summary=get("SUMMARY"); let dtstart=get("DTSTART"); let dtend=get("DTEND");
+    if(!summary||!dtstart||!dtend) continue;
+    // Strip VALUE/DATE-TIME prefixes and TZID suffixes for prototype
+    dtstart=dtstart.replace(/.*?:/,"").trim(); dtend=dtend.replace(/.*?:/,"").trim();
+    const parseDT=(s)=>{
+      if(s.includes("T")){const m=s.match(/T(\d{2})(\d{2})/);if(m)return `${m[1]}:${m[2]}`;}
+      return "09:00";
+    };
+    const start=parseDT(dtstart), end=parseDT(dtend);
+    events.push({title:summary,start,end,type:"hard"});
+  }
+  return events;
+}
+
+function findConflicts(events){
+  const sorted=[...events].sort((a,b)=>parseTime(a.start)-parseTime(b.start));
+  const conflicts=[];
+  for(let i=0;i<sorted.length;i++){
+    for(let j=i+1;j<sorted.length;j++){
+      if(parseTime(sorted[j].start)<parseTime(sorted[i].end)){conflicts.push([sorted[i],sorted[j]]);}
+      else break;
+    }
+  }
+  return conflicts;
+}
+
+function suggestFocusBlock(events, dayStart="07:00", dayEnd="22:00"){
+  const sorted=[...events].sort((a,b)=>parseTime(a.start)-parseTime(b.start));
+  const gaps=[];
+  let prevEnd=parseTime(dayStart);
+  for(const ev of sorted){
+    const s=parseTime(ev.start), e=parseTime(ev.end);
+    if(s>prevEnd) gaps.push({start:prevEnd,end:s,duration:(s-prevEnd)/60});
+    if(e>prevEnd) prevEnd=e;
+  }
+  const de=parseTime(dayEnd);
+  if(prevEnd<de) gaps.push({start:prevEnd,end:de,duration:(de-prevEnd)/60});
+  // Pick the longest gap, but prefer gaps >= 60 min
+  const good=gaps.filter(g=>g.duration>=1).sort((a,b)=>b.duration-a.duration);
+  return good[0] || gaps.sort((a,b)=>b.duration-a.duration)[0] || null;
+}
+
+function renderCalendar(events){
+  const container=document.getElementById("cal-day");
+  container.innerHTML="";
+  if(!events.length){container.innerHTML="<div class='cal-free'>No events yet — import a calendar or load demo.</div>";return;}
+  const sorted=[...events].sort((a,b)=>parseTime(a.start)-parseTime(b.start));
+  const conflicts=findConflicts(sorted);
+  const conflictSet=new Set();
+  conflicts.forEach(pair=>{conflictSet.add(pair[0].title);conflictSet.add(pair[1].title);});
+
+  let prevEnd="07:00";
+  let freeMinutes=0;
+  sorted.forEach((ev,index)=>{
+    if(parseTime(ev.start)>parseTime(prevEnd)){
+      const gap=duration(prevEnd,ev.start);
+      if(gap>0){
+        freeMinutes+=gap*60;
+        container.insertAdjacentHTML("beforeend",`<div class="cal-free">${gap>=1?gap.toFixed(1)+" hrs":""} free · ${formatTime(parseTime(prevEnd))}–${formatTime(parseTime(ev.start))}</div>`);
+      }
+    }
+    const dur=duration(ev.start,ev.end);
+    const conflictClass=conflictSet.has(ev.title)?"conflict":"";
+    container.insertAdjacentHTML("beforeend",`<div class="cal-event ${conflictClass}"><span class="cal-time">${formatTime(parseTime(ev.start))}</span><div class="cal-block"><div class="cal-title">${esc(ev.title)}</div><div class="cal-sub">${dur} hr${dur===1?"":"s"} · hard commitment</div></div></div>`);
+    prevEnd=ev.end;
+  });
+
+  // Conflict banner
+  const conflictArea=document.getElementById("conflict-area");
+  if(conflicts.length){
+    const names=conflicts.map(c=>c.map(e=>e.title).join(" vs ")).join("; ");
+    conflictArea.innerHTML=`<div class="conflict-banner">⚠️ Conflict detected: ${esc(names)}</div>`;
+  } else {conflictArea.innerHTML="";}
+
+  // Focus block suggestion
+  const best=suggestFocusBlock(sorted);
+  if(best){
+    const el=document.createElement("div");
+    el.className="cal-suggest";
+    el.setAttribute("tabindex","0");
+    el.setAttribute("role","button");
+    el.innerHTML=`💡 Suggested focus block: <strong>${formatTime(best.start)}–${formatTime(best.end)}</strong> (${best.duration.toFixed(1)} hrs)`;
+    el.addEventListener("click",()=>showToast(`Focus block set: ${formatTime(best.start)}–${formatTime(best.end)}`));
+    el.addEventListener("keydown",(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();showToast(`Focus block set: ${formatTime(best.start)}–${formatTime(best.end)}`);}});
+    container.appendChild(el);
+  }
+
+  const dayMinutes=(parseTime("22:00")-parseTime("07:00"));
+  const busyMinutes=sorted.reduce((acc,ev)=>acc+duration(ev.start,ev.end)*60,0);
+  freeMinutes=Math.max(0,dayMinutes-busyMinutes);
+  document.getElementById("free-label").textContent=`Free time today: ${(freeMinutes/60).toFixed(1)} hrs`;
+  updateCap();
+}
+
+// Upload / demo
+const fileInput=document.getElementById("ics-file");
+document.getElementById("btn-upload").onclick=()=>fileInput.click();
+fileInput.addEventListener("change",(e)=>{
+  const f=e.target.files[0]; if(!f)return;
+  const reader=new FileReader();
+  reader.onload=(ev)=>{const evs=parseICS(ev.target.result);renderCalendar(evs);document.getElementById("cal-source").textContent="Imported: "+esc(f.name);showToast("Calendar imported — "+evs.length+" events");};
+  reader.readAsText(f);
+});
+document.getElementById("btn-demo").onclick=()=>{renderCalendar(demoEvents);document.getElementById("cal-source").textContent="Demo data loaded";showToast("Demo calendar loaded");};
 
 // Single win chips
 const winInput=document.getElementById("fs1-win");
@@ -223,7 +354,10 @@ document.getElementById("fs1-split").onclick=()=>{
 
 // Capacity bar
 function updateCap(){const val=winInput.value?1:0;document.getElementById("cap-fill").style.width=(val/5*100)+"%";document.getElementById("cap-text").textContent="Task estimate: "+val+"h";}
-winInput.addEventListener("input",updateCap);updateCap();
+winInput.addEventListener("input",updateCap);
+
+// Init
+renderCalendar(demoEvents);
 </script>
 </body>
 </html>
