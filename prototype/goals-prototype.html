@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FocusPath — Goals</title>
+<style>
+  :root{
+    --bg:#EDEFEA; --surface:#F7F8F2; --surface-2:#FFFFFF; --surface-sunken:#E4E7DE;
+    --border:#D6DBCD; --border-strong:#C2C8B8;
+    --text:#2E332B; --text-muted:#5F655A; --text-faint:#6B7062;
+    --accent:#5E7A5E; --accent-hover:#4D6A4D; --accent-press:#436143; --accent-soft:#DCE6D6;
+    --amber:#C68B5C; --amber-soft:#F0E2D2;
+    --slate:#5E7A8A; --slate-soft:#DCE4E8;
+    --lavender:#9B7AA8; --lavender-soft:#E8DFEC;
+    --success:#6B9362; --danger:#B5635C; --danger-soft:#F0DBD9;
+    --shadow-sm:0 1px 2px rgba(46,51,43,.05), 0 2px 6px rgba(46,51,43,.05);
+    --shadow:0 1px 2px rgba(46,51,43,.05), 0 6px 18px rgba(46,51,43,.08);
+    --shadow-lg:0 2px 8px rgba(46,51,43,.07), 0 18px 48px rgba(46,51,43,.14);
+    --radius:14px; --radius-sm:9px; --radius-xs:6px;
+    --ease:cubic-bezier(.4,0,.2,1);
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+    --font-num:"SF Mono","ui-monospace","Menlo","Consolas",monospace;
+    --font-disp:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0}
+  body{font-family:var(--font-ui);color:var(--text);background:radial-gradient(1200px 600px at 80% -10%,#E3E7DD 0%,transparent 60%),radial-gradient(900px 500px at -10% 20%,#E7EBE0 0%,transparent 55%),var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+
+  .toolbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:12px 22px;background:rgba(247,248,242,.82);backdrop-filter:saturate(140%) blur(14px);border-bottom:1px solid var(--border)}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em}
+  .brand .mark{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-hover));display:grid;place-items:center;color:#fff}
+  .brand small{color:var(--text-muted);font-weight:500;margin-left:2px}
+  .toolbar .spacer{flex:1}
+  .btn{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);padding:8px 14px;border-radius:10px;display:inline-flex;align-items:center;gap:8px;transition:.16s var(--ease);box-shadow:var(--shadow-sm)}
+  .btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent-hover)}
+  .btn:active{transform:translateY(0)}
+  .btn.primary{background:var(--accent-hover);border-color:var(--accent-hover);color:#fff}
+  .btn.primary:hover{background:var(--accent-press);border-color:var(--accent-press);color:#fff}
+  .btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+  .btn .ic{width:15px;height:15px}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:34px 22px 120px}
+  .intro{max-width:680px}
+  .intro h1{font-size:30px;letter-spacing:-.02em;margin:0 0 8px}
+  .intro p{color:var(--text-muted);margin:0 0 6px;font-size:15px}
+  .intro .meta{color:var(--text-faint);font-size:13px}
+
+  .sec{margin-top:54px;scroll-margin-top:74px}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
+  .sec-num{font-family:var(--font-num);font-size:12px;font-weight:600;color:var(--accent-hover);background:var(--accent-soft);padding:3px 9px;border-radius:999px}
+  .sec-title{font-size:19px;font-weight:700;letter-spacing:-.01em;margin:0}
+  .sec-sub{color:var(--text-muted);font-size:13.5px;margin:0}
+  .sec-head .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+  .frame{background:var(--surface-2);border:1px solid var(--border-strong);border-radius:16px;box-shadow:var(--shadow-lg);overflow:hidden;position:relative}
+  .frame-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(180deg,#EFF1E9,#E9EBE2);border-bottom:1px solid var(--border)}
+  .lights{display:flex;gap:7px} .lights i{width:11px;height:11px;border-radius:50%;display:block}
+  .lights .r{background:#E0726A} .lights .y{background:#E3B341} .lights .g{background:#7DB76C}
+  .frame-title{font-size:12.5px;color:var(--text-muted);font-weight:500;margin-left:4px}
+  .frame-bar .spacer{flex:1}
+  .frame:fullscreen{border-radius:0}
+  .frame:fullscreen .frame-bar{display:none}
+  .frame-body{background:var(--bg);height:620px;overflow:auto}
+
+  .panel{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .panel-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface)}
+  .panel-head .ph-title{font-size:14px;font-weight:700;letter-spacing:-.01em}
+  .panel-head .ph-sub{font-size:11px;color:var(--text-muted);margin-left:auto}
+  .panel-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+
+  .goal-card{padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--surface);cursor:pointer;transition:.14s var(--ease)}
+  .goal-card:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .goal-card.active{border-color:var(--accent);background:var(--accent-soft)}
+  .goal-card .g-title{font-size:13px;font-weight:600}
+  .goal-card .g-meta{font-size:11px;color:var(--text-muted)}
+  .goal-card .g-bar{height:6px;border-radius:999px;background:var(--surface-sunken);overflow:hidden;margin-top:8px}
+  .goal-card .g-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent-hover));transition:width .4s var(--ease)}
+
+  .tree{display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px}
+  .tree-node{width:120px;height:120px;border-radius:50%;background:var(--surface);border:2px solid var(--border);display:grid;place-items:center;position:relative;transition:.2s var(--ease)}
+  .tree-node.done{border-color:var(--accent);background:var(--accent-soft)}
+  .tree-node .tn-ico{font-size:28px}
+  .tree-children{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+  .tree-child{width:60px;height:60px;border-radius:50%;background:var(--surface);border:2px solid var(--border);display:grid;place-items:center;font-size:18px;cursor:pointer;transition:.2s var(--ease)}
+  .tree-child.done{border-color:var(--accent);background:var(--accent-soft)}
+  .tree-child:hover{transform:scale(1.08)}
+
+  .ii-form{display:flex;flex-direction:column;gap:10px}
+  .ii-form label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em}
+  .ii-form input,.ii-form textarea,.ii-form select{font:inherit;font-size:13px;border:1px solid var(--border);border-radius:9px;padding:9px 11px;background:var(--surface-2);color:var(--text)}
+  .ii-form input:focus,.ii-form textarea:focus,.ii-form select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .ii-form textarea{min-height:60px;resize:vertical}
+
+  .step{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);transition:.14s var(--ease)}
+  .step:hover{border-color:var(--accent)}
+  .step-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);cursor:pointer;display:grid;place-items:center;transition:.14s var(--ease)}
+  .step-check.done{background:var(--accent);border-color:var(--accent);color:#fff}
+  .step-check .ic{width:12px;height:12px}
+  .step-text{flex:1;font-size:13px}
+  .step-text.done{text-decoration:line-through;color:var(--text-faint)}
+
+  .chat{display:flex;flex-direction:column;gap:10px;max-height:240px;overflow:auto;padding:4px}
+  .bubble{padding:10px 13px;border-radius:12px;max-width:85%;font-size:13px;line-height:1.45}
+  .bubble.ai{background:var(--surface);border:1px solid var(--border);align-self:flex-start}
+  .bubble.user{background:var(--accent);color:#fff;align-self:flex-end}
+  .chat-input{display:flex;gap:8px;margin-top:8px}
+  .chat-input input{flex:1;font:inherit;font-size:13px;border:1px solid var(--border);border-radius:9px;padding:9px 11px}
+  .chat-input input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+
+  .next-card{padding:24px;text-align:center;background:radial-gradient(120% 100% at 50% 0%,var(--accent-soft) 0%,transparent 60%),var(--surface-2);border:1px solid var(--border);border-radius:var(--radius)}
+  .next-card .next-title{font-family:var(--font-disp);font-size:22px;font-weight:700;margin-bottom:8px}
+  .next-card .next-meta{font-size:13px;color:var(--text-muted);margin-bottom:16px}
+
+  .done-garden{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:12px}
+  .dg-item{width:36px;height:36px;border-radius:50%;background:var(--accent-soft);border:1px solid var(--accent);display:grid;place-items:center;font-size:16px}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--text);color:#F7F8F2;padding:10px 16px;border-radius:999px;font-size:12.5px;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.22s var(--ease);z-index:300}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  footer.foot{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);color:var(--text-faint);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="brand">
+    <span class="mark"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+    FocusPath <small>· Goals</small>
+  </div>
+</div>
+
+<div class="wrap">
+  <section class="intro">
+    <h1>Goals — 3 Fullscreen Layouts</h1>
+    <p><b>Goal Cultivator</b> (Split Panes), <b>Breakdown Desk</b> (Three-Column), and <b>Focus Feed</b> (Single-Scroll). Each supports implementation intentions, progress trees, and buddy integration.</p>
+    <p class="meta">Palette: Sage Stone · Visual metaphor: Goal Garden / Progress Trees</p>
+  </section>
+
+  <!-- TEMPLATE 1: Goal Cultivator (Split Panes) -->
+  <section class="sec" id="t1">
+    <div class="sec-head"><span class="sec-num">01</span><div><h2 class="sec-title">Goal Cultivator — Split Panes</h2><p class="sec-sub">Goal tree pinned left; implementation-intention editor scrolls right.</p></div></div>
+    <div class="frame">
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Goal Cultivator</span><span class="spacer"></span></div>
+      <div class="frame-body" style="display:grid;grid-template-columns:320px 1fr;gap:0">
+        <div style="border-right:1px solid var(--border);padding:16px;overflow:auto;background:var(--surface-2)">
+          <div class="panel" style="box-shadow:none;border:none">
+            <div class="panel-head"><span class="ph-title">Your goal garden</span></div>
+            <div class="panel-body" id="t1-tree"></div>
+          </div>
+        </div>
+        <div style="padding:16px;overflow:auto">
+          <div class="panel" style="box-shadow:none;border:none" id="t1-editor">
+            <div class="panel-head"><span class="ph-title">Implementation intention</span><span class="ph-sub">Selected step</span></div>
+            <div class="panel-body ii-form" id="t1-form"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEMPLATE 2: Breakdown Desk (Three-Column) -->
+  <section class="sec" id="t2">
+    <div class="sec-head"><span class="sec-num">02</span><div><h2 class="sec-title">Breakdown Desk — Three-Column</h2><p class="sec-sub">Goals list · selected goal detail · AI buddy chat.</p></div></div>
+    <div class="frame">
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Breakdown Desk</span><span class="spacer"></span></div>
+      <div class="frame-body" style="display:grid;grid-template-columns:220px 1fr 260px;gap:0">
+        <div style="border-right:1px solid var(--border);padding:16px;overflow:auto" id="t2-list"></div>
+        <div style="border-right:1px solid var(--border);padding:16px;overflow:auto" id="t2-detail"></div>
+        <div style="padding:16px;overflow:auto;background:var(--surface-2)">
+          <div class="panel" style="box-shadow:none;border:none">
+            <div class="panel-head"><span class="ph-title">Buddy</span></div>
+            <div class="panel-body" style="padding:0">
+              <div class="chat" id="t2-chat"></div>
+              <div class="chat-input"><input type="text" id="t2-input" placeholder="Ask about this goal…" /><button class="btn primary" id="t2-send">Send</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEMPLATE 3: Focus Feed (Single-Scroll Stack) -->
+  <section class="sec" id="t3">
+    <div class="sec-head"><span class="sec-num">03</span><div><h2 class="sec-title">Focus Feed — Single-Scroll Stack</h2><p class="sec-sub">Only the next step. Done garden below.</p></div></div>
+    <div class="frame">
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Focus Feed</span><span class="spacer"></span></div>
+      <div class="frame-body" style="padding:16px;display:flex;flex-direction:column;gap:16px;max-width:720px;margin:0 auto">
+        <div class="panel" id="t3-buddy"></div>
+        <div id="t3-next"></div>
+        <div class="panel" id="t3-done"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">FocusPath Goals prototype · 3 layout templates · Sage Stone palette · implementation intentions · buddy-integrated.</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const IC={check:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>'};
+const toast=document.getElementById("toast");
+function showToast(m){toast.textContent=m;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1700);}
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML;}
+
+let goals=[
+  {id:1,title:"Get an A in Chemistry",type:"academic",deadline:"2025-12-15",why:"I need a strong GPA for pre-med apps.",progress:35,steps:[
+    {id:101,what:"Read Chapter 4, sections 4.1-4.5",when:"Tue 7pm",where:"At my desk, phone away",first:"Open textbook to page 142",obstacle:"Discord notifications",ifThen:"If I feel the urge to check Discord, I will stand up and stretch for 30 seconds",done:true},
+    {id:102,what:"Practice problems for Chapter 4",when:"Thu 6pm",where:"Library",first:"Open problem set",obstacle:"Getting stuck on hard problems",ifThen:"If I get stuck, I will re-read the example first before asking for help",done:false},
+    {id:103,what:"Review weak areas before quiz",when:"Fri 7pm",where:"At my desk",first:"List the three hardest topics",obstacle:"Skipping review because it feels boring",ifThen:"If I want to skip, I will set a 15-minute timer and just do one topic",done:false}
+  ]},
+  {id:2,title:"Meditate daily",type:"habit",deadline:"ongoing",why:"Less anxiety, better focus.",progress:60,steps:[
+    {id:201,what:"Meditate for 10 minutes",when:"Morning",where:"Living room couch",first:"Set a timer and sit down",obstacle:"Hitting snooze",ifThen:"If I hit snooze, I will meditate right after brushing my teeth",done:true},
+    {id:202,what:"Journal one line after meditating",when:"After meditation",where:"Same spot",first:"Open notebook",obstacle:"Forgetting",ifThen:"If I finish meditating, I will open the notebook before standing up",done:false}
+  ]}
+];
+let selectedGoal=1;
+let selectedStep=102;
+
+function renderT1(){
+  const g=goals.find(x=>x.id===selectedGoal);
+  const completed=g.steps.filter(s=>s.done).length;
+  const tree=document.getElementById("t1-tree");
+  tree.innerHTML=`<div style="text-align:center;margin-bottom:12px"><div style="font-size:40px;margin-bottom:8px">🌳</div><div style="font-size:15px;font-weight:700">${esc(g.title)}</div><div style="font-size:11px;color:var(--text-muted)">${completed}/${g.steps.length} steps complete</div><div style="height:6px;border-radius:999px;background:var(--surface-sunken);margin-top:10px;overflow:hidden"><div style="height:100%;width:${g.progress}%;background:linear-gradient(90deg,var(--accent),var(--accent-hover));border-radius:999px"></div></div></div>
+  <div class="tree-children">${g.steps.map(s=>`<div class="tree-child ${s.done?"done":""}" data-sid="${s.id}" title="${esc(s.what)}">${s.done?"":"🌱"}</div>`).join("")}</div>
+  <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">${goals.map(g2=>`<div class="goal-card ${g2.id===selectedGoal?"active":""}" data-gid="${g2.id}"><div class="g-title">${esc(g2.title)}</div><div class="g-meta">${g2.type} · ${g2.progress}%</div><div class="g-bar"><div class="g-fill" style="width:${g2.progress}%"></div></div></div>`).join("")}</div>`;
+  tree.querySelectorAll("[data-sid]").forEach(el=>el.onclick=()=>{selectedStep=+el.getAttribute("data-sid");renderT1Form();});
+  tree.querySelectorAll("[data-gid]").forEach(el=>el.onclick=()=>{selectedGoal=+el.getAttribute("data-gid");const g2=goals.find(x=>x.id===selectedGoal);selectedStep=g2.steps.find(s=>!s.done)?.id||g2.steps[0].id;renderT1();renderT1Form();});
+  renderT1Form();
+}
+function renderT1Form(){
+  const g=goals.find(x=>x.id===selectedGoal);
+  const s=g.steps.find(x=>x.id===selectedStep);
+  const form=document.getElementById("t1-form");
+  if(!s){form.innerHTML='<div style="color:var(--text-faint);font-size:13px">Select a step from the tree.</div>';return;}
+  form.innerHTML=`<label for="t1-what">What exactly?</label><input value="${esc(s.what)}" id="t1-what" name="t1-what"/>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label for="t1-when">When</label><input value="${esc(s.when)}" id="t1-when" name="t1-when"/></div><div><label for="t1-where">Where</label><input value="${esc(s.where)}" id="t1-where" name="t1-where"/></div></div>
+  <label for="t1-first">First concrete step</label><input value="${esc(s.first)}" id="t1-first" name="t1-first"/>
+  <label for="t1-obstacle">Obstacle</label><input value="${esc(s.obstacle)}" id="t1-obstacle" name="t1-obstacle"/>
+  <label for="t1-if">If-then plan</label><input value="${esc(s.ifThen)}" id="t1-if" name="t1-if"/>
+  <div style="display:flex;gap:10px"><button class="btn primary" id="t1-save">Save intention</button><button class="btn" id="t1-done">${s.done?"Mark not done":"Mark done"}</button></div>`;
+  document.getElementById("t1-save").onclick=()=>showToast("Intention saved");
+  document.getElementById("t1-done").onclick=()=>{s.done=!s.done;g.progress=Math.round(g.steps.filter(x=>x.done).length/g.steps.length*100);renderT1();showToast(s.done?"Step completed!":"Step reopened");};
+}
+
+function renderT2(){
+  const list=document.getElementById("t2-list");
+  list.innerHTML=`<div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Active Goals</div>${goals.map(g=>`<div class="goal-card ${g.id===selectedGoal?"active":""}" data-gid="${g.id}"><div class="g-title">${esc(g.title)}</div><div class="g-meta">${g.type} · ${g.progress}%</div><div class="g-bar"><div class="g-fill" style="width:${g.progress}%"></div></div></div>`).join("")}`;
+  list.querySelectorAll("[data-gid]").forEach(el=>el.onclick=()=>{selectedGoal=+el.getAttribute("data-gid");renderT2();});
+  const g=goals.find(x=>x.id===selectedGoal);
+  const detail=document.getElementById("t2-detail");
+  detail.innerHTML=`<div style="font-size:20px;font-weight:700;font-family:var(--font-disp);margin-bottom:4px">${esc(g.title)}</div><div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">${g.type} · deadline ${g.deadline} · ${g.progress}% complete</div>
+  <div style="display:flex;flex-direction:column;gap:8px">${g.steps.map(s=>`<div class="step"><div class="step-check ${s.done?"done":""}" data-sid="${s.id}">${s.done?IC.check:""}</div><span class="step-text ${s.done?"done":""}">${esc(s.what)}</span></div>`).join("")}</div>
+  <div class="ii-form" style="margin-top:16px"><label for="t2-why">Why this matters</label><textarea id="t2-why" name="t2-why">${esc(g.why)}</textarea><label for="t2-outcome">Target outcome</label><input id="t2-outcome" name="t2-outcome" value="${g.type==="academic"?"A in Chemistry":"10 min/day"}"/></div>`;
+  detail.querySelectorAll("[data-sid]").forEach(el=>el.onclick=()=>{const sid=+el.getAttribute("data-sid");const st=g.steps.find(x=>x.id===sid);st.done=!st.done;g.progress=Math.round(g.steps.filter(x=>x.done).length/g.steps.length*100);renderT2();showToast(st.done?"Step completed!":"Step reopened");});
+}
+
+let chat=[{who:"ai",text:"Want me to break this goal into smaller steps?"}];
+function renderT2Chat(){const c=document.getElementById("t2-chat");c.innerHTML=chat.map(m=>`<div class="bubble ${m.who}">${esc(m.text)}</div>`).join("");c.scrollTop=c.scrollHeight;}
+document.getElementById("t2-send").onclick=()=>{const inp=document.getElementById("t2-input");const v=inp.value.trim();if(!v)return;chat.push({who:"user",text:v});inp.value="";renderT2Chat();setTimeout(()=>{chat.push({who:"ai",text:"I can split that into a 20-minute first slice. Want me to add it to your calendar?"});renderT2Chat();},650);};
+document.getElementById("t2-input").onkeydown=e=>{if(e.key==="Enter")document.getElementById("t2-send").click();};
+
+function renderT3(){
+  const g=goals.find(x=>x.id===selectedGoal);
+  const next=g.steps.find(s=>!s.done);
+  const doneCount=goals.reduce((a,g)=>a+g.steps.filter(s=>s.done).length,0);
+  document.getElementById("t3-buddy").innerHTML=`<div class="panel-head"><span class="ph-title">Buddy</span></div><div class="panel-body" style="font-size:13px">${next?`One thing. Just this: <b>${esc(next.what)}</b>`:"All caught up! Enjoy the win."}</div>`;
+  document.getElementById("t3-next").innerHTML=next?`<div class="next-card"><div class="next-title">${esc(next.what)}</div><div class="next-meta">${esc(next.when)} · ${esc(next.where)}</div><div style="display:flex;gap:10px;justify-content:center"><button class="btn primary" id="t3-mark">Mark done</button><button class="btn" id="t3-skip">Skip for now</button></div></div>`:`<div class="next-card"><div class="next-title">No next step</div><div class="next-meta">All your steps are done today.</div></div>`;
+  if(next){
+    document.getElementById("t3-mark").onclick=()=>{next.done=true;const g2=goals.find(x=>x.id===selectedGoal);g2.progress=Math.round(g2.steps.filter(s=>s.done).length/g2.steps.length*100);renderT3();showToast("Step completed!");};
+    document.getElementById("t3-skip").onclick=()=>showToast("Skipped — no guilt");
+  }
+  document.getElementById("t3-done").innerHTML=`<div class="panel-head"><span class="ph-title">Done Garden · ${doneCount} this week</span></div><div class="panel-body"><div class="done-garden">${Array(doneCount).fill("🌿").map(e=>`<div class="dg-item">${e}</div>`).join("")}</div></div>`;
+}
+
+renderT1();renderT2();renderT2Chat();renderT3();
+</script>
+</body>
+</html>
