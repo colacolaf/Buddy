@@ -21,7 +21,6 @@
     --ease:cubic-bezier(.4,0,.2,1);
     --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
     --font-num:"SF Mono","ui-monospace","Menlo","Consolas",monospace;
-    --font-disp:Georgia,"Times New Roman",serif;
   }
   *{box-sizing:border-box} html,body{margin:0;padding:0}
   body{font-family:var(--font-ui);color:var(--text);background:radial-gradient(1200px 600px at 80% -10%,#E3E7DD 0%,transparent 60%),radial-gradient(900px 500px at -10% 20%,#E7EBE0 0%,transparent 55%),var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
@@ -37,6 +36,8 @@
   .btn.primary{background:var(--accent-hover);border-color:var(--accent-hover);color:#fff}
   .btn.primary:hover{background:var(--accent-press);border-color:var(--accent-press);color:#fff}
   .btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+  .btn.ghost{background:transparent;border-color:transparent;box-shadow:none}
+  .btn.ghost:hover{background:var(--accent-soft)}
   .btn .ic{width:15px;height:15px}
   .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .btn-sm{padding:6px 10px;font-size:12px}
@@ -59,8 +60,6 @@
   .lights .r{background:#E0726A} .lights .y{background:#E3B341} .lights .g{background:#7DB76C}
   .frame-title{font-size:12.5px;color:var(--text-muted);font-weight:500;margin-left:4px}
   .frame-bar .spacer{flex:1}
-  .frame:fullscreen{border-radius:0}
-  .frame:fullscreen .frame-bar{display:none}
   .frame-body{background:var(--bg);min-height:260px;overflow:auto}
 
   .panel{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
@@ -82,25 +81,47 @@
   .split-left{border-right:1px solid var(--border);padding:16px;overflow:auto;background:var(--surface-2)}
   .split-right{padding:16px;overflow:auto}
 
-  .step{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);transition:.14s var(--ease)}
-  .step:hover{border-color:var(--accent)}
-  .step-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);cursor:pointer;display:grid;place-items:center;transition:.14s var(--ease)}
-  .step-check.done{background:var(--accent);border-color:var(--accent);color:#fff}
-  .step-check .ic{width:12px;height:12px}
-  .step-text{flex:1;font-size:13px}
+  .chip{font:inherit;display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;transition:.14s var(--ease)}
+  .chip:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-hover)}
+  .chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .chip[role="button"]{user-select:none}
+  .chip.selected{background:var(--accent);border-color:var(--accent);color:#fff}
 
   .input{font:inherit;font-size:13px;border:1px solid var(--border);border-radius:9px;padding:9px 11px;background:var(--surface-2);color:var(--text);width:100%}
   .input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
   .textarea{font:inherit;font-size:13px;border:1px solid var(--border);border-radius:9px;padding:9px 11px;background:var(--surface-2);color:var(--text);width:100%;min-height:70px;resize:vertical}
   .textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 
-  .suggest-chip{font:inherit;display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;transition:.14s var(--ease)}
-  .suggest-chip:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-hover)}
-  .suggest-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  .suggest-chip[role="button"]{user-select:none}
-
   .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--text);color:#F7F8F2;padding:10px 16px;border-radius:999px;font-size:12.5px;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.22s var(--ease);z-index:300}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* New components */
+  .capacity-wrap{background:var(--surface-sunken);border-radius:999px;height:10px;overflow:hidden;margin:8px 0 4px}
+  .capacity-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent-hover));transition:width .3s var(--ease)}
+  .capacity-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted)}
+
+  .mini-timeline{position:relative;padding-left:18px;border-left:2px solid var(--border);display:flex;flex-direction:column;gap:10px}
+  .mini-dot{position:absolute;left:-7px;width:12px;height:12px;border-radius:50%;background:var(--accent);border:2px solid var(--surface-2)}
+  .mini-item{position:relative}
+  .mini-item .mt-text{font-size:13px}
+  .mini-item .mt-time{font-size:12px;color:var(--text-muted)}
+
+  .subtask{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface)}
+  .subtask-check{width:18px;height:18px;border-radius:5px;border:2px solid var(--border);cursor:pointer;display:grid;place-items:center;transition:.14s var(--ease)}
+  .subtask-check.done{background:var(--accent);border-color:var(--accent);color:#fff}
+
+  .pile{position:relative;height:180px;background:var(--surface);border:1px dashed var(--border-strong);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .pile-card{position:absolute;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:10px 14px;box-shadow:var(--shadow);font-size:13px;transform:rotate(var(--r))}
+
+  .mood-row{display:flex;gap:10px}
+  .mood-btn{font:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--surface);cursor:pointer;transition:.14s var(--ease);min-width:70px}
+  .mood-btn:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .mood-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .mood-btn.selected{background:var(--accent);border-color:var(--accent);color:#fff}
+  .mood-btn .emoji{font-size:24px}
+  .mood-btn .label{font-size:11px}
+
+  .done-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--success);background:#EFF4EC;border:1px solid #D6E4CF;border-radius:999px;padding:4px 10px}
 
   footer.foot{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);color:var(--text-faint);font-size:12px;text-align:center}
 </style>
@@ -116,39 +137,39 @@
 
 <div class="wrap">
   <section class="intro">
-    <h1>Planning Ritual — 3 Bars + 3 Fullscreens</h1>
-    <p>ADHD-friendly daily micro-planning. Forgiveness-first, one decision at a time.</p>
-    <p class="meta">Palette: Sage Stone · 60-second ritual · Single Win · Shame-Free Reset</p>
+    <h1>Planning Ritual — Richer Bars + Fullscreens</h1>
+    <p>ADHD-friendly daily micro-planning with yesterday recap, AI task split, capacity bar, intentions, and shutdown.</p>
+    <p class="meta">Palette: Sage Stone · Forgiveness-first · Body doubling · Anti-shame</p>
   </section>
 
   <!-- BARS -->
   <section class="sec" id="bars">
-    <div class="sec-head"><span class="sec-num">B</span><div><h2 class="sec-title">Dashboard Bars</h2><p class="sec-sub">Three states: unplanned, planned, active/break.</p></div></div>
+    <div class="sec-head"><span class="sec-num">B</span><div><h2 class="sec-title">Dashboard Bars</h2><p class="sec-sub">Three states: morning unplanned, active focus/body double, evening shutdown.</p></div></div>
 
     <div class="bar-widget">
       <div class="buddy-ico">🐱</div>
-      <div class="bar-text"><div class="bar-title">Good morning</div><p class="bar-sub">Got 60 seconds to anchor your day?</p></div>
-      <div class="bar-actions"><button class="btn primary btn-sm" id="bar-start">Start Quick Plan</button><button class="btn btn-sm" id="bar-skip">Skip</button></div>
+      <div class="bar-text"><div class="bar-title">Good morning, Cole</div><p class="bar-sub">Yesterday you finished 2 tasks. Want to anchor today?</p></div>
+      <div class="bar-actions"><button class="btn primary btn-sm" id="bar-start">Start Ritual</button><button class="btn btn-sm" id="bar-skip">Skip</button></div>
     </div>
 
     <div class="bar-widget">
-      <div class="buddy-ico">✅</div>
-      <div class="bar-text"><div class="bar-title">Today's Single Win</div><p class="bar-sub">Chem Ch.4 practice · 1 hour until 3pm</p></div>
-      <div class="bar-actions"><button class="btn primary btn-sm" id="bar-focus">Start Focus</button></div>
+      <div class="buddy-ico">🐱</div>
+      <div class="bar-text"><div class="bar-title">Focus block active · Body doubling on</div><p class="bar-sub">Micro-task: Read Ch.4 intro · 18 min left</p></div>
+      <div class="bar-actions"><button class="btn primary btn-sm" id="bar-done">Mark done</button><button class="btn btn-sm" id="bar-buffer">Buffer</button></div>
     </div>
 
     <div class="bar-widget">
-      <div class="buddy-ico">⏱️</div>
-      <div class="bar-text"><div class="bar-title">Focus block active</div><p class="bar-sub">45 min free · Dentist at 2pm</p></div>
-      <div class="bar-actions"><button class="btn btn-sm" id="bar-break">Take a break</button></div>
+      <div class="buddy-ico">🌙</div>
+      <div class="bar-text"><div class="bar-title">Evening wind-down</div><p class="bar-sub">You completed 3 things today. Time to close shop?</p></div>
+      <div class="bar-actions"><button class="btn primary btn-sm" id="bar-shutdown">Start Shutdown</button></div>
     </div>
   </section>
 
-  <!-- FS1: 60-Second Micro-Plan -->
+  <!-- FS1: Morning 60-Second Micro-Plan -->
   <section class="sec" id="fs1">
-    <div class="sec-head"><span class="sec-num">FS1</span><div><h2 class="sec-title">60-Second Micro-Plan</h2><p class="sec-sub">Anchor · Single Win · Launch Check.</p></div></div>
+    <div class="sec-head"><span class="sec-num">FS1</span><div><h2 class="sec-title">Morning 60-Second Micro-Plan</h2><p class="sec-sub">Anchor · Single Win · AI Split · Intention · Launch.</p></div></div>
     <div class="frame">
-      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — 60-Second Micro-Plan</span><span class="spacer"></span></div>
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Morning Ritual</span><span class="spacer"></span></div>
       <div class="frame-body split">
         <div class="split-left" id="fs1-left"></div>
         <div class="split-right" id="fs1-right"></div>
@@ -158,7 +179,7 @@
 
   <!-- FS2: Shame-Free Reset -->
   <section class="sec" id="fs2">
-    <div class="sec-head"><span class="sec-num">FS2</span><div><h2 class="sec-title">Shame-Free Reset</h2><p class="sec-sub">After missed days. Clear overdue, start fresh.</p></div></div>
+    <div class="sec-head"><span class="sec-num">FS2</span><div><h2 class="sec-title">Shame-Free Reset</h2><p class="sec-sub">Clear the pile. Start fresh. No guilt.</p></div></div>
     <div class="frame">
       <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Shame-Free Reset</span><span class="spacer"></span></div>
       <div class="frame-body split">
@@ -168,11 +189,11 @@
     </div>
   </section>
 
-  <!-- FS3: Extended Launch -->
+  <!-- FS3: Shutdown Ritual -->
   <section class="sec" id="fs3">
-    <div class="sec-head"><span class="sec-num">FS3</span><div><h2 class="sec-title">Extended Launch</h2><p class="sec-sub">Energy check + obstacle check + launch.</p></div></div>
+    <div class="sec-head"><span class="sec-num">FS3</span><div><h2 class="sec-title">Shutdown Ritual</h2><p class="sec-sub">Celebrate done, brain dump, rate the day, close shop.</p></div></div>
     <div class="frame">
-      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Extended Launch</span><span class="spacer"></span></div>
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Shutdown Ritual</span><span class="spacer"></span></div>
       <div class="frame-body split">
         <div class="split-left" id="fs3-left"></div>
         <div class="split-right" id="fs3-right"></div>
@@ -186,57 +207,155 @@
 <div class="toast" id="toast"></div>
 
 <script>
+function esc(s){return(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
 const toast=document.getElementById("toast");
 function showToast(m){toast.textContent=m;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1700);}
 function makeChip(el, handler){
-  el.setAttribute("role","button");
-  el.setAttribute("tabindex","0");
+  el.setAttribute("role","button");el.setAttribute("tabindex","0");
   el.addEventListener("click", handler);
-  el.addEventListener("keydown", (e)=>{
-    if(e.key==="Enter"||e.key===" "){e.preventDefault();handler(e);}
-  });
+  el.addEventListener("keydown", (e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();handler(e);}});
 }
-// Bar actions
 function wireBars(){
-  document.getElementById("bar-start").onclick=()=>showToast("Opening 60-second plan...");
+  document.getElementById("bar-start").onclick=()=>showToast("Opening morning ritual...");
   document.getElementById("bar-skip").onclick=()=>showToast("No problem — you can plan later");
-  document.getElementById("bar-focus").onclick=()=>showToast("Focus block started");
-  document.getElementById("bar-break").onclick=()=>showToast("Break logged — come back when ready");
+  document.getElementById("bar-done").onclick=()=>showToast("Task marked done — great work");
+  document.getElementById("bar-buffer").onclick=()=>showToast("Buffer zone started — 5 min wind-up");
+  document.getElementById("bar-shutdown").onclick=()=>showToast("Opening shutdown ritual...");
 }
 
-// FS1: 60-Second Micro-Plan
+// FS1: Morning 60-Second Micro-Plan
 function renderFS1(){
-  document.getElementById("fs1-left").innerHTML=`<div style="text-align:center"><div style="font-size:60px;margin-bottom:10px">🐱</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">Sage</div><p style="font-size:13px;color:var(--text-muted);line-height:1.5">Let's anchor today in 60 seconds. One thing. No guilt.</p></div>`;
-  document.getElementById("fs1-right").innerHTML=`<div class="panel"><div class="panel-head"><span class="ph-title">Step 1 — Anchor</span></div><div class="panel-body"><p style="font-size:13px;color:var(--text-muted);margin:0">2 events today · 5 free hours for tasks</p><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="suggest-chip">📅 2pm Dentist</span><span class="suggest-chip">📅 6pm Dinner</span></div></div></div>
-  <div class="panel"><div class="panel-head"><span class="ph-title">Step 2 — Single Win</span></div><div class="panel-body"><input class="input" id="fs1-win" placeholder="What's the ONE thing that would make today a win?" value="Chem Ch.4 practice"/><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="suggest-chip" data-win="Chem Ch.4 practice">📝 Chem Ch.4 practice</span><span class="suggest-chip" data-win="Email professor">✉️ Email professor</span><span class="suggest-chip" data-win="Clean room">🧹 Clean room</span></div></div></div>
-  <div class="panel"><div class="panel-head"><span class="ph-title">Step 3 — Launch Check</span></div><div class="panel-body"><p style="font-size:13px;color:var(--text-muted);margin:0">You'll need: textbook p.142, notebook, calculator</p><button class="btn primary" id="fs1-launch">Start focus block</button></div></div>`;
-  document.getElementById("fs1-launch").onclick=()=>showToast("Focus block started — go get it");
+  document.getElementById("fs1-left").innerHTML=`<div style="text-align:center"><div style="font-size:60px;margin-bottom:10px">🐱</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">Sage</div><p style="font-size:13px;color:var(--text-muted);line-height:1.5">Let's anchor today in 60 seconds. Yesterday you finished <strong>2 tasks</strong> — nice.</p></div>`;
+  document.getElementById("fs1-right").innerHTML=`<div class="panel">
+    <div class="panel-head"><span class="ph-title">Step 1 — Anchor</span><span class="ph-sub">Today's hard edges</span></div>
+    <div class="panel-body">
+      <div class="mini-timeline">
+        <div class="mini-item"><span class="mini-dot" style="top:6px"></span><div class="mt-text">📅 Dentist</div><div class="mt-time">2:00pm · 1 hr</div></div>
+        <div class="mini-item"><span class="mini-dot" style="top:48px"></span><div class="mt-text">📅 Dinner w/ friends</div><div class="mt-time">6:00pm · 2 hr</div></div>
+      </div>
+      <div class="capacity-label"><span>Free time today: 5 hrs</span><span id="cap-text">Task estimate: 0h</span></div>
+      <div class="capacity-wrap"><div class="capacity-fill" id="cap-fill" style="width:0%"></div></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><span class="ph-title">Step 2 — Single Win</span><span class="ph-sub">One thing that makes today a win</span></div>
+    <div class="panel-body">
+      <input class="input" id="fs1-win" placeholder="What's the ONE thing that would make today a win?" value="Chem Ch.4 practice"/>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span class="chip" data-win="Chem Ch.4 practice">📝 Chem Ch.4 practice</span>
+        <span class="chip" data-win="Email professor">✉️ Email professor</span>
+        <span class="chip" data-win="Clean room">🧹 Clean room</span>
+      </div>
+      <button class="btn btn-sm" id="fs1-split" style="align-self:flex-start">✨ Break into small steps</button>
+      <div id="fs1-steps" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><span class="ph-title">Step 3 — Launch Check</span></div>
+    <div class="panel-body">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <label style="font-size:13px;color:var(--text-muted)">If I get distracted by...</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span class="chip" data-obstacle="Phone">📱 Phone</span>
+          <span class="chip" data-obstacle="YouTube">📺 YouTube</span>
+          <span class="chip" data-obstacle="Discord">💬 Discord</span>
+        </div>
+        <label style="font-size:13px;color:var(--text-muted)">Then I will...</label>
+        <input class="input" id="fs1-intention" placeholder="e.g., put the phone in another room" value="put the phone in another room"/>
+      </div>
+      <button class="btn primary" id="fs1-launch">Start buffer zone &amp; focus</button>
+    </div>
+  </div>`;
+
+  document.getElementById("fs1-launch").onclick=()=>showToast("Buffer zone started — focus begins in 5 min");
   document.querySelectorAll("[data-win]").forEach(c=>makeChip(c,()=>{document.getElementById("fs1-win").value=c.getAttribute("data-win");showToast("Single win set");}));
+  document.querySelectorAll("[data-obstacle]").forEach(c=>makeChip(c,()=>{const obs=c.getAttribute("data-obstacle");showToast(`${obs} selected — set your if/then intention`);}));
+
+  let splitShown=false;
+  document.getElementById("fs1-split").onclick=()=>{
+    if(splitShown)return;
+    const steps=["Open textbook to p.142","Skim section headings","Work 5 example problems","Summarize key formula"];
+    const container=document.getElementById("fs1-steps");
+    container.innerHTML=steps.map((s,i)=>`<div class="subtask"><div class="subtask-check" data-ix="${i}"></div><span class="step-text">${esc(s)}</span></div>`).join("");
+    container.querySelectorAll(".subtask-check").forEach(ch=>{
+      ch.setAttribute("role","button");ch.setAttribute("tabindex","0");ch.setAttribute("aria-label","Toggle step");
+      ch.addEventListener("click",()=>{ch.classList.toggle("done");ch.innerHTML=ch.classList.contains("done")?"✓":"";showToast("Step updated — keep going");});
+      ch.addEventListener("keydown",(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();ch.click();}});
+    });
+    splitShown=true;showToast("Steps generated — pick the first one");
+  };
+
+  // Capacity demo: set 1h task
+  const winInput=document.getElementById("fs1-win");
+  function updateCap(){const val=winInput.value?1:0;document.getElementById("cap-fill").style.width=(val/5*100)+"%";document.getElementById("cap-text").textContent="Task estimate: "+val+"h";}
+  winInput.addEventListener("input",updateCap);updateCap();
 }
 
 // FS2: Shame-Free Reset
 function renderFS2(){
   document.getElementById("fs2-left").innerHTML=`<div style="text-align:center"><div style="font-size:60px;margin-bottom:10px">🐱</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">Sage</div><p style="font-size:13px;color:var(--text-muted);line-height:1.5">Been a minute. No guilt. Want to clear the slate before we pick today's task?</p></div>`;
-  document.getElementById("fs2-right").innerHTML=`<div class="panel"><div class="panel-head"><span class="ph-title">Overdue tasks</span><span class="ph-sub">3 items</span></div><div class="panel-body">
-  <div class="step"><div class="step-check"></div><span class="step-text">History essay intro</span></div>
-  <div class="step"><div class="step-check"></div><span class="step-text">Gym session</span></div>
-  <div class="step"><div class="step-check"></div><span class="step-text">Read Ch.3</span></div>
-  <button class="btn danger" id="fs2-reset">Archive all overdue &amp; start fresh</button>
-  <button class="btn" id="fs2-keep">Keep them — I'll handle it</button>
-  </div></div>`;
-  document.getElementById("fs2-reset").onclick=()=>showToast("Overdue tasks archived — fresh start!");
-  document.getElementById("fs2-keep").onclick=()=>showToast("No problem — they're still there");
+  document.getElementById("fs2-right").innerHTML=`<div class="panel">
+    <div class="panel-head"><span class="ph-title">Overdue pile</span><span class="ph-sub">3 tasks · no judgment</span></div>
+    <div class="panel-body" style="align-items:center">
+      <div class="pile" id="fs2-pile">
+        <div class="pile-card" style="--r:-6deg;left:28%;top:22%">History essay intro</div>
+        <div class="pile-card" style="--r:4deg;left:38%;top:40%">Gym session</div>
+        <div class="pile-card" style="--r:-3deg;left:32%;top:58%">Read Ch.3</div>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);text-align:center;margin:0">These tasks are from past days. They don't belong on today's plate.</p>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><span class="ph-title">Fresh start options</span></div>
+    <div class="panel-body">
+      <button class="btn danger" id="fs2-archive">Archive all &amp; start fresh</button>
+      <button class="btn" id="fs2-one">Keep just one</button>
+      <button class="btn ghost" id="fs2-leave">Leave them — I'll handle it</button>
+    </div>
+  </div>`;
+  document.getElementById("fs2-archive").onclick=()=>{document.getElementById("fs2-pile").innerHTML="";showToast("Pile cleared — fresh start!");};
+  document.getElementById("fs2-one").onclick=()=>{
+    const pile=document.getElementById("fs2-pile");
+    const cards=Array.from(pile.children);
+    pile.innerHTML="";
+    if(cards.length){cards[0].style.left="33%";cards[0].style.top="40%";pile.appendChild(cards[0]);}
+    showToast("Kept one task — rest archived");
+  };
+  document.getElementById("fs2-leave").onclick=()=>showToast("No problem — they're still there");
 }
 
-// FS3: Extended Launch
+// FS3: Shutdown Ritual
 function renderFS3(){
-  document.getElementById("fs3-left").innerHTML=`<div style="text-align:center"><div style="font-size:60px;margin-bottom:10px">🐱</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">Sage</div><p style="font-size:13px;color:var(--text-muted);line-height:1.5">How's your energy today? Anything likely to pull you off track?</p></div>`;
-  document.getElementById("fs3-right").innerHTML=`<div class="panel"><div class="panel-head"><span class="ph-title">Energy check</span></div><div class="panel-body"><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="suggest-chip" data-energy="High">⚡ High</span><span class="suggest-chip" data-energy="Medium">🌤️ Medium</span><span class="suggest-chip" data-energy="Low">🛌 Low</span></div><p style="font-size:12px;color:var(--text-muted);margin:0" id="fs3-energy-text">Pick your energy level to filter task suggestions.</p></div></div>
-  <div class="panel"><div class="panel-head"><span class="ph-title">Obstacle check</span></div><div class="panel-body"><p style="font-size:13px;color:var(--text-muted);margin:0">Pre-commit to blocking known distractions.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="suggest-chip" data-block="Phone">📱 Phone</span><span class="suggest-chip" data-block="YouTube">📺 YouTube</span><span class="suggest-chip" data-block="Discord">💬 Discord</span><span class="suggest-chip" data-block="Reddit">🌐 Reddit</span></div></div></div>
-  <div class="panel"><div class="panel-head"><span class="ph-title">Launch</span></div><div class="panel-body"><button class="btn primary" id="fs3-launch">Launch focus block</button></div></div>`;
-  document.getElementById("fs3-launch").onclick=()=>showToast("Focus block launched with blocks active");
-  document.querySelectorAll("[data-energy]").forEach(c=>makeChip(c,()=>{document.getElementById("fs3-energy-text").textContent=`Energy set to ${c.getAttribute("data-energy")}. Tasks filtered.`;showToast(`Energy: ${c.getAttribute("data-energy")}`);}));
-  document.querySelectorAll("[data-block]").forEach(c=>makeChip(c,()=>showToast(`${c.getAttribute("data-block")} will be blocked during focus`)));
+  document.getElementById("fs3-left").innerHTML=`<div style="text-align:center"><div style="font-size:60px;margin-bottom:10px">🌙</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">Sage</div><p style="font-size:13px;color:var(--text-muted);line-height:1.5">You did 3 things today. Let's close the loop so your brain can rest.</p></div>`;
+  document.getElementById("fs3-right").innerHTML=`<div class="panel">
+    <div class="panel-head"><span class="ph-title">Done today</span><span class="ph-sub">celebrate first</span></div>
+    <div class="panel-body">
+      <div class="done-badge">✓ Finished Chem Ch.4 practice</div>
+      <div class="done-badge">✓ Sent email to professor</div>
+      <div class="done-badge">✓ 1 hour focus block</div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><span class="ph-title">Brain dump</span><span class="ph-sub">offload without a deadline</span></div>
+    <div class="panel-body">
+      <textarea class="textarea" id="fs3-dump" placeholder="Anything still swirling in your head? Drop it here — no task needed."></textarea>
+      <button class="btn" id="fs3-dump-btn">Log thought</button>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><span class="ph-title">How was your energy today?</span></div>
+    <div class="panel-body">
+      <div class="mood-row">
+        <button class="mood-btn" data-mood="Low"><span class="emoji">🛌</span><span class="label">Low</span></button>
+        <button class="mood-btn" data-mood="Medium"><span class="emoji">🌤️</span><span class="label">Medium</span></button>
+        <button class="mood-btn" data-mood="High"><span class="emoji">⚡</span><span class="label">High</span></button>
+      </div>
+      <button class="btn primary" id="fs3-close">Close shop · see you tomorrow</button>
+    </div>
+  </div>`;
+  document.getElementById("fs3-dump-btn").onclick=()=>{const v=document.getElementById("fs3-dump").value.trim();showToast(v?"Thought logged — no task needed":"Type something first");};
+  document.getElementById("fs3-close").onclick=()=>showToast("Shutdown complete — rest well");
+  document.querySelectorAll(".mood-btn").forEach(b=>b.onclick=()=>{document.querySelectorAll(".mood-btn").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");showToast(`Energy: ${b.getAttribute("data-mood")} — thanks for letting me know`);});
 }
 
 wireBars();renderFS1();renderFS2();renderFS3();
