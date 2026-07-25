@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FocusPath — Stats &amp; Insights (Advanced)</title>
+<style>
+  :root{
+    --bg:#EDEFEA; --surface:#F7F8F2; --surface-2:#FFFFFF; --surface-sunken:#E4E7DE;
+    --border:#D6DBCD; --border-strong:#C2C8B8;
+    --text:#2E332B; --text-muted:#5F655A; --text-faint:#6B7062;
+    --accent:#5E7A5E; --accent-hover:#4D6A4D; --accent-press:#436143; --accent-soft:#DCE6D6;
+    --amber:#C68B5C; --amber-soft:#F0E2D2;
+    --slate:#5E7A8A; --slate-soft:#DCE4E8;
+    --lavender:#9B7AA8; --lavender-soft:#E8DFEC;
+    --success:#6B9362; --warning:#C98A4B; --danger:#B5635C; --danger-soft:#F0DBD9;
+    --shadow-sm:0 1px 2px rgba(46,51,43,.05), 0 2px 6px rgba(46,51,43,.05);
+    --shadow:0 1px 2px rgba(46,51,43,.05), 0 6px 18px rgba(46,51,43,.08);
+    --shadow-lg:0 2px 8px rgba(46,51,43,.07), 0 18px 48px rgba(46,51,43,.14);
+    --radius:14px; --radius-sm:9px; --radius-xs:6px;
+    --ease:cubic-bezier(.4,0,.2,1);
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+    --font-num:"SF Mono","ui-monospace","Menlo","Consolas",monospace;
+    --font-disp:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0}
+  body{font-family:var(--font-ui);color:var(--text);background:radial-gradient(1200px 600px at 80% -10%,#E3E7DD 0%,transparent 60%),radial-gradient(900px 500px at -10% 20%,#E7EBE0 0%,transparent 55%),var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+
+  .toolbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:12px 22px;background:rgba(247,248,242,.82);backdrop-filter:saturate(140%) blur(14px);border-bottom:1px solid var(--border)}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em}
+  .brand .mark{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-hover));display:grid;place-items:center;color:#fff}
+  .brand small{color:var(--text-muted);font-weight:500;margin-left:2px}
+  .toolbar .spacer{flex:1}
+  .btn{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);padding:8px 14px;border-radius:10px;display:inline-flex;align-items:center;gap:8px;transition:.16s var(--ease);box-shadow:var(--shadow-sm)}
+  .btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent-hover)}
+  .btn:active{transform:translateY(0)}
+  .btn.primary{background:var(--accent-hover);border-color:var(--accent-hover);color:#fff}
+  .btn.primary:hover{background:var(--accent-press);border-color:var(--accent-press);color:#fff}
+  .btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:34px 22px 120px}
+  .intro{max-width:680px}
+  .intro h1{font-size:30px;letter-spacing:-.02em;margin:0 0 8px}
+  .intro p{color:var(--text-muted);margin:0 0 6px;font-size:15px}
+  .intro .meta{color:var(--text-faint);font-size:13px}
+
+  .sec{margin-top:54px;scroll-margin-top:74px}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
+  .sec-num{font-family:var(--font-num);font-size:12px;font-weight:600;color:var(--accent-hover);background:var(--accent-soft);padding:3px 9px;border-radius:999px}
+  .sec-title{font-size:19px;font-weight:700;letter-spacing:-.01em;margin:0}
+  .sec-sub{color:var(--text-muted);font-size:13.5px;margin:0}
+
+  .frame{background:var(--surface-2);border:1px solid var(--border-strong);border-radius:16px;box-shadow:var(--shadow-lg);overflow:hidden;position:relative}
+  .frame-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(180deg,#EFF1E9,#E9EBE2);border-bottom:1px solid var(--border)}
+  .lights{display:flex;gap:7px} .lights i{width:11px;height:11px;border-radius:50%;display:block}
+  .lights .r{background:#E0726A} .lights .y{background:#E3B341} .lights .g{background:#7DB76C}
+  .frame-title{font-size:12.5px;color:var(--text-muted);font-weight:500;margin-left:4px}
+  .frame-bar .spacer{flex:1}
+  .frame:fullscreen{border-radius:0}
+  .frame:fullscreen .frame-bar{display:none}
+  .frame-body{background:var(--bg);height:620px;overflow:auto}
+
+  .panel{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .panel-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface)}
+  .panel-head .ph-title{font-size:14px;font-weight:700;letter-spacing:-.01em}
+  .panel-head .ph-sub{font-size:11px;color:var(--text-muted);margin-left:auto}
+  .panel-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+
+  .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+  .metric{padding:14px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--border);text-align:center}
+  .metric .num{font-size:28px;font-weight:700;font-family:var(--font-num);color:var(--accent-hover)}
+  .metric .lab{font-size:12px;color:var(--text-muted);margin-top:4px}
+
+  .hbar{display:flex;align-items:center;gap:12px}
+  .hbar-track{flex:1;height:10px;background:var(--surface-sunken);border-radius:999px;overflow:hidden}
+  .hbar-fill{height:100%;border-radius:999px;background:var(--accent);transition:width .4s var(--ease)}
+  .hbar-label{font-size:12px;white-space:nowrap;width:120px}
+  .hbar-val{font-size:12px;color:var(--text-muted);width:50px;text-align:right;font-family:var(--font-num)}
+
+  .timeline{position:relative;padding-left:24px}
+  .timeline::before{content:"";position:absolute;left:7px;top:4px;bottom:4px;width:2px;background:var(--border)}
+  .tl-item{position:relative;margin-bottom:14px}
+  .tl-dot{position:absolute;left:-20px;top:2px;width:12px;height:12px;border-radius:50%;background:var(--accent);border:2px solid var(--surface-2)}
+  .tl-time{font-size:11px;color:var(--text-faint);font-family:var(--font-num)}
+  .tl-text{font-size:13px;color:var(--text)}
+  .tl-sub{font-size:12px;color:var(--text-muted)}
+
+  .app-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);transition:.14s var(--ease)}
+  .app-row:hover{border-color:var(--accent)}
+  .app-ico{width:32px;height:32px;border-radius:8px;background:var(--accent-soft);display:grid;place-items:center;font-size:14px}
+  .app-info{flex:1}
+  .app-name{font-size:13px;font-weight:600}
+  .app-meta{font-size:11px;color:var(--text-muted)}
+  .app-time{font-size:13px;font-weight:700;font-family:var(--font-num);color:var(--accent-hover)}
+
+  .tabs{display:flex;gap:8px;border-bottom:1px solid var(--border);padding:0 16px}
+  .tab{padding:10px 14px;font-size:13px;font-weight:600;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:.14s var(--ease);background:none;border-left:none;border-right:none;border-top:none}
+  .tab:hover{color:var(--accent-hover)}
+  .tab.active{color:var(--accent-hover);border-color:var(--accent)}
+  .tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .heatmap{display:grid;grid-template-columns:44px repeat(12,1fr);gap:3px}
+  .heatmap .hml{font-size:10px;font-weight:700;text-align:center;color:var(--text-faint);padding:4px 0}
+  .heatmap .hmh{font-size:9px;color:var(--text-faint);font-family:var(--font-num);text-align:right;padding-right:6px;display:flex;align-items:center;justify-content:flex-end}
+  .hm-cell{height:22px;border-radius:4px;transition:.12s var(--ease)}
+
+  .journal-entry{padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
+  .journal-entry .je-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .journal-entry .je-time{font-size:11px;color:var(--text-faint);font-family:var(--font-num)}
+  .journal-entry .je-tag{font-size:10px;font-weight:600;padding:3px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent-hover)}
+  .journal-entry .je-text{font-size:13px;color:var(--text)}
+  .journal-entry .je-action{font-size:12px;color:var(--text-muted);margin-top:4px}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--text);color:#F7F8F2;padding:10px 16px;border-radius:999px;font-size:12.5px;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.22s var(--ease);z-index:300}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  footer.foot{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);color:var(--text-faint);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="brand">
+    <span class="mark"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+    FocusPath <small>· Stats &amp; Insights (Advanced)</small>
+  </div>
+</div>
+
+<div class="wrap">
+  <section class="intro">
+    <h1>Stats &amp; Insights — Advanced Layouts</h1>
+    <p>Richer data: app usage, interruption patterns, energy heatmaps, and override journaling. Designed to inform, not shame.</p>
+    <p class="meta">Palette: Sage Stone · Principles: curiosity over judgment, forgiveness-first, contextual insight</p>
+  </section>
+
+  <!-- T7: Focus Anatomy -->
+  <section class="sec" id="t7">
+    <div class="sec-head"><span class="sec-num">07</span><div><h2 class="sec-title">Focus Anatomy — Where Time Went</h2><p class="sec-sub">App/site usage, last blocked, interruptions, and recovery time.</p></div></div>
+    <div class="frame">
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Focus Anatomy</span><span class="spacer"></span></div>
+      <div class="frame-body" style="padding:16px;display:grid;grid-template-columns:280px 1fr;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="panel">
+            <div class="panel-head"><span class="ph-title">Today in numbers</span></div>
+            <div class="panel-body" id="t7-metrics"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><span class="ph-title">Last blocked</span></div>
+            <div class="panel-body" id="t7-last"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span class="ph-title">Where focus went</span><span class="ph-sub">Apps &amp; sites, no judgment</span></div>
+          <div class="panel-body" id="t7-apps"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- T8: Energy Map -->
+  <section class="sec" id="t8">
+    <div class="sec-head"><span class="sec-num">08</span><div><h2 class="sec-title">Energy Map — When You're at Your Best</h2><p class="sec-sub">Time-of-day heatmap, weekly pattern, productive vs distracting time.</p></div></div>
+    <div class="frame">
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Energy Map</span><span class="spacer"></span></div>
+      <div class="frame-body" style="padding:16px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;gap:12px">
+          <div class="panel" style="flex:1">
+            <div class="panel-head"><span class="ph-title">Focus intensity by hour</span></div>
+            <div class="panel-body"><div class="heatmap" id="t8-heat"></div></div>
+          </div>
+          <div class="panel" style="width:260px">
+            <div class="panel-head"><span class="ph-title">Your pattern</span></div>
+            <div class="panel-body" id="t8-pattern"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span class="ph-title">Productive vs distracting time</span></div>
+          <div class="panel-body" id="t8-ratio"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- T9: Override Journal -->
+  <section class="sec" id="t9">
+    <div class="sec-head"><span class="sec-num">09</span><div><h2 class="sec-title">Override Journal — Understand the Friction</h2><p class="sec-sub">Override history, reasons, and what helped you stay.</p></div></div>
+    <div class="frame">
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Override Journal</span><span class="spacer"></span></div>
+      <div class="frame-body" style="padding:16px;display:flex;flex-direction:column;gap:16px;max-width:820px;margin:0 auto">
+        <div class="panel">
+          <div class="panel-head"><span class="ph-title">Overrides this week</span><span class="ph-sub">No shame — just data</span></div>
+          <div class="panel-body" id="t9-journal"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span class="ph-title">What helped you stay</span></div>
+          <div class="panel-body" id="t9-helped"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">FocusPath Advanced Stats prototype · 3 layouts · Sage Stone palette · curiosity over judgment.</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const toast=document.getElementById("toast");
+function showToast(m){toast.textContent=m;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1700);}
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML;}
+
+const apps=[
+  {ico:"🌐",n:"Chrome (study)",cat:"Productive",t:"2h 14m",pct:68},
+  {ico:"📝",n:"Notion",cat:"Productive",t:"1h 05m",pct:42},
+  {ico:"🎧",n:"Spotify",cat:"Neutral",t:"45m",pct:29},
+  {ico:"📱",n:"Instagram",cat:"Distracting",t:"12m",pct:8},
+  {ico:"💬",n:"Discord",cat:"Distracting",t:"8m",pct:5}
+];
+const interruptions=[
+  {t:"10:23am",text:"Opened Discord",sub:"Recovered in 4 min"},
+  {t:"11:47am",text:"Checked Instagram",sub:"Recovered in 7 min"},
+  {t:"2:15pm",text:"Searched YouTube",sub:"Recovered in 2 min"},
+  {t:"4:02pm",text:"Opened Reddit",sub:"Recovered in 9 min"}
+];
+const heatData=[
+  [0,1,2,4,5,3,2,1,0,0,1,2],
+  [1,2,3,5,4,3,2,2,1,0,1,1],
+  [0,1,1,3,4,5,4,3,2,1,0,0],
+  [0,0,1,2,3,4,3,2,1,0,0,0],
+  [1,2,3,4,4,3,2,1,1,0,0,1],
+  [2,3,4,5,5,4,3,2,1,1,2,2],
+  [1,1,2,3,3,2,1,1,0,0,1,1]
+];
+const hours=["6am","7am","8am","9am","10am","11am","12pm","1pm","2pm","3pm","4pm","5pm"];
+const days=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+function hbarHTML(item){return `<div class="hbar"><span class="hbar-label">${esc(item.n)}</span><div class="hbar-track"><div class="hbar-fill" style="width:${item.pct}%"></div></div><span class="hbar-val">${esc(item.t)}</span></div>`;}
+
+function colorFor(v){if(v===0)return"var(--surface-sunken)";if(v<=2)return"#DCE6D6";if(v<=4)return"#A8C5A8";if(v<=5)return"#6B9362";return"#436143";}
+
+function renderT7(){
+  document.getElementById("t7-metrics").innerHTML=`<div class="metric"><div class="num">4</div><div class="lab">Interruptions</div></div><div class="metric"><div class="num">5.5m</div><div class="lab">Avg recovery</div></div><div class="metric"><div class="num">3h 12m</div><div class="lab">Focus time</div></div>`;
+  document.getElementById("t7-last").innerHTML=`<div class="timeline">${interruptions.slice(0,3).map(i=>`<div class="tl-item"><div class="tl-dot"></div><div class="tl-time">${esc(i.t)}</div><div class="tl-text">${esc(i.text)}</div><div class="tl-sub">${esc(i.sub)}</div></div>`).join("")}</div>`;
+  document.getElementById("t7-apps").innerHTML=apps.map(a=>`<div class="app-row"><div class="app-ico">${a.ico}</div><div class="app-info"><div class="app-name">${esc(a.n)}</div><div class="app-meta">${esc(a.cat)}</div></div><div class="app-time">${esc(a.t)}</div></div>`).join("")+`<p style="font-size:12px;color:var(--text-muted);margin:8px 0 0">This is data, not a report card. Even 'Distracting' time has a purpose — it tells you where the friction is.</p>`;
+}
+
+function renderT8(){
+  let heat=`<div class="hmh"></div>${hours.map(h=>`<div class="hml">${h}</div>`).join("")}`;
+  days.forEach((d,idx)=>{
+    heat+=`<div class="hmh">${d}</div>${heatData[idx].map((v,h)=>`<div class="hm-cell" style="background:${colorFor(v)}" title="${d}: ${v===0?"No focus":v+" units"}" role="img" aria-label="${d} ${hours[h]||""}: ${v}"></div>`).join("")}`;
+  });
+  document.getElementById("t8-heat").innerHTML=heat;
+  document.getElementById("t8-pattern").innerHTML=`<p style="font-size:13px;color:var(--text-muted);line-height:1.6">You focus best between <b>9am and 12pm</b> on weekdays. Weekend mornings are lighter — that's fine.</p>`;
+  const prod=8.2,dist=1.3,neut=2.5;
+  const total=prod+dist+neut;
+  document.getElementById("t8-ratio").innerHTML=`<div class="hbar"><span class="hbar-label">Productive</span><div class="hbar-track"><div class="hbar-fill" style="width:${prod/total*100}%;background:var(--accent)"></div></div><span class="hbar-val">${prod}h</span></div>
+  <div class="hbar"><span class="hbar-label">Neutral</span><div class="hbar-track"><div class="hbar-fill" style="width:${neut/total*100}%;background:var(--slate)"></div></div><span class="hbar-val">${neut}h</span></div>
+  <div class="hbar"><span class="hbar-label">Distracting</span><div class="hbar-track"><div class="hbar-fill" style="width:${dist/total*100}%;background:var(--amber)"></div></div><span class="hbar-val">${dist}h</span></div>
+  <p style="font-size:12px;color:var(--text-muted);margin:4px 0 0">8.2 productive hours vs 1.3 distracting hours. The ratio is strong.</p>`;
+}
+
+function renderT9(){
+  const entries=[
+    {time:"Mon 8:15pm",tag:"Boredom",text:"Override to scroll Reddit during Chem reading.",action:"Buddy suggested a 5-min stretch; returned in 9 min."},
+    {time:"Sun 3:40pm",tag:"Notification",text:"Discord ping pulled me out of essay writing.",action:"Turned off Discord badges; stayed on task after."},
+    {time:"Sat 10:05am",tag:"Uncertainty",text:"Didn't know the next step on the essay.",action:"Used AI breakdown; wrote intro in 12 min."}
+  ];
+  document.getElementById("t9-journal").innerHTML=entries.map(e=>`<div class="journal-entry"><div class="je-top"><span class="je-time">${esc(e.time)}</span><span class="je-tag">${esc(e.tag)}</span></div><div class="je-text">${esc(e.text)}</div><div class="je-action">→ ${esc(e.action)}</div></div>`).join("")+`<button class="btn" id="t9-reflect" style="margin-top:4px">Log a reflection</button>`;
+  document.getElementById("t9-reflect").onclick=()=>showToast("Reflection logged — no judgment");
+  document.getElementById("t9-helped").innerHTML=`<div class="metric-grid" style="grid-template-columns:1fr 1fr">
+    <div class="metric"><div class="num">Body double</div><div class="lab">Most effective</div></div>
+    <div class="metric"><div class="num">25 min</div><div class="lab">Avg block length</div></div>
+    <div class="metric"><div class="num">Music</div><div class="lab">Focus aid</div></div>
+    <div class="metric"><div class="num">Phone away</div><div class="lab">Barrier tactic</div></div>
+  </div>`;
+}
+
+renderT7();renderT8();renderT9();
+</script>
+</body>
+</html>
