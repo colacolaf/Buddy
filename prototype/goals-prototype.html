@@ -104,9 +104,15 @@
   .bubble{padding:10px 13px;border-radius:12px;max-width:85%;font-size:13px;line-height:1.45}
   .bubble.ai{background:var(--surface);border:1px solid var(--border);align-self:flex-start}
   .bubble.user{background:var(--accent);color:#fff;align-self:flex-end}
-  .chat-input{display:flex;gap:8px;margin-top:8px}
+  .chat-col{display:flex;flex-direction:column;height:100%}
+  .chat{flex:1;min-height:0;overflow:auto;padding:4px;display:flex;flex-direction:column;gap:10px}
+  .chat-input{display:flex;gap:8px;margin-top:8px;flex-shrink:0}
   .chat-input input{flex:1;font:inherit;font-size:13px;border:1px solid var(--border);border-radius:9px;padding:9px 11px}
   .chat-input input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .suggest{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px;flex-shrink:0}
+  .suggest button{font:inherit;font-size:11px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;transition:.14s var(--ease)}
+  .suggest button:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-hover)}
+  .suggest button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
   .next-card{padding:24px;text-align:center;background:radial-gradient(120% 100% at 50% 0%,var(--accent-soft) 0%,transparent 60%),var(--surface-2);border:1px solid var(--border);border-radius:var(--radius)}
   .next-card .next-title{font-family:var(--font-disp);font-size:22px;font-weight:700;margin-bottom:8px}
@@ -163,14 +169,15 @@
     <div class="sec-head"><span class="sec-num">02</span><div><h2 class="sec-title">Breakdown Desk — Three-Column</h2><p class="sec-sub">Goals list · selected goal detail · AI buddy chat.</p></div></div>
     <div class="frame">
       <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Breakdown Desk</span><span class="spacer"></span></div>
-      <div class="frame-body" style="display:grid;grid-template-columns:220px 1fr 260px;gap:0">
+      <div class="frame-body" style="display:grid;grid-template-columns:220px 1fr 300px;gap:0">
         <div style="border-right:1px solid var(--border);padding:16px;overflow:auto" id="t2-list"></div>
         <div style="border-right:1px solid var(--border);padding:16px;overflow:auto" id="t2-detail"></div>
-        <div style="padding:16px;overflow:auto;background:var(--surface-2)">
-          <div class="panel" style="box-shadow:none;border:none">
+        <div style="padding:16px;overflow:hidden;background:var(--surface-2);display:flex;flex-direction:column">
+          <div class="panel chat-col" style="box-shadow:none;border:none">
             <div class="panel-head"><span class="ph-title">Buddy</span></div>
-            <div class="panel-body" style="padding:0">
+            <div class="panel-body" style="padding:0;flex:1;min-height:0;display:flex;flex-direction:column">
               <div class="chat" id="t2-chat"></div>
+              <div class="suggest" id="t2-suggest"></div>
               <div class="chat-input"><input type="text" id="t2-input" placeholder="Ask about this goal…" /><button class="btn primary" id="t2-send">Send</button></div>
             </div>
           </div>
@@ -255,10 +262,19 @@ function renderT2(){
   detail.querySelectorAll("[data-sid]").forEach(el=>el.onclick=()=>{const sid=+el.getAttribute("data-sid");const st=g.steps.find(x=>x.id===sid);st.done=!st.done;g.progress=Math.round(g.steps.filter(x=>x.done).length/g.steps.length*100);renderT2();showToast(st.done?"Step completed!":"Step reopened");});
 }
 
+const SUGGESTIONS=[
+  "Break this goal into smaller steps",
+  "Schedule time for this goal",
+  "What should I do first?",
+  "Help me write an if-then plan",
+  "I feel stuck — what now?"
+];
 let chat=[{who:"ai",text:"Want me to break this goal into smaller steps?"}];
 function renderT2Chat(){const c=document.getElementById("t2-chat");c.innerHTML=chat.map(m=>`<div class="bubble ${m.who}">${esc(m.text)}</div>`).join("");c.scrollTop=c.scrollHeight;}
-document.getElementById("t2-send").onclick=()=>{const inp=document.getElementById("t2-input");const v=inp.value.trim();if(!v)return;chat.push({who:"user",text:v});inp.value="";renderT2Chat();setTimeout(()=>{chat.push({who:"ai",text:"I can split that into a 20-minute first slice. Want me to add it to your calendar?"});renderT2Chat();},650);};
-document.getElementById("t2-input").onkeydown=e=>{if(e.key==="Enter")document.getElementById("t2-send").click();};
+function renderT2Suggest(){const s=document.getElementById("t2-suggest");s.innerHTML=SUGGESTIONS.map(q=>`<button type="button" data-q="${esc(q)}">${esc(q)}</button>`).join("");s.querySelectorAll("button").forEach(b=>b.onclick=()=>{document.getElementById("t2-input").value=b.getAttribute("data-q");document.getElementById("t2-send").click();});}
+function sendMessage(){const inp=document.getElementById("t2-input");const v=inp.value.trim();if(!v)return;chat.push({who:"user",text:v});inp.value="";renderT2Chat();setTimeout(()=>{chat.push({who:"ai",text:"I can split that into a 20-minute first slice. Want me to add it to your calendar?"});renderT2Chat();},650);}
+document.getElementById("t2-send").onclick=sendMessage;
+document.getElementById("t2-input").onkeydown=e=>{if(e.key==="Enter")sendMessage();};
 
 function renderT3(){
   const g=goals.find(x=>x.id===selectedGoal);
@@ -273,7 +289,7 @@ function renderT3(){
   document.getElementById("t3-done").innerHTML=`<div class="panel-head"><span class="ph-title">Done Garden · ${doneCount} this week</span></div><div class="panel-body"><div class="done-garden">${Array(doneCount).fill("🌿").map(e=>`<div class="dg-item">${e}</div>`).join("")}</div></div>`;
 }
 
-renderT1();renderT2();renderT2Chat();renderT3();
+renderT1();renderT2();renderT2Chat();renderT2Suggest();renderT3();
 </script>
 </body>
 </html>
