@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FocusPath — Planning Ritual</title>
+<style>
+  :root{
+    --bg:#EDEFEA; --surface:#F7F8F2; --surface-2:#FFFFFF; --surface-sunken:#E4E7DE;
+    --border:#D6DBCD; --border-strong:#C2C8B8;
+    --text:#2E332B; --text-muted:#5F655A; --text-faint:#6B7062;
+    --accent:#5E7A5E; --accent-hover:#4D6A4D; --accent-press:#436143; --accent-soft:#DCE6D6;
+    --amber:#C68B5C; --amber-soft:#F0E2D2;
+    --slate:#5E7A8A; --slate-soft:#DCE4E8;
+    --lavender:#9B7AA8; --lavender-soft:#E8DFEC;
+    --success:#6B9362; --warning:#C98A4B; --danger:#B5635C; --danger-soft:#F0DBD9;
+    --shadow-sm:0 1px 2px rgba(46,51,43,.05), 0 2px 6px rgba(46,51,43,.05);
+    --shadow:0 1px 2px rgba(46,51,43,.05), 0 6px 18px rgba(46,51,43,.08);
+    --shadow-lg:0 2px 8px rgba(46,51,43,.07), 0 18px 48px rgba(46,51,43,.14);
+    --radius:14px; --radius-sm:9px; --radius-xs:6px;
+    --ease:cubic-bezier(.4,0,.2,1);
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+    --font-num:"SF Mono","ui-monospace","Menlo","Consolas",monospace;
+    --font-disp:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0}
+  body{font-family:var(--font-ui);color:var(--text);background:radial-gradient(1200px 600px at 80% -10%,#E3E7DD 0%,transparent 60%),radial-gradient(900px 500px at -10% 20%,#E7EBE0 0%,transparent 55%),var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+
+  .toolbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:12px 22px;background:rgba(247,248,242,.82);backdrop-filter:saturate(140%) blur(14px);border-bottom:1px solid var(--border)}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em}
+  .brand .mark{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-hover));display:grid;place-items:center;color:#fff}
+  .brand small{color:var(--text-muted);font-weight:500;margin-left:2px}
+  .toolbar .spacer{flex:1}
+  .btn{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);padding:8px 14px;border-radius:10px;display:inline-flex;align-items:center;gap:8px;transition:.16s var(--ease);box-shadow:var(--shadow-sm)}
+  .btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent-hover)}
+  .btn:active{transform:translateY(0)}
+  .btn.primary{background:var(--accent-hover);border-color:var(--accent-hover);color:#fff}
+  .btn.primary:hover{background:var(--accent-press);border-color:var(--accent-press);color:#fff}
+  .btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+  .btn .ic{width:15px;height:15px}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .btn-sm{padding:6px 10px;font-size:12px}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:34px 22px 120px}
+  .intro{max-width:680px}
+  .intro h1{font-size:30px;letter-spacing:-.02em;margin:0 0 8px}
+  .intro p{color:var(--text-muted);margin:0 0 6px;font-size:15px}
+  .intro .meta{color:var(--text-faint);font-size:13px}
+
+  .sec{margin-top:54px;scroll-margin-top:74px}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
+  .sec-num{font-family:var(--font-num);font-size:12px;font-weight:600;color:var(--accent-hover);background:var(--accent-soft);padding:3px 9px;border-radius:999px}
+  .sec-title{font-size:19px;font-weight:700;letter-spacing:-.01em;margin:0}
+  .sec-sub{color:var(--text-muted);font-size:13.5px;margin:0}
+
+  .frame{background:var(--surface-2);border:1px solid var(--border-strong);border-radius:16px;box-shadow:var(--shadow-lg);overflow:hidden;position:relative}
+  .frame-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(180deg,#EFF1E9,#E9EBE2);border-bottom:1px solid var(--border)}
+  .lights{display:flex;gap:7px} .lights i{width:11px;height:11px;border-radius:50%;display:block}
+  .lights .r{background:#E0726A} .lights .y{background:#E3B341} .lights .g{background:#7DB76C}
+  .frame-title{font-size:12.5px;color:var(--text-muted);font-weight:500;margin-left:4px}
+  .frame-bar .spacer{flex:1}
+  .frame:fullscreen{border-radius:0}
+  .frame:fullscreen .frame-bar{display:none}
+  .frame-body{background:var(--bg);min-height:260px;overflow:auto}
+
+  .panel{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .panel-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface)}
+  .panel-head .ph-title{font-size:14px;font-weight:700;letter-spacing:-.01em}
+  .panel-head .ph-sub{font-size:11px;color:var(--text-muted);margin-left:auto}
+  .panel-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+
+  /* Bars */
+  .bar-widget{background:var(--surface-2);border:1px solid var(--border-strong);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;margin-bottom:14px}
+  .bar-widget .buddy-ico{width:42px;height:42px;border-radius:50%;background:var(--accent-soft);display:grid;place-items:center;font-size:22px;flex-shrink:0}
+  .bar-widget .bar-text{flex:1;min-width:0}
+  .bar-widget .bar-title{font-size:14px;font-weight:700;margin:0 0 2px}
+  .bar-widget .bar-sub{font-size:13px;color:var(--text-muted);margin:0}
+  .bar-widget .bar-actions{display:flex;gap:8px;flex-shrink:0}
+
+  /* Fullscreen split panes */
+  .split{display:grid;grid-template-columns:320px 1fr;gap:0;min-height:540px}
+  .split-left{border-right:1px solid var(--border);padding:16px;overflow:auto;background:var(--surface-2)}
+  .split-right{padding:16px;overflow:auto}
+
+  .step{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);transition:.14s var(--ease)}
+  .step:hover{border-color:var(--accent)}
+  .step-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);cursor:pointer;display:grid;place-items:center;transition:.14s var(--ease)}
+  .step-check.done{background:var(--accent);border-color:var(--accent);color:#fff}
+  .step-check .ic{width:12px;height:12px}
+  .step-text{flex:1;font-size:13px}
+
+  .input{font:inherit;font-size:13px;border:1px solid var(--border);border-radius:9px;padding:9px 11px;background:var(--surface-2);color:var(--text);width:100%}
+  .input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .textarea{font:inherit;font-size:13px;border:1px solid var(--border);border-radius:9px;padding:9px 11px;background:var(--surface-2);color:var(--text);width:100%;min-height:70px;resize:vertical}
+  .textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+
+  .suggest-chip{font:inherit;display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;transition:.14s var(--ease)}
+  .suggest-chip:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-hover)}
+  .suggest-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .suggest-chip[role="button"]{user-select:none}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--text);color:#F7F8F2;padding:10px 16px;border-radius:999px;font-size:12.5px;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.22s var(--ease);z-index:300}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  footer.foot{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);color:var(--text-faint);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="brand">
+    <span class="mark"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+    FocusPath <small>· Planning Ritual</small>
+  </div>
+</div>
+
+<div class="wrap">
+  <section class="intro">
+    <h1>Planning Ritual — 3 Bars + 3 Fullscreens</h1>
+    <p>ADHD-friendly daily micro-planning. Forgiveness-first, one decision at a time.</p>
+    <p class="meta">Palette: Sage Stone · 60-second ritual · Single Win · Shame-Free Reset</p>
+  </section>
+
+  <!-- BARS -->
+  <section class="sec" id="bars">
+    <div class="sec-head"><span class="sec-num">B</span><div><h2 class="sec-title">Dashboard Bars</h2><p class="sec-sub">Three states: unplanned, planned, active/break.</p></div></div>
+
+    <div class="bar-widget">
+      <div class="buddy-ico">🐱</div>
+      <div class="bar-text"><div class="bar-title">Good morning</div><p class="bar-sub">Got 60 seconds to anchor your day?</p></div>
+      <div class="bar-actions"><button class="btn primary btn-sm" id="bar-start">Start Quick Plan</button><button class="btn btn-sm" id="bar-skip">Skip</button></div>
+    </div>
+
+    <div class="bar-widget">
+      <div class="buddy-ico">✅</div>
+      <div class="bar-text"><div class="bar-title">Today's Single Win</div><p class="bar-sub">Chem Ch.4 practice · 1 hour until 3pm</p></div>
+      <div class="bar-actions"><button class="btn primary btn-sm" id="bar-focus">Start Focus</button></div>
+    </div>
+
+    <div class="bar-widget">
+      <div class="buddy-ico">⏱️</div>
+      <div class="bar-text"><div class="bar-title">Focus block active</div><p class="bar-sub">45 min free · Dentist at 2pm</p></div>
+      <div class="bar-actions"><button class="btn btn-sm" id="bar-break">Take a break</button></div>
+    </div>
+  </section>
+
+  <!-- FS1: 60-Second Micro-Plan -->
+  <section class="sec" id="fs1">
+    <div class="sec-head"><span class="sec-num">FS1</span><div><h2 class="sec-title">60-Second Micro-Plan</h2><p class="sec-sub">Anchor · Single Win · Launch Check.</p></div></div>
+    <div class="frame">
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — 60-Second Micro-Plan</span><span class="spacer"></span></div>
+      <div class="frame-body split">
+        <div class="split-left" id="fs1-left"></div>
+        <div class="split-right" id="fs1-right"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FS2: Shame-Free Reset -->
+  <section class="sec" id="fs2">
+    <div class="sec-head"><span class="sec-num">FS2</span><div><h2 class="sec-title">Shame-Free Reset</h2><p class="sec-sub">After missed days. Clear overdue, start fresh.</p></div></div>
+    <div class="frame">
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Shame-Free Reset</span><span class="spacer"></span></div>
+      <div class="frame-body split">
+        <div class="split-left" id="fs2-left"></div>
+        <div class="split-right" id="fs2-right"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FS3: Extended Launch -->
+  <section class="sec" id="fs3">
+    <div class="sec-head"><span class="sec-num">FS3</span><div><h2 class="sec-title">Extended Launch</h2><p class="sec-sub">Energy check + obstacle check + launch.</p></div></div>
+    <div class="frame">
+      <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Extended Launch</span><span class="spacer"></span></div>
+      <div class="frame-body split">
+        <div class="split-left" id="fs3-left"></div>
+        <div class="split-right" id="fs3-right"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">FocusPath Planning Ritual prototype · 3 bars + 3 fullscreen templates · Sage Stone palette · forgiveness-first.</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const toast=document.getElementById("toast");
+function showToast(m){toast.textContent=m;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1700);}
+function makeChip(el, handler){
+  el.setAttribute("role","button");
+  el.setAttribute("tabindex","0");
+  el.addEventListener("click", handler);
+  el.addEventListener("keydown", (e)=>{
+    if(e.key==="Enter"||e.key===" "){e.preventDefault();handler(e);}
+  });
+}
+// Bar actions
+function wireBars(){
+  document.getElementById("bar-start").onclick=()=>showToast("Opening 60-second plan...");
+  document.getElementById("bar-skip").onclick=()=>showToast("No problem — you can plan later");
+  document.getElementById("bar-focus").onclick=()=>showToast("Focus block started");
+  document.getElementById("bar-break").onclick=()=>showToast("Break logged — come back when ready");
+}
+
+// FS1: 60-Second Micro-Plan
+function renderFS1(){
+  document.getElementById("fs1-left").innerHTML=`<div style="text-align:center"><div style="font-size:60px;margin-bottom:10px">🐱</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">Sage</div><p style="font-size:13px;color:var(--text-muted);line-height:1.5">Let's anchor today in 60 seconds. One thing. No guilt.</p></div>`;
+  document.getElementById("fs1-right").innerHTML=`<div class="panel"><div class="panel-head"><span class="ph-title">Step 1 — Anchor</span></div><div class="panel-body"><p style="font-size:13px;color:var(--text-muted);margin:0">2 events today · 5 free hours for tasks</p><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="suggest-chip">📅 2pm Dentist</span><span class="suggest-chip">📅 6pm Dinner</span></div></div></div>
+  <div class="panel"><div class="panel-head"><span class="ph-title">Step 2 — Single Win</span></div><div class="panel-body"><input class="input" id="fs1-win" placeholder="What's the ONE thing that would make today a win?" value="Chem Ch.4 practice"/><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="suggest-chip" data-win="Chem Ch.4 practice">📝 Chem Ch.4 practice</span><span class="suggest-chip" data-win="Email professor">✉️ Email professor</span><span class="suggest-chip" data-win="Clean room">🧹 Clean room</span></div></div></div>
+  <div class="panel"><div class="panel-head"><span class="ph-title">Step 3 — Launch Check</span></div><div class="panel-body"><p style="font-size:13px;color:var(--text-muted);margin:0">You'll need: textbook p.142, notebook, calculator</p><button class="btn primary" id="fs1-launch">Start focus block</button></div></div>`;
+  document.getElementById("fs1-launch").onclick=()=>showToast("Focus block started — go get it");
+  document.querySelectorAll("[data-win]").forEach(c=>makeChip(c,()=>{document.getElementById("fs1-win").value=c.getAttribute("data-win");showToast("Single win set");}));
+}
+
+// FS2: Shame-Free Reset
+function renderFS2(){
+  document.getElementById("fs2-left").innerHTML=`<div style="text-align:center"><div style="font-size:60px;margin-bottom:10px">🐱</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">Sage</div><p style="font-size:13px;color:var(--text-muted);line-height:1.5">Been a minute. No guilt. Want to clear the slate before we pick today's task?</p></div>`;
+  document.getElementById("fs2-right").innerHTML=`<div class="panel"><div class="panel-head"><span class="ph-title">Overdue tasks</span><span class="ph-sub">3 items</span></div><div class="panel-body">
+  <div class="step"><div class="step-check"></div><span class="step-text">History essay intro</span></div>
+  <div class="step"><div class="step-check"></div><span class="step-text">Gym session</span></div>
+  <div class="step"><div class="step-check"></div><span class="step-text">Read Ch.3</span></div>
+  <button class="btn danger" id="fs2-reset">Archive all overdue &amp; start fresh</button>
+  <button class="btn" id="fs2-keep">Keep them — I'll handle it</button>
+  </div></div>`;
+  document.getElementById("fs2-reset").onclick=()=>showToast("Overdue tasks archived — fresh start!");
+  document.getElementById("fs2-keep").onclick=()=>showToast("No problem — they're still there");
+}
+
+// FS3: Extended Launch
+function renderFS3(){
+  document.getElementById("fs3-left").innerHTML=`<div style="text-align:center"><div style="font-size:60px;margin-bottom:10px">🐱</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">Sage</div><p style="font-size:13px;color:var(--text-muted);line-height:1.5">How's your energy today? Anything likely to pull you off track?</p></div>`;
+  document.getElementById("fs3-right").innerHTML=`<div class="panel"><div class="panel-head"><span class="ph-title">Energy check</span></div><div class="panel-body"><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="suggest-chip" data-energy="High">⚡ High</span><span class="suggest-chip" data-energy="Medium">🌤️ Medium</span><span class="suggest-chip" data-energy="Low">🛌 Low</span></div><p style="font-size:12px;color:var(--text-muted);margin:0" id="fs3-energy-text">Pick your energy level to filter task suggestions.</p></div></div>
+  <div class="panel"><div class="panel-head"><span class="ph-title">Obstacle check</span></div><div class="panel-body"><p style="font-size:13px;color:var(--text-muted);margin:0">Pre-commit to blocking known distractions.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="suggest-chip" data-block="Phone">📱 Phone</span><span class="suggest-chip" data-block="YouTube">📺 YouTube</span><span class="suggest-chip" data-block="Discord">💬 Discord</span><span class="suggest-chip" data-block="Reddit">🌐 Reddit</span></div></div></div>
+  <div class="panel"><div class="panel-head"><span class="ph-title">Launch</span></div><div class="panel-body"><button class="btn primary" id="fs3-launch">Launch focus block</button></div></div>`;
+  document.getElementById("fs3-launch").onclick=()=>showToast("Focus block launched with blocks active");
+  document.querySelectorAll("[data-energy]").forEach(c=>makeChip(c,()=>{document.getElementById("fs3-energy-text").textContent=`Energy set to ${c.getAttribute("data-energy")}. Tasks filtered.`;showToast(`Energy: ${c.getAttribute("data-energy")}`);}));
+  document.querySelectorAll("[data-block]").forEach(c=>makeChip(c,()=>showToast(`${c.getAttribute("data-block")} will be blocked during focus`)));
+}
+
+wireBars();renderFS1();renderFS2();renderFS3();
+</script>
+</body>
+</html>
