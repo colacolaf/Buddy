@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FocusPath — Calendar</title>
+<style>
+  :root{
+    --bg:#EDEFEA; --surface:#F7F8F2; --surface-2:#FFFFFF; --surface-sunken:#E4E7DE;
+    --border:#D6DBCD; --border-strong:#C2C8B8;
+    --text:#2E332B; --text-muted:#5F655A; --text-faint:#6B7062;
+    --accent:#5E7A5E; --accent-hover:#4D6A4D; --accent-press:#436143; --accent-soft:#DCE6D6;
+    --amber:#C68B5C; --amber-soft:#F0E2D2;
+    --slate:#5E7A8A; --slate-soft:#DCE4E8;
+    --lavender:#9B7AA8; --lavender-soft:#E8DFEC;
+    --success:#6B9362; --warning:#C98A4B; --danger:#B5635C;
+    --shadow-sm:0 1px 2px rgba(46,51,43,.05), 0 2px 6px rgba(46,51,43,.05);
+    --shadow:0 1px 2px rgba(46,51,43,.05), 0 6px 18px rgba(46,51,43,.08);
+    --shadow-lg:0 2px 8px rgba(46,51,43,.07), 0 18px 48px rgba(46,51,43,.14);
+    --radius:14px; --radius-sm:9px; --radius-xs:6px;
+    --ease:cubic-bezier(.4,0,.2,1);
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+    --font-num:"SF Mono","ui-monospace","Menlo","Consolas",monospace;
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0}
+  body{font-family:var(--font-ui);color:var(--text);background:radial-gradient(1200px 600px at 80% -10%,#E3E7DD 0%,transparent 60%),radial-gradient(900px 500px at -10% 20%,#E7EBE0 0%,transparent 55%),var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+
+  .toolbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:12px 22px;background:rgba(247,248,242,.82);backdrop-filter:saturate(140%) blur(14px);border-bottom:1px solid var(--border)}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em}
+  .brand .mark{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-hover));display:grid;place-items:center;color:#fff}
+  .brand small{color:var(--text-muted);font-weight:500;margin-left:2px}
+
+  .wrap{max-width:1400px;margin:0 auto;padding:34px 22px 120px}
+  .intro{max-width:680px}
+  .intro h1{font-size:30px;letter-spacing:-.02em;margin:0 0 8px}
+  .intro p{color:var(--text-muted);margin:0 0 6px;font-size:15px}
+
+  .btn{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);padding:8px 14px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.16s var(--ease);box-shadow:var(--shadow-sm)}
+  .btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent-hover)}
+  .btn:active{transform:translateY(0)}
+  .btn.primary{background:var(--accent-hover);border-color:var(--accent-hover);color:#fff}
+  .btn.primary:hover{background:var(--accent-press);border-color:var(--accent-press)}
+  .btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .btn-sm{padding:6px 10px;font-size:12px}
+
+  .frame{background:var(--surface-2);border:1px solid var(--border-strong);border-radius:16px;box-shadow:var(--shadow-lg);overflow:hidden;position:relative;margin-top:24px}
+  .frame-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(180deg,#EFF1E9,#E9EBE2);border-bottom:1px solid var(--border)}
+  .lights{display:flex;gap:7px} .lights i{width:11px;height:11px;border-radius:50%;display:block}
+  .lights .r{background:#E0726A} .lights .y{background:#E3B341} .lights .g{background:#7DB76C}
+  .frame-title{font-size:12.5px;color:var(--text-muted);font-weight:500;margin-left:4px}
+
+  /* Dashboard bar: full daily plan */
+  .daily-bar{background:var(--surface-2);border:1px solid var(--border-strong);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);margin-bottom:14px}
+  .daily-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .daily-title{font-size:14px;font-weight:700;margin:0}
+  .daily-sub{font-size:12px;color:var(--text-muted)}
+  .daily-timeline{position:relative;height:44px;background:var(--surface-sunken);border-radius:10px;overflow:hidden}
+  .daily-slot{position:absolute;top:0;bottom:0;border-right:1px dashed var(--border)}
+  .daily-hour{position:absolute;bottom:3px;font-size:9px;color:var(--text-faint);transform:translateX(-50%)}
+  .daily-block{position:absolute;top:4px;bottom:4px;border-radius:6px;padding:2px 6px;color:#fff;font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;transition:.14s var(--ease)}
+  .daily-block:hover{filter:brightness(1.08);transform:scaleY(1.05)}
+  .daily-legend{display:flex;gap:12px;margin-top:8px;font-size:11px;color:var(--text-muted)}
+  .daily-legend span{display:flex;align-items:center;gap:5px}
+  .dot{width:8px;height:8px;border-radius:50%}
+
+  /* Fullscreen month app */
+  .cal-app{display:grid;grid-template-columns:260px 1fr 260px;min-height:720px}
+  .cal-app>*{min-width:0;min-height:0}
+  .col-left{background:var(--surface-2);border-right:1px solid var(--border);padding:16px;overflow:auto}
+  .col-main{background:var(--bg);padding:16px;overflow:auto;min-width:0}
+  .col-right{background:var(--surface-2);border-left:1px solid var(--border);display:flex;flex-direction:column;min-height:0;overflow:auto}
+
+  .panel{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px}
+  .panel-head{padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface);font-size:14px;font-weight:700}
+  .panel-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+
+  /* Month grid */
+  .month-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .month-title{font-size:20px;font-weight:700}
+  .month-nav{display:flex;gap:8px;align-items:center}
+  .weekdays{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  .month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;width:100%}
+  .day-cell{aspect-ratio:1;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:6px;cursor:pointer;display:flex;flex-direction:column;gap:4px;transition:.14s var(--ease);min-height:0}
+  .day-cell:hover{border-color:var(--accent);box-shadow:var(--shadow)}
+  .day-cell.selected{background:var(--accent-soft);border-color:var(--accent)}
+  .day-cell.today{background:var(--surface);box-shadow:0 0 0 2px var(--accent)}
+  .day-cell:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .day-num{font-size:13px;font-weight:700;color:var(--text)}
+  .day-events{display:flex;flex-direction:column;gap:2px;overflow:hidden;flex:1}
+  .day-event{font-size:9px;padding:2px 4px;border-radius:4px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .more-events{font-size:9px;color:var(--text-muted);margin-top:auto}
+
+  /* Day detail */
+  .day-detail{padding-bottom:16px}
+  .day-detail h2{font-size:18px;margin:0 0 4px}
+  .day-detail p.meta{font-size:12px;color:var(--text-muted);margin:0 0 12px}
+  .detail-block{display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:10px;background:var(--bg);border:1px solid var(--border);margin-bottom:8px;cursor:pointer;transition:.14s var(--ease)}
+  .detail-block:hover{border-color:var(--accent)}
+  .detail-time{font-size:12px;font-weight:700;color:var(--text-muted);min-width:50px;text-align:right}
+  .detail-body{flex:1}
+  .detail-title{font-size:13px;font-weight:700;margin:0 0 2px}
+  .detail-sub{font-size:11px;color:var(--text-muted);margin:0}
+  .detail-dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex-shrink:0}
+
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)}
+  .field input,.field select,.field textarea{font:inherit;font-size:13px;border:1px solid var(--border);border-radius:9px;padding:9px 11px;background:var(--surface-2);color:var(--text)}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .field textarea{resize:vertical;min-height:60px}
+
+  .ai-card{margin-top:auto;border-top:1px solid var(--border);padding:16px;background:var(--surface)}
+  .ai-card h4{font-size:13px;font-weight:700;margin:0 0 12px}
+  .ai-card textarea{width:100%;font:inherit;font-size:12px;border:1px solid var(--border);border-radius:9px;padding:8px 10px;resize:none;min-height:64px}
+  .ai-card button{margin-top:8px;width:100%}
+  .ai-bubble{font-size:12px;color:var(--text-muted);background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:12px}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--text);color:#F7F8F2;padding:10px 16px;border-radius:999px;font-size:12.5px;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.22s var(--ease);z-index:300}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  footer.foot{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);color:var(--text-faint);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="brand">
+    <span class="mark">🗓️</span>
+    FocusPath <small>· Calendar</small>
+  </div>
+</div>
+
+<div class="wrap">
+  <section class="intro">
+    <h1>Calendar</h1>
+    <p>Dashboard bar shows your full daily plan. Fullscreen is a month grid — click any day to view, add, or edit blocks.</p>
+  </section>
+
+  <!-- DASHBOARD BAR: full daily plan -->
+  <section class="daily-bar" id="daily-bar">
+    <div class="daily-header">
+      <div>
+        <div class="daily-title" id="bar-title">Today's plan — Monday, July 22</div>
+        <div class="daily-sub" id="bar-sub">4 scheduled blocks · next: Workout at 6:30am</div>
+      </div>
+      <button class="btn primary btn-sm" onclick="showToast('Opening fullscreen calendar')">Open calendar</button>
+    </div>
+    <div class="daily-timeline" id="daily-timeline"></div>
+    <div class="daily-legend">
+      <span><i class="dot" style="background:#5E7A5E"></i>Workout</span>
+      <span><i class="dot" style="background:#5E7A8A"></i>Study</span>
+      <span><i class="dot" style="background:#C68B5C"></i>Work</span>
+      <span><i class="dot" style="background:#9B7AA8"></i>Personal</span>
+    </div>
+  </section>
+
+  <!-- FULLSCREEN MONTH VIEW -->
+  <section class="frame" id="fs">
+    <div class="frame-bar"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="frame-title">FocusPath — Calendar</span></div>
+    <div class="cal-app">
+      <!-- LEFT: Selected day detail + Add/Edit block -->
+      <div class="col-left">
+        <div class="day-detail" id="day-view">
+          <h2 id="detail-date">Monday, July 22</h2>
+          <p class="meta" id="detail-meta">4 blocks · 3.5 hours scheduled</p>
+          <button class="btn primary" id="btn-show-add" style="width:100%;margin-bottom:12px">+ Add block</button>
+          <div id="detail-list"></div>
+        </div>
+
+        <div class="panel" id="form-panel" style="display:none;margin:0">
+          <div class="panel-head" id="form-head">Add block</div>
+          <div class="panel-body">
+            <input type="hidden" id="sel-date" value="2026-07-22">
+            <div class="field">
+              <label>What you're doing</label>
+              <input id="cb-title" placeholder="e.g. Workout">
+            </div>
+            <div class="field-row" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="field">
+                <label>Time</label>
+                <input type="time" id="cb-time" value="06:30">
+              </div>
+              <div class="field">
+                <label>Duration</label>
+                <select id="cb-duration">
+                  <option value="30">30 min</option>
+                  <option value="60" selected>1 hr</option>
+                  <option value="90">1.5 hr</option>
+                  <option value="120">2 hr</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label>Notes</label>
+              <textarea id="cb-notes" placeholder="Warm up 10 min, stretch after..."></textarea>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn primary" id="btn-save" style="flex:1">Save</button>
+              <button class="btn" id="btn-cancel" style="flex:1">Cancel</button>
+            </div>
+            <button class="btn danger" id="btn-delete" style="display:none;width:100%">Delete</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTER: Month grid -->
+      <div class="col-main">
+        <div class="month-header">
+          <div class="month-title" id="month-title">July 2026</div>
+          <div class="month-nav">
+            <button class="btn btn-sm" id="prev-month">◀</button>
+            <button class="btn btn-sm" id="today-btn">Today</button>
+            <button class="btn btn-sm" id="next-month">▶</button>
+          </div>
+        </div>
+        <div class="weekdays"><div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div></div>
+        <div class="month-grid" id="month-grid"></div>
+      </div>
+
+      <!-- RIGHT: AI Chat -->
+      <div class="col-right">
+        <div class="ai-card">
+          <h4>AI Assistant</h4>
+          <div class="ai-bubble" id="ai-reply">Hi! I can help schedule your week. Try "find focus time" or "reschedule my workout."</div>
+          <textarea id="chat-msg" placeholder="e.g., find focus time this week"></textarea>
+          <button class="btn primary btn-sm" id="btn-send">Send</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">FocusPath Calendar prototype · Daily plan bar + full month view · Sage Stone palette.</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function esc(s){return(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
+const toast=document.getElementById("toast");
+function showToast(m){toast.textContent=m;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1700);}
+
+const colors={workout:"#5E7A5E",study:"#5E7A8A",work:"#C68B5C",personal:"#9B7AA8"};
+const today=new Date();
+let currentMonth=today.getMonth();
+let currentYear=today.getFullYear();
+let selectedDate=formatDate(today);
+let selectedBlockId=null;
+
+// Seed events across multiple days
+let blocks=[
+  {id:1,title:"Workout",detail:"Legs — squats, lunges, calf raises",type:"workout",date:"2026-07-22",time:"06:30",duration:60,notes:"Warm up 10 min"},
+  {id:2,title:"Study",detail:"Chem Ch.4 practice problems",type:"study",date:"2026-07-22",time:"09:00",duration:90,notes:"Focus on thermodynamics"},
+  {id:3,title:"Work",detail:"Team standup + emails",type:"work",date:"2026-07-22",time:"13:00",duration:60,notes:"Prepare update slides"},
+  {id:4,title:"Personal",detail:"Walk dog",type:"personal",date:"2026-07-22",time:"17:00",duration:30,notes:"Bring treats"},
+  {id:5,title:"Study",detail:"History essay research",type:"study",date:"2026-07-23",time:"10:00",duration:120,notes:"Library sources"},
+  {id:6,title:"Workout",detail:"Upper body",type:"workout",date:"2026-07-24",time:"07:00",duration:60,notes:"Bench, rows, curls"},
+  {id:7,title:"Personal",detail:"Dentist appointment",type:"personal",date:"2026-07-25",time:"14:00",duration:60,notes:"Bring insurance card"},
+  {id:8,title:"Work",detail:"Project deadline",type:"work",date:"2026-07-28",time:"09:00",duration:180,notes:"Final review"}
+];
+
+function formatDate(d){const y=d.getFullYear();const m=String(d.getMonth()+1).padStart(2,"0");const day=String(d.getDate()).padStart(2,"0");return y+"-"+m+"-"+day;}
+function parseDate(s){const [y,m,day]=s.split("-").map(Number);return new Date(y,m-1,day);}
+function dateLabel(s){const d=parseDate(s);return d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});}
+function monthName(y,m){return new Date(y,m).toLocaleDateString("en-US",{month:"long",year:"numeric"});}
+function timeToMin(t){const[h,m]=t.split(":").map(Number);return h*60+m;}
+
+function getDayEvents(date){return blocks.filter(b=>b.date===date).sort((a,b)=>timeToMin(a.time)-timeToMin(b.time));}
+function getTodayEvents(){return getDayEvents(formatDate(today));}
+
+// Daily plan bar
+function renderDailyBar(){
+  const timeline=document.getElementById("daily-timeline");
+  timeline.innerHTML="";
+  const startHour=6,endHour=23;
+  const totalHours=endHour-startHour;
+  for(let h=startHour;h<=endHour;h++){
+    const slot=document.createElement("div");slot.className="daily-slot";
+    slot.style.left=((h-startHour)/totalHours*100)+"%";
+    slot.style.width=(1/totalHours*100)+"%";
+    const label=document.createElement("div");label.className="daily-hour";
+    label.style.left=((h-startHour)/totalHours*100)+"%";
+    label.textContent=(h%12||12)+(h<12?"am":"pm");
+    timeline.appendChild(slot);timeline.appendChild(label);
+  }
+  getTodayEvents().forEach(b=>{
+    const startH=timeToMin(b.time)/60;
+    const endH=startH+(b.duration/60);
+    if(endH<=startHour || startH>=endHour)return;
+    let left=(startH-startHour)/totalHours*100;
+    let width=(b.duration/60)/totalHours*100;
+    if(left<0){width+=left;left=0;}
+    if(left+width>100){width=100-left;}
+    if(width<=0)return;
+    const el=document.createElement("div");el.className="daily-block";
+    el.style.left=left+"%";el.style.width=width+"%";el.style.background=colors[b.type];
+    el.textContent=b.title;el.title=esc(b.detail);
+    el.onclick=()=>{selectedDate=formatDate(today);selectDay(selectedDate);loadBlock(b.id);document.getElementById("fs").scrollIntoView({behavior:"smooth"});};
+    timeline.appendChild(el);
+  });
+  const next=getTodayEvents().find(b=>timeToMin(b.time)>timeToMin("00:00"));
+  document.getElementById("bar-sub").textContent=getTodayEvents().length+" scheduled blocks · next: "+(next?next.title+" at "+next.time:"nothing scheduled");
+}
+
+// Month grid
+function daysInMonth(y,m){return new Date(y,m+1,0).getDate();}
+function firstDayOfMonth(y,m){return new Date(y,m,1).getDay();}
+
+function renderMonth(){
+  document.getElementById("month-title").textContent=monthName(currentYear,currentMonth);
+  const grid=document.getElementById("month-grid");
+  grid.innerHTML="";
+  const days=daysInMonth(currentYear,currentMonth);
+  const firstDay=firstDayOfMonth(currentYear,currentMonth);
+  for(let i=0;i<firstDay;i++){const pad=document.createElement("div");pad.style.opacity="0.3";grid.appendChild(pad);}
+  const todayStr=formatDate(today);
+  for(let day=1;day<=days;day++){
+    const y=currentYear;
+    const m=String(currentMonth+1).padStart(2,"0");
+    const dStr=String(day).padStart(2,"0");
+    const dateStr=y+"-"+m+"-"+dStr;
+    const cell=document.createElement("div");cell.className="day-cell"+ (dateStr===todayStr?" today":"")+ (dateStr===selectedDate?" selected":"");
+    cell.setAttribute("role","button");cell.setAttribute("tabindex","0");cell.setAttribute("aria-label","Open "+dateStr);
+    cell.onclick=()=>selectDay(dateStr);
+    cell.onkeydown=(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();selectDay(dateStr);}};
+    const num=document.createElement("div");num.className="day-num";num.textContent=day;
+    if(dateStr===todayStr)num.textContent="• "+day;
+    cell.appendChild(num);
+    const events=getDayEvents(dateStr).slice(0,3);
+    events.forEach(e=>{const de=document.createElement("div");de.className="day-event";de.style.background=colors[e.type];de.textContent=e.title;cell.appendChild(de);});
+    const rest=getDayEvents(dateStr).length-events.length;
+    if(rest>0){const more=document.createElement("div");more.className="more-events";more.textContent="+"+rest+" more";cell.appendChild(more);}
+    grid.appendChild(cell);
+  }
+}
+
+function selectDay(dateStr){
+  selectedDate=dateStr;selectedBlockId=null;renderMonth();renderDayDetail();
+  document.getElementById("sel-date").value=dateStr;
+  hideForm();
+}
+
+function renderDayDetail(){
+  document.getElementById("detail-date").textContent=dateLabel(selectedDate);
+  const events=getDayEvents(selectedDate);
+  document.getElementById("detail-meta").textContent=events.length+" block"+(events.length!==1?"s":"")+" · "+(events.reduce((a,b)=>a+b.duration,0)/60)+" hrs scheduled";
+  const list=document.getElementById("detail-list");
+  list.innerHTML="";
+  if(events.length===0){const empty=document.createElement("p");empty.style.cssText="font-size:13px;color:var(--text-muted)";empty.textContent="No blocks yet.";list.appendChild(empty);}
+  events.forEach(b=>{
+    const row=document.createElement("div");row.className="detail-block";
+    row.innerHTML="<div class=\"detail-time\">"+formatTime(b.time)+"</div><div class=\"detail-dot\" style=\"background:"+colors[b.type]+"\"></div><div class=\"detail-body\"><div class=\"detail-title\">"+esc(b.title)+"</div><div class=\"detail-sub\">"+esc(b.detail)+"</div></div>";
+    row.onclick=()=>loadBlock(b.id);
+    list.appendChild(row);
+  });
+}
+
+function formatTime(t){const [h,m]=t.split(":").map(Number);const am=h<12;const hour=h%12||12;return hour+":"+String(m).padStart(2,"0")+(am?"am":"pm");}
+
+// Form toggle
+function showForm(mode){
+  document.getElementById("day-view").style.display="none";
+  document.getElementById("form-panel").style.display="block";
+  document.getElementById("form-head").textContent=mode==="edit"?"Edit block":"Add block";
+  document.getElementById("btn-delete").style.display=mode==="edit"?"block":"none";
+}
+function hideForm(){
+  document.getElementById("day-view").style.display="block";
+  document.getElementById("form-panel").style.display="none";
+  selectedBlockId=null;
+}
+function clearFormFields(){
+  document.getElementById("cb-title").value="";
+  document.getElementById("cb-time").value="06:30";
+  document.getElementById("cb-duration").value="60";
+  document.getElementById("cb-notes").value="";
+}
+function getFormData(){
+  return{
+    title:document.getElementById("cb-title").value.trim()||"Untitled",
+    detail:"",
+    type:"personal",
+    time:document.getElementById("cb-time").value,
+    duration:parseInt(document.getElementById("cb-duration").value,10),
+    notes:document.getElementById("cb-notes").value.trim(),
+    date:document.getElementById("sel-date").value
+  };
+}
+function loadBlock(id){
+  const b=blocks.find(x=>x.id===id);if(!b)return;
+  selectedBlockId=id;selectedDate=b.date;document.getElementById("sel-date").value=b.date;
+  document.getElementById("cb-title").value=b.title;
+  document.getElementById("cb-time").value=b.time;
+  document.getElementById("cb-duration").value=String(b.duration);
+  document.getElementById("cb-notes").value=b.notes;
+  renderDayDetail();renderMonth();showForm("edit");
+}
+function saveBlock(){
+  const data=getFormData();
+  if(selectedBlockId){
+    const idx=blocks.findIndex(b=>b.id===selectedBlockId);
+    if(idx>=0)blocks[idx]={...blocks[idx],...data};
+  } else {
+    blocks.push({id:Date.now(),...data});
+  }
+  renderDailyBar();renderMonth();renderDayDetail();clearFormFields();hideForm();
+  showToast(selectedBlockId?"Block updated":"Block created");
+}
+function deleteBlock(){
+  if(!selectedBlockId)return;
+  blocks=blocks.filter(b=>b.id!==selectedBlockId);
+  clearFormFields();renderDailyBar();renderMonth();renderDayDetail();hideForm();showToast("Block deleted");
+}
+
+// Events
+document.getElementById("btn-show-add").onclick=()=>{clearFormFields();selectedBlockId=null;showForm("add");};
+document.getElementById("btn-save").onclick=saveBlock;
+document.getElementById("btn-cancel").onclick=hideForm;
+document.getElementById("btn-delete").onclick=deleteBlock;
+
+document.getElementById("prev-month").onclick=()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--;}renderMonth();};
+document.getElementById("next-month").onclick=()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++;}renderMonth();};
+document.getElementById("today-btn").onclick=()=>{currentMonth=today.getMonth();currentYear=today.getFullYear();selectDay(formatDate(today));};
+
+document.getElementById("btn-send").onclick=()=>{
+  const input=document.getElementById("chat-msg");const text=input.value.trim();if(!text)return;
+  let reply="Got it. I added that to your schedule.";
+  if(text.toLowerCase().includes("focus"))reply="I found a 2-hour focus window on Thursday at 10am. Should I block it for your top task?";
+  if(text.toLowerCase().includes("reschedule"))reply="I moved your workout to Friday morning. Does that work?";
+  document.getElementById("ai-reply").textContent=reply;input.value="";
+};
+
+renderDailyBar();renderMonth();selectDay(selectedDate);
+</script>
+</body>
+</html>
