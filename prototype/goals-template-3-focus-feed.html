@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FocusPath Goals — Focus Feed · Template 3</title>
+<style>
+  :root{
+    --bg:#F7EDE4; --surface:#FBF3EB; --surface-2:#FFFFFF; --surface-sunken:#ECD9C8;
+    --border:#E0C7B2; --border-strong:#C8A88C;
+    --text:#3B2A22; --text-muted:#6E574A; --text-faint:#907A6B;
+    --accent:#C76A3E; --accent-hover:#A8562E; --accent-press:#8A4624; --accent-soft:#F2D8C5;
+    --cocoa:#7A4F3A; --cocoa-soft:#E8D9CC;
+    --sage:#7A8A6E; --sage-soft:#DDE3D4;
+    --dusk:#7A6A8A; --dusk-soft:#E2DCE6;
+    --amber:#B89366; --amber-soft:#F0E2D2;
+    --success:#7A8A6E; --warning:#B89366; --danger:#B05A4E; --danger-soft:#EBD6D0;
+    --shadow-sm:0 1px 2px rgba(59,42,34,.05), 0 2px 6px rgba(59,42,34,.05);
+    --shadow:0 1px 2px rgba(59,42,34,.05), 0 6px 18px rgba(59,42,34,.08);
+    --shadow-lg:0 2px 8px rgba(59,42,34,.07), 0 18px 48px rgba(59,42,34,.14);
+    --radius:14px; --radius-sm:9px; --radius-xs:6px;
+    --ease:cubic-bezier(.4,0,.2,1);
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+    --font-num:"SF Mono","ui-monospace","Menlo","Consolas",monospace;
+    --font-disp:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0;height:100%;overflow:hidden}
+  body{font-family:var(--font-ui);color:var(--text);background:radial-gradient(1100px 600px at 80% -10%,#F0D8C2 0%,transparent 60%),radial-gradient(900px 500px at -10% 25%,#F4E0CE 0%,transparent 55%),var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+
+  .app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+  .rail{flex:0 0 auto;display:flex;align-items:center;gap:14px;padding:9px 22px;background:rgba(251,243,235,.82);backdrop-filter:saturate(140%) blur(14px);-webkit-backdrop-filter:saturate(140%) blur(14px);border-bottom:1px solid var(--border)}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-.01em;font-size:14px}
+  .brand .mark{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent-hover));display:grid;place-items:center;color:#fff;box-shadow:var(--shadow-sm)}
+  .brand small{color:var(--text-muted);font-weight:500;margin-left:2px;font-size:12px}
+  .rail .spacer{flex:1}
+  .rail .meta-tag{font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px}
+  .rail .meta-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+  .rail .date{font-family:var(--font-disp);font-size:13px;color:var(--text-muted);font-style:italic}
+  .back-btn{font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);padding:7px 13px;border-radius:9px;display:inline-flex;align-items:center;gap:7px;transition:.15s var(--ease);box-shadow:var(--shadow-sm)}
+  .back-btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent-hover)}
+  .back-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .back-btn .ic{width:14px;height:14px}
+  .add-btn{font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-hover);padding:7px 13px;border-radius:9px;display:inline-flex;align-items:center;gap:7px;transition:.15s var(--ease);box-shadow:var(--shadow-sm)}
+  .add-btn:hover{background:var(--accent);color:#fff}
+  .add-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .add-btn .ic{width:14px;height:14px}
+
+  .body{flex:1 1 auto;min-height:0;overflow:auto;padding:16px 22px 28px;display:flex;flex-direction:column;gap:16px;max-width:680px;margin:0 auto}
+
+  .panel{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .panel-head{display:flex;align-items:center;gap:9px;padding:12px 15px;border-bottom:1px solid var(--border);background:var(--surface)}
+  .panel-head .ph-title{font-size:13px;font-weight:700;letter-spacing:-.01em;font-family:var(--font-disp)}
+  .panel-head .ph-sub{font-size:10.5px;color:var(--text-muted);margin-left:auto;white-space:nowrap}
+  .panel-head .ph-ic{width:15px;height:15px;color:var(--accent);flex:0 0 auto}
+  .panel-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+
+  /* Buddy nudge card */
+  .buddy-card{display:flex;align-items:center;gap:14px;padding:16px 18px;background:linear-gradient(135deg,var(--accent-soft),var(--surface));border:1px dashed var(--accent);border-radius:var(--radius)}
+  .buddy-card .bc-stage{width:48px;height:48px;border-radius:12px;background:radial-gradient(circle at 30% 30%,var(--accent-soft) 0%,transparent 70%),linear-gradient(135deg,var(--surface-sunken),var(--surface));border:1px dashed var(--accent);display:grid;place-items:center;flex:0 0 auto;overflow:hidden}
+  .buddy-card .bc-stage .ph-emoji{font-size:28px;opacity:.85;animation:breathe 3.6s var(--ease) infinite}
+  @keyframes breathe{0%,100%{transform:scale(1)} 50%{transform:scale(1.06)}}
+  .buddy-card .bc-body{flex:1;min-width:0}
+  .buddy-card .bc-name{font-size:14px;font-weight:700;font-family:var(--font-disp)}
+  .buddy-card .bc-msg{font-size:12.5px;color:var(--text-muted);margin-top:3px;line-height:1.45}
+  .buddy-card .bc-msg b{color:var(--accent-hover)}
+  .buddy-card .bc-acts{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+  .buddy-card .bc-acts button{font:inherit;font-size:11px;font-weight:600;padding:6px 11px;border-radius:7px;cursor:pointer;border:1px solid var(--accent);background:var(--surface-2);color:var(--accent-hover);transition:.14s var(--ease)}
+  .buddy-card .bc-acts button:hover{background:var(--accent);color:#fff}
+  .buddy-card .bc-acts button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* Next-action hero card */
+  .next-card{padding:28px 24px;text-align:center;background:radial-gradient(120% 100% at 50% 0%,var(--accent-soft) 0%,transparent 60%),var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .next-card .nx-eyebrow{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-hover)}
+  .next-card .nx-emoji{font-size:30px;margin:8px 0 4px}
+  .next-card .nx-goal{font-size:11px;color:var(--text-muted);margin-bottom:6px}
+  .next-card .nx-title{font-family:var(--font-disp);font-size:24px;font-weight:700;margin-bottom:8px;letter-spacing:-.01em;line-height:1.25}
+  .next-card .nx-meta{font-size:13px;color:var(--text-muted);margin-bottom:6px}
+  .next-card .nx-first{font-size:12px;color:var(--accent-hover);font-weight:600;padding:8px 14px;background:var(--surface);border-radius:8px;display:inline-block;margin-bottom:16px;border:1px dashed var(--accent)}
+  .next-card .nx-acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .btn{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);padding:10px 16px;border-radius:9px;display:inline-flex;align-items:center;gap:8px;transition:.15s var(--ease);box-shadow:var(--shadow-sm)}
+  .btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent-hover)}
+  .btn.primary{background:var(--accent-hover);border-color:var(--accent-hover);color:#fff}
+  .btn.primary:hover{background:var(--accent-press);border-color:var(--accent-press);color:#fff}
+  .btn.ghost{border:none;background:transparent;box-shadow:none;padding:8px 12px}
+  .btn.ghost:hover{background:var(--surface-sunken);transform:none}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .btn .ic{width:14px;height:14px}
+  .ifthen-mini{margin-top:14px;padding:10px 14px;border-left:3px solid var(--dusk);background:var(--dusk-soft);border-radius:8px;font-size:11.5px;line-height:1.5;color:var(--text);text-align:left}
+  .ifthen-mini .it-label{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--dusk);margin-bottom:3px;display:block}
+  .ifthen-mini b{color:var(--dusk)}
+
+  /* Mastery reframe */
+  .mastery{padding:14px 16px;border-radius:var(--radius-sm);background:var(--sage-soft);border:1px solid var(--sage);font-size:12.5px;line-height:1.55;color:var(--text)}
+  .mastery .m-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--sage);margin-bottom:4px}
+  .mastery b{color:var(--sage)}
+
+  /* Done garden */
+  .garden{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:8px 0}
+  .dg-item{width:40px;height:40px;border-radius:50%;background:var(--accent-soft);border:1.5px solid var(--accent);display:grid;place-items:center;font-size:18px;cursor:pointer;transition:.14s var(--ease)}
+  .dg-item:hover{transform:scale(1.12);box-shadow:var(--shadow-sm)}
+  .dg-item:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* Goal list (all goals, compact) */
+  .goal-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--surface);transition:.14s var(--ease);cursor:pointer}
+  .goal-row:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .goal-row:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .goal-row .gr-emoji{font-size:20px;flex:0 0 auto}
+  .goal-row .gr-body{flex:1;min-width:0}
+  .goal-row .gr-title{font-size:13px;font-weight:600}
+  .goal-row .gr-meta{font-size:10.5px;color:var(--text-muted);margin-top:1px}
+  .goal-row .gr-bar{width:80px;height:6px;border-radius:999px;background:var(--surface-sunken);overflow:hidden;flex:0 0 auto}
+  .goal-row .gr-fill{height:100%;border-radius:999px;background:var(--accent);transition:width .4s var(--ease)}
+  .goal-row .gr-stage{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:3px 8px;border-radius:5px;flex:0 0 auto}
+  .goal-row .gr-stage.tending{background:var(--accent-soft);color:var(--accent-hover)}
+  .goal-row .gr-stage.seedling{background:var(--sage-soft);color:var(--sage)}
+  .goal-row .gr-stage.bloom{background:var(--dusk-soft);color:var(--dusk)}
+  .goal-row .gr-stage.resting{background:var(--surface-sunken);color:var(--text-faint)}
+  .goal-row.resting{opacity:.65;border-style:dashed}
+  .goal-row.resting .gr-emoji{filter:grayscale(.5)}
+
+  /* Reflection prompt */
+  .reflect{padding:14px 16px;border-radius:var(--radius-sm);background:var(--dusk-soft);border:1px solid var(--dusk);font-size:12.5px;line-height:1.55;color:var(--text)}
+  .reflect .r-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--dusk);margin-bottom:5px}
+  .reflect .r-input{font:inherit;font-size:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:8px;padding:8px 10px;width:100%;margin-top:7px;transition:.15s var(--ease);font-family:var(--font-ui)}
+  .reflect .r-input:focus{outline:none;border-color:var(--dusk);box-shadow:0 0 0 3px var(--dusk-soft)}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--text);color:#FBF3EB;padding:10px 16px;border-radius:999px;font-size:12.5px;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.22s var(--ease);z-index:300}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="rail">
+    <div class="brand">
+      <span class="mark"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></span>
+      FocusPath <small>· Goals</small>
+    </div>
+    <div class="spacer"></div>
+    <span class="meta-tag"><span class="dot"></span>One thing at a time</span>
+    <span class="date">Tuesday, July 22, 2025</span>
+    <button class="add-btn" id="addGoalBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>New goal</button>
+    <button class="back-btn" id="backBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Dashboard</button>
+  </div>
+
+  <div class="body" id="feed">
+    <!-- Buddy nudge -->
+    <div class="buddy-card">
+      <div class="bc-stage" aria-label="Buddy placeholder — Kitsu the Fox"><span class="ph-emoji">🦊</span></div>
+      <div class="bc-body">
+        <div class="bc-name">Kitsu says</div>
+        <div class="bc-msg" id="buddyMsg"></div>
+        <div class="bc-acts" id="buddyActs"></div>
+      </div>
+    </div>
+
+    <!-- Next-action hero — ONLY the immediate next step -->
+    <div id="nextHero"></div>
+
+    <!-- Mastery reframe -->
+    <div class="mastery" id="masteryBox"></div>
+
+    <!-- Reflection prompt -->
+    <div class="reflect">
+      <div class="r-label">🦊 Gentle reflection (optional)</div>
+      What went <b style="color:var(--dusk)">easier than you expected</b> today? (Not "what did you do wrong?" — we don't do that here.)
+      <input class="r-input" id="reflectInput" placeholder="e.g. The first problem wasn't as bad as I feared…" />
+    </div>
+
+    <!-- Done garden -->
+    <div class="panel">
+      <div class="panel-head">
+        <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        <span class="ph-title">Done garden</span>
+        <span class="ph-sub" id="gardenCount">3 blooms this week</span>
+      </div>
+      <div class="panel-body"><div class="garden" id="garden"></div></div>
+    </div>
+
+    <!-- All goals (compact list) -->
+    <div class="panel">
+      <div class="panel-head">
+        <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L8 8h3v4H7l5 6 5-6h-4V8h3z"/></svg>
+        <span class="ph-title">All your goals</span>
+        <span class="ph-sub">cultivated, not chased</span>
+      </div>
+      <div class="panel-body" id="goalList" style="gap:8px"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const toast=document.getElementById("toast");
+function showToast(m){toast.textContent=m;toast.classList.add("show");clearTimeout(window._t);window._t=setTimeout(()=>toast.classList.remove("show"),1700);}
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML;}
+
+const IC={
+  check:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+  skip:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l10 8-10 8V4zM19 5v14"/></svg>',
+  relaunch:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg>',
+};
+
+let goals=[
+  {id:1,emoji:"🌳",title:"A in Chemistry",stage:"tending",why:"Strong GPA for pre-med — and I like it when I'm not rushing.",progress:35,mastery:"building chemistry intuition, not chasing a grade",
+    next:{what:"Problems 4.1-4.5 (just attempt them)",when:"Today · 1pm",where:"At my desk, phone away",first:"Open textbook to page 142",ifThen:"IF I get stuck, THEN I'll re-read the worked example first"},
+    steps:[{what:"Ch.1-3 Foundation review",done:true},{what:"Read Ch.4 pp.142-158",done:true},{what:"Problems 4.1-4.5",done:false},{what:"Problems 4.6-4.10",done:false},{what:"Ch.4 review",done:false},{what:"Exam prep",done:false}]},
+  {id:2,emoji:"🧘",title:"Meditate daily",stage:"tending",why:"Less anxiety, better focus.",progress:60,mastery:"building a calmer relationship with my mind",
+    next:{what:"Journal one line after meditating",when:"After meditation",where:"Same spot on couch",first:"Open notebook to today's page",ifThen:"IF I finish meditating, THEN I'll open the notebook before standing up"},
+    steps:[{what:"10-min meditation",done:true},{what:"Journal one line",done:false}]},
+  {id:3,emoji:"🏃",title:"Run 5k by August",stage:"resting",why:"Cardio base + mental clarity.",progress:0,mastery:"building cardiovascular capacity, slowly",
+    next:{what:"Easy 1k walk/jog to start",when:"This week",where:"The park loop",first:"Put on running shoes",ifThen:"IF I feel too tired to run, THEN I'll just walk — walking counts"},
+    steps:[{what:"Easy 1k walk/jog",done:false},{what:"2k continuous",done:false},{what:"5k attempt",done:false}]},
+  {id:4,emoji:"📚",title:"Read 12 books this year",stage:"bloom",why:"Joy + slower thinking.",progress:75,mastery:"cultivating a reading habit for life",
+    next:{what:"Start book 9 (Tiamat's Wrath)",when:"Whenever",where:"Cozy spot",first:"Open to page 1",ifThen:""},
+    steps:[{what:"Books 1-8",done:true},{what:"Book 9",done:false},{what:"Books 10-12",done:false}]},
+];
+
+// Find the active goal with the clearest next action (tending > seedling; resting shown but de-prioritized)
+function activeGoal(){ return goals.find(g=>g.stage==="tending"&&g.progress<100)||goals.find(g=>g.stage!=="bloom"&&g.stage!=="resting")||goals.find(g=>g.stage==="resting")||goals[0]; }
+
+function renderBuddy(){
+  const g=activeGoal();
+  const msgs=[
+    `One thing. Just this: <b>${esc(g.next.what)}</b>. Don't think about the rest — they're resting, not failing.`,
+    `Hey. Your next move is small: <b>${esc(g.next.first)}</b>. That's a 2-minute action. You can stop after. Most of the time, you won't want to.`,
+    `I noticed you've been avoiding <b>${esc(g.title)}</b>. That's not laziness — it's high activation energy. Let's make the first step tiny: <b>${esc(g.next.first)}</b>.`,
+  ];
+  const msg=msgs[0];
+  document.getElementById("buddyMsg").innerHTML=msg;
+  document.getElementById("buddyActs").innerHTML=`<button data-act="start">Start the 2-min first step</button><button data-act="break">Break it smaller</button><button data-act="skip">Skip today — no guilt</button>`;
+  document.querySelectorAll(".bc-acts button").forEach(b=>{
+    b.onclick=()=>{
+      const a=b.getAttribute("data-act");
+      if(a==="start")showToast("Go! Just the first step — open the book. Kitsu's watching proudly 🦊");
+      else if(a==="break")showToast("Kitsu: 'Open to page 142. That's it. Don't think about the problems yet.'");
+      else showToast("Skipped — no guilt, no streak to break. Tomorrow's a fresh start 🌱");
+    };
+  });
+}
+
+function renderNext(){
+  const g=activeGoal();
+  const n=g.next;
+  document.getElementById("nextHero").innerHTML=`<div class="next-card">
+    <div class="nx-eyebrow">${g.emoji} Your one next action</div>
+    <div class="nx-goal">for ${esc(g.title)} · ${g.progress}% cultivated</div>
+    <div class="nx-title">${esc(n.what)}</div>
+    <div class="nx-meta">${esc(n.when)} · ${esc(n.where)}</div>
+    <div class="nx-first">First move: ${esc(n.first)}</div>
+    <div class="nx-acts">
+      <button class="btn primary" id="markDone">${IC.check} Mark done</button>
+      <button class="btn" id="skipBtn">${IC.skip} Skip — no guilt</button>
+    </div>
+    ${n.ifThen?`<div class="ifthen-mini"><span class="it-label">⚡ If-then plan</span>IF <b>${esc(n.ifThen.split(", THEN")[0].replace(/^IF\s/i,""))}</b>, THEN <b>${esc((n.ifThen.split("THEN")[1]||"").trim())}</b></div>`:""}
+  </div>`;
+  document.getElementById("markDone").onclick=()=>{
+    const s=g.steps.find(s=>!s.done); if(s){s.done=true;g.progress=Math.round(g.steps.filter(s=>s.done).length/g.steps.length*100);}
+    if(g.progress===100) g.stage="bloom";
+    else if(g.progress>0&&g.stage==="resting") g.stage="tending";
+    renderAll(); showToast("Done! A bloom for the garden 🌱");
+  };
+  document.getElementById("skipBtn").onclick=()=>showToast("Skipped — no guilt, no streak to break 🌱");
+}
+
+function renderMastery(){
+  const g=activeGoal();
+  document.getElementById("masteryBox").innerHTML=`<div class="m-label">🌱 Mastery reframe</div>You're not chasing an outcome — you're <b>${esc(g.mastery)}</b>. ${g.progress}% grown. Growth isn't linear, and a paused goal isn't a failed one.`;
+}
+
+function renderGarden(){
+  const totalDone=goals.reduce((a,g)=>a+g.steps.filter(s=>s.done).length,0);
+  const plants=["🌿","🌱","🌸","🪴","🌷","🌻","🍀","🌳","🌹","🪻"];
+  document.getElementById("gardenCount").textContent=`${totalDone} blooms total`;
+  document.getElementById("garden").innerHTML=Array.from({length:Math.max(totalDone,3)},(_,i)=>`<div class="dg-item" role="button" tabindex="0" aria-label="Win ${i+1}">${plants[i%plants.length]}</div>`).join("");
+  document.querySelectorAll(".dg-item").forEach((d,i)=>{const act=()=>showToast(`Win #${i+1} 🎉`);d.onclick=act;d.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act();}};});
+}
+
+function renderGoalList(){
+  document.getElementById("goalList").innerHTML=goals.map(g=>`<div class="goal-row ${g.stage==="resting"?"resting":""}" role="button" tabindex="0" data-gid="${g.id}" aria-label="${esc(g.title)}, ${g.stage}, ${g.progress}% cultivated">
+    <span class="gr-emoji">${g.emoji}</span>
+    <div class="gr-body"><div class="gr-title">${esc(g.title)}</div><div class="gr-meta">${g.steps.filter(s=>s.done).length}/${g.steps.length} steps · ${g.progress}%</div></div>
+    <div class="gr-bar"><div class="gr-fill" style="width:${g.progress}%"></div></div>
+    <span class="gr-stage ${g.stage}">${g.stage}</span>
+  </div>`).join("");
+  document.querySelectorAll(".goal-row").forEach(r=>{
+    const pick=()=>{const gid=+r.getAttribute("data-gid");const g=goals.find(x=>x.id===gid);showToast(`${g.emoji} ${g.title} — ${g.stage}, ${g.progress}% cultivated. Next: ${g.next.what}`);};
+    r.onclick=pick;
+    r.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();pick();}};
+  });
+}
+
+function renderAll(){renderBuddy();renderNext();renderMastery();renderGarden();renderGoalList();}
+
+document.getElementById("reflectInput").onchange=function(){ if(this.value.trim()) showToast("Reflection saved — Kitsu is proud you noticed 🦊"); };
+document.getElementById("addGoalBtn").onclick=()=>showToast("New goal flow — Kitsu will guide you 🦊");
+document.getElementById("backBtn").onclick=()=>{ if(window.opener) window.close(); else if(document.referrer) history.back(); else window.location.href="dashboard-template-3-terracotta-bloom.html"; };
+
+renderAll();
+</script>
+</body>
+</html>

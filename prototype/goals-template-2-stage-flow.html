@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FocusPath Goals — Stage Flow · Template 2</title>
+<style>
+  :root{
+    --bg:#F7EDE4; --surface:#FBF3EB; --surface-2:#FFFFFF; --surface-sunken:#ECD9C8;
+    --border:#E0C7B2; --border-strong:#C8A88C;
+    --text:#3B2A22; --text-muted:#6E574A; --text-faint:#907A6B;
+    --accent:#C76A3E; --accent-hover:#A8562E; --accent-press:#8A4624; --accent-soft:#F2D8C5;
+    --cocoa:#7A4F3A; --cocoa-soft:#E8D9CC;
+    --sage:#7A8A6E; --sage-soft:#DDE3D4;
+    --dusk:#7A6A8A; --dusk-soft:#E2DCE6;
+    --amber:#B89366; --amber-soft:#F0E2D2;
+    --success:#7A8A6E; --warning:#B89366; --danger:#B05A4E; --danger-soft:#EBD6D0;
+    --shadow-sm:0 1px 2px rgba(59,42,34,.05), 0 2px 6px rgba(59,42,34,.05);
+    --shadow:0 1px 2px rgba(59,42,34,.05), 0 6px 18px rgba(59,42,34,.08);
+    --shadow-lg:0 2px 8px rgba(59,42,34,.07), 0 18px 48px rgba(59,42,34,.14);
+    --radius:14px; --radius-sm:9px; --radius-xs:6px;
+    --ease:cubic-bezier(.4,0,.2,1);
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+    --font-num:"SF Mono","ui-monospace","Menlo","Consolas",monospace;
+    --font-disp:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0;height:100%;overflow:hidden}
+  body{font-family:var(--font-ui);color:var(--text);background:radial-gradient(1100px 600px at 80% -10%,#F0D8C2 0%,transparent 60%),radial-gradient(900px 500px at -10% 25%,#F4E0CE 0%,transparent 55%),var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+
+  .app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+  .rail{flex:0 0 auto;display:flex;align-items:center;gap:14px;padding:9px 22px;background:rgba(251,243,235,.82);backdrop-filter:saturate(140%) blur(14px);-webkit-backdrop-filter:saturate(140%) blur(14px);border-bottom:1px solid var(--border)}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-.01em;font-size:14px}
+  .brand .mark{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent-hover));display:grid;place-items:center;color:#fff;box-shadow:var(--shadow-sm)}
+  .brand small{color:var(--text-muted);font-weight:500;margin-left:2px;font-size:12px}
+  .rail .spacer{flex:1}
+  .rail .meta-tag{font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px}
+  .rail .meta-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+  .rail .date{font-family:var(--font-disp);font-size:13px;color:var(--text-muted);font-style:italic}
+  .back-btn{font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);padding:7px 13px;border-radius:9px;display:inline-flex;align-items:center;gap:7px;transition:.15s var(--ease);box-shadow:var(--shadow-sm)}
+  .back-btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent-hover)}
+  .back-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .back-btn .ic{width:14px;height:14px}
+  .add-btn{font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-hover);padding:7px 13px;border-radius:9px;display:inline-flex;align-items:center;gap:7px;transition:.15s var(--ease);box-shadow:var(--shadow-sm)}
+  .add-btn:hover{background:var(--accent);color:#fff}
+  .add-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .add-btn .ic{width:14px;height:14px}
+
+  .body{flex:1 1 auto;min-height:0;overflow:hidden;display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 18px 8px}
+  .body>*{min-width:0;min-height:0}
+
+  /* Kanban columns */
+  .board{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;min-height:0;overflow:hidden}
+  .col{display:flex;flex-direction:column;min-height:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .col-head{display:flex;align-items:center;gap:8px;padding:11px 13px;border-bottom:1px solid var(--border);background:var(--surface-2)}
+  .col-head .col-emoji{font-size:18px}
+  .col-head .col-title{font-size:13px;font-weight:700;font-family:var(--font-disp);flex:1}
+  .col-head .col-count{font-size:10.5px;color:var(--text-muted);background:var(--surface-sunken);padding:2px 8px;border-radius:999px;font-weight:700}
+  .col-head.seedling .col-emoji{filter:saturate(.7)}
+  .col-head.tending{border-bottom-color:var(--accent)}
+  .col-head.bloom{border-bottom-color:var(--sage)}
+  .col-body{flex:1 1 auto;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:0}
+
+  /* Goal cards */
+  .gcard{padding:12px 13px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);cursor:pointer;transition:.16s var(--ease);display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow-sm)}
+  .gcard:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:var(--shadow)}
+  .gcard:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .gcard.selected{border-color:var(--accent);box-shadow:0 0 0 1.5px var(--accent),var(--shadow)}
+  .gcard .gc-top{display:flex;align-items:center;gap:8px}
+  .gcard .gc-emoji{font-size:18px;flex:0 0 auto}
+  .gcard .gc-title{font-size:13px;font-weight:700;flex:1;min-width:0;line-height:1.3}
+  .gcard .gc-why{font-size:10.5px;color:var(--text-muted);line-height:1.45}
+  .gcard .gc-bar{height:6px;border-radius:999px;background:var(--surface-sunken);overflow:hidden;margin-top:2px}
+  .gcard .gc-fill{height:100%;border-radius:999px;transition:width .4s var(--ease)}
+  .gcard .gc-meta{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--text-faint)}
+  .gcard .gc-next{font-size:11px;color:var(--accent-hover);font-weight:600;display:flex;align-items:center;gap:5px;margin-top:2px}
+  .gcard .gc-next .ic{width:12px;height:12px}
+  .gcard.done .gc-title{text-decoration:line-through;text-decoration-color:var(--border-strong);color:var(--text-muted)}
+  .gcard.resting{opacity:.7;border-style:dashed}
+  .gcard.resting .gc-emoji{filter:grayscale(.5)}
+
+  /* Buddy chat panel */
+  .panel{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-height:0}
+  .buddy-chat{display:flex;flex-direction:column;min-height:0}
+  .bc-head{display:flex;align-items:center;gap:9px;padding:11px 13px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--surface),var(--surface-2))}
+  .bc-stage{width:34px;height:34px;border-radius:9px;background:radial-gradient(circle at 30% 30%,var(--accent-soft) 0%,transparent 70%),linear-gradient(135deg,var(--surface-sunken),var(--surface));border:1px dashed var(--accent);display:grid;place-items:center;flex:0 0 auto;overflow:hidden}
+  .bc-stage .ph-emoji{font-size:20px;opacity:.75;animation:breathe 3.6s var(--ease) infinite}
+  @keyframes breathe{0%,100%{transform:scale(1)} 50%{transform:scale(1.06)}}
+  .bc-name{font-size:13px;font-weight:700;font-family:var(--font-disp)}
+  .bc-state{font-size:10px;color:var(--success);font-weight:600;display:flex;align-items:center;gap:4px}
+  .bc-state .dot{width:5px;height:5px;border-radius:50%;background:var(--success)}
+  .bc-body{flex:1 1 auto;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:0}
+  .msg{display:flex;gap:7px;max-width:94%;animation:fadeIn .25s var(--ease)}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none}}
+  .msg .av{width:22px;height:22px;border-radius:7px;flex:0 0 auto;display:grid;place-items:center;color:#fff;font-size:11px}
+  .msg.ai .av{background:linear-gradient(135deg,var(--accent),var(--accent-hover))}
+  .msg.me .av{background:var(--cocoa)}
+  .msg .bubble{font-size:11.5px;line-height:1.45;padding:8px 10px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);color:var(--text)}
+  .msg.me{align-self:flex-end;flex-direction:row-reverse}
+  .msg.me .bubble{background:var(--cocoa);color:#fff;border-color:var(--cocoa)}
+  .msg.ai .bubble b{color:var(--accent-hover)}
+  .msg.ai .bubble .plan{margin-top:7px;padding:8px;border:1px solid var(--border);border-radius:7px;background:var(--surface)}
+  .msg.ai .bubble .plan b{display:block;font-size:10.5px;margin-bottom:3px}
+  .msg.ai .bubble .plan .acts{margin-top:6px;display:flex;gap:5px}
+  .msg.ai .bubble .plan .acts button{font:inherit;font-size:10px;font-weight:600;padding:4px 8px;border-radius:6px;cursor:pointer;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-hover);transition:.14s var(--ease)}
+  .msg.ai .bubble .plan .acts button:hover{background:var(--accent);color:#fff}
+  .bc-recs{flex:0 0 auto;padding:0 10px 8px}
+  .bc-recs .rec-label{font-size:8.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-faint);margin-bottom:5px;padding-left:1px}
+  .bc-recs .rec-list{display:flex;flex-direction:column;gap:4px}
+  .rec{width:100%;text-align:left;font:inherit;font-size:10.5px;line-height:1.35;border:1px solid var(--border);background:var(--surface-2);color:var(--text);padding:6px 9px;border-radius:7px;cursor:pointer;display:flex;align-items:flex-start;gap:5px;transition:.13s var(--ease);box-shadow:var(--shadow-sm)}
+  .rec:hover{border-color:var(--accent);color:var(--accent-hover);transform:translateY(-1px)}
+  .rec:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .rec .rec-ico{width:12px;height:12px;flex:0 0 auto;color:var(--accent);margin-top:1px}
+  .rec.sent{opacity:.45;pointer-events:none}
+  .bc-input{flex:0 0 auto;border-top:1px solid var(--border);padding:8px 10px;background:rgba(255,255,255,.5);display:flex;gap:6px;align-items:flex-end}
+  .bc-input textarea{flex:1;font:inherit;font-size:11.5px;line-height:1.4;resize:none;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:8px;padding:7px 9px;max-height:70px;min-height:32px;transition:.15s var(--ease);font-family:var(--font-ui)}
+  .bc-input textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .sendbtn{width:32px;height:32px;border-radius:8px;flex:0 0 auto;border:none;background:var(--accent-hover);color:#fff;cursor:pointer;display:grid;place-items:center;transition:.15s var(--ease);box-shadow:var(--shadow-sm)}
+  .sendbtn:hover{background:var(--accent-press)}
+  .sendbtn:disabled{background:var(--border-strong);cursor:not-allowed}
+  .sendbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .sendbtn .ic{width:14px;height:14px}
+
+  /* Breakdown drawer (slides in from right over the chat) */
+  .drawer{position:absolute;top:0;right:0;bottom:0;width:340px;background:var(--surface-2);border-left:1px solid var(--border-strong);box-shadow:var(--shadow-lg);transform:translateX(100%);transition:transform .3s var(--ease);z-index:50;display:flex;flex-direction:column}
+  .drawer.show{transform:translateX(0)}
+  .drawer-head{display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--accent-soft),var(--surface))}
+  .drawer-head .dh-emoji{font-size:22px}
+  .drawer-head .dh-title{font-size:14px;font-weight:700;font-family:var(--font-disp);flex:1}
+  .drawer-head .dh-close{width:28px;height:28px;border-radius:7px;border:none;background:transparent;cursor:pointer;color:var(--text-muted);display:grid;place-items:center;transition:.14s var(--ease)}
+  .drawer-head .dh-close:hover{background:var(--surface-sunken);color:var(--text)}
+  .drawer-head .dh-close .ic{width:17px;height:17px}
+  .drawer-body{flex:1;overflow:auto;padding:14px 15px;display:flex;flex-direction:column;gap:12px}
+  .drawer-foot{padding:11px 15px;border-top:1px solid var(--border);display:flex;gap:8px}
+  .step{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface);transition:.14s var(--ease)}
+  .step:hover{border-color:var(--accent)}
+  .step-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--border-strong);cursor:pointer;display:grid;place-items:center;transition:.14s var(--ease);flex:0 0 auto;margin-top:1px}
+  .step-check.done{background:var(--sage);border-color:var(--sage);color:#fff}
+  .step-check .ic{width:12px;height:12px}
+  .step-body{flex:1;min-width:0}
+  .step-what{font-size:12.5px;font-weight:600}
+  .step-what.done{text-decoration:line-through;color:var(--text-faint)}
+  .step-meta{font-size:10.5px;color:var(--text-muted);margin-top:2px}
+  .step-ifthen{font-size:10.5px;color:var(--dusk);margin-top:4px;padding:5px 8px;background:var(--dusk-soft);border-radius:6px;line-height:1.4}
+  .btn{font:inherit;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);padding:8px 13px;border-radius:8px;display:inline-flex;align-items:center;gap:7px;transition:.15s var(--ease);box-shadow:var(--shadow-sm)}
+  .btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent-hover)}
+  .btn.primary{background:var(--accent-hover);border-color:var(--accent-hover);color:#fff}
+  .btn.primary:hover{background:var(--accent-press);border-color:var(--accent-press);color:#fff}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .btn .ic{width:13px;height:13px}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--text);color:#FBF3EB;padding:10px 16px;border-radius:999px;font-size:12.5px;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.22s var(--ease);z-index:300}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="rail">
+    <div class="brand">
+      <span class="mark"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></span>
+      FocusPath <small>· Goals</small>
+    </div>
+    <div class="spacer"></div>
+    <span class="meta-tag"><span class="dot"></span>Flow from seed to bloom</span>
+    <span class="date">Tuesday, July 22, 2025</span>
+    <button class="add-btn" id="addGoalBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>New goal</button>
+    <button class="back-btn" id="backBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Dashboard</button>
+  </div>
+
+  <div class="body" style="position:relative">
+    <!-- LEFT: kanban board -->
+    <div class="board" id="board"></div>
+
+    <!-- RIGHT: buddy chat -->
+    <div class="panel buddy-chat">
+      <div class="bc-head">
+        <div class="bc-stage" aria-label="Buddy placeholder — Kitsu the Fox"><span class="ph-emoji">🦊</span></div>
+        <div>
+          <div class="bc-name">Kitsu — Goal buddy</div>
+          <div class="bc-state"><span class="dot"></span>Move things to bloom</div>
+        </div>
+      </div>
+      <div class="bc-body" id="bcBody"></div>
+      <div class="bc-recs"><div class="rec-label">Ask Kitsu</div><div class="rec-list" id="recList"></div></div>
+      <div class="bc-input">
+        <textarea id="bcInput" placeholder="e.g. 'What's my next move on Chemistry?'" rows="1"></textarea>
+        <button class="sendbtn" id="bcSend" aria-label="Send"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+      </div>
+    </div>
+
+    <!-- Breakdown drawer -->
+    <div class="drawer" id="drawer" role="dialog" aria-modal="false" aria-label="Goal breakdown">
+      <div class="drawer-head">
+        <span class="dh-emoji" id="dhEmoji"></span>
+        <span class="dh-title" id="dhTitle"></span>
+        <button class="dh-close" id="dhClose" aria-label="Close breakdown"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="drawer-body" id="drawerBody"></div>
+      <div class="drawer-foot">
+        <button class="btn primary" id="advanceBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>Advance to next stage</button>
+        <button class="btn" id="relaunchBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg>Relaunch</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const toast=document.getElementById("toast");
+function showToast(m){toast.textContent=m;toast.classList.add("show");clearTimeout(window._t);window._t=setTimeout(()=>toast.classList.remove("show"),1700);}
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML;}
+
+const IC={
+  check:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+  arrow:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>',
+  spark:'<svg class="rec-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>',
+};
+
+// Goals — stages: seedling → tending → bloom (+ resting for paused)
+let goals=[
+  {id:1,emoji:"🌳",title:"A in Chemistry",stage:"tending",why:"Strong GPA for pre-med — and I like it when I'm not rushing.",progress:35,nextAction:"Problems 4.1-4.5 (just attempt them)",
+    steps:[
+      {what:"Ch.1-3 Foundation review",done:true,meta:"done"},
+      {what:"Read Ch.4 pp.142-158",done:true,meta:"done"},
+      {what:"Problems 4.1-4.5",done:false,meta:"now · 1pm",ifThen:"IF I get stuck, THEN I'll re-read the worked example first"},
+      {what:"Problems 4.6-4.10",done:false,meta:"next"},
+      {what:"Ch.4 review + weak spots",done:false,meta:"Wed 7pm"},
+      {what:"Exam prep + summary sheet",done:false,meta:"Jul 31"},
+    ]},
+  {id:2,emoji:"🧘",title:"Meditate daily",stage:"tending",why:"Less anxiety, better focus. I'm calmer on days I meditate.",progress:60,nextAction:"Journal one line after meditating",
+    steps:[
+      {what:"10-min meditation",done:true,meta:"done"},
+      {what:"Journal one line after",done:false,meta:"after med",ifThen:"IF I finish meditating, THEN I'll open the notebook before standing up"},
+    ]},
+  {id:3,emoji:"🏃",title:"Run 5k by August",stage:"seedling",why:"Cardio base + mental clarity. Starting slow, no pressure.",progress:0,nextAction:"Easy 1k walk/jog to start",
+    steps:[
+      {what:"Easy 1k walk/jog",done:false,meta:"this week"},
+      {what:"2k continuous",done:false,meta:"next week"},
+      {what:"3k + stretch routine",done:false,meta:"week 3"},
+      {what:"5k attempt",done:false,meta:"Aug"},
+    ]},
+  {id:4,emoji:"📚",title:"Read 12 books this year",stage:"bloom",why:"Joy + slower thinking. Already hit 8 — just maintaining.",progress:75,nextAction:"Start book 9 (Tiamat's Wrath)",
+    steps:[
+      {what:"Books 1-8",done:true,meta:"done · 8 of 12"},
+      {what:"Book 9: Tiamat's Wrath",done:false,meta:"now"},
+      {what:"Books 10-12",done:false,meta:"rest of year"},
+    ]},
+  {id:5,emoji:"✍️",title:"Write weekly journal",stage:"seedling",why:"Process emotions instead of suppressing them.",progress:0,nextAction:"Open a blank doc and title it",
+    steps:[
+      {what:"Open a blank doc and title it",done:false,meta:"today"},
+      {what:"Write 3 sentences about today",done:false,meta:"Fri"},
+    ]},
+];
+let selGoal=null;
+
+const STAGES=[
+  {key:"seedling",emoji:"🌱",title:"Seedling",cls:"seedling"},
+  {key:"tending",emoji:"🌿",title:"Tending",cls:"tending"},
+  {key:"bloom",emoji:"🌸",title:"Bloom",cls:"bloom"},
+];
+
+function renderBoard(){
+  document.getElementById("board").innerHTML=STAGES.map(stage=>{
+    const items=goals.filter(g=>g.stage===stage.key);
+    return `<div class="col">
+      <div class="col-head ${stage.cls}"><span class="col-emoji">${stage.emoji}</span><span class="col-title">${stage.title}</span><span class="col-count">${items.length}</span></div>
+      <div class="col-body" role="list">
+        ${items.map(g=>`<div class="gcard ${g.stage==="bloom"?"done":""}${g.progress===0&&g.stage==="seedling"?" resting":""}" role="button" tabindex="0" data-gid="${g.id}" aria-label="${esc(g.title)}, ${stage.title} stage, ${g.progress}% cultivated">
+          <div class="gc-top"><span class="gc-emoji">${g.emoji}</span><span class="gc-title">${esc(g.title)}</span></div>
+          <div class="gc-why">${esc(g.why)}</div>
+          <div class="gc-bar"><div class="gc-fill" style="width:${g.progress}%;background:${g.stage==="bloom"?"var(--sage)":"var(--accent)"}"></div></div>
+          <div class="gc-meta">${g.steps.filter(s=>s.done).length}/${g.steps.length} steps · ${g.progress}%</div>
+          ${g.nextAction?`<div class="gc-next">${IC.arrow}<span>Next: ${esc(g.nextAction)}</span></div>`:""}
+        </div>`).join("")}
+        ${items.length===0?`<div style="margin:auto;text-align:center;color:var(--text-faint);font-size:11px;padding:20px">No goals here yet</div>`:""}
+      </div>
+    </div>`;
+  }).join("");
+  document.querySelectorAll(".gcard").forEach(c=>{
+    const open=()=>{ selGoal=+c.getAttribute("data-gid"); openDrawer(); };
+    c.onclick=open;
+    c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open();}};
+  });
+}
+
+function openDrawer(){
+  const g=goals.find(x=>x.id===selGoal); if(!g)return;
+  document.getElementById("dhEmoji").textContent=g.emoji;
+  document.getElementById("dhTitle").textContent=g.title;
+  document.getElementById("drawerBody").innerHTML=`
+    <div style="padding:12px 14px;background:var(--accent-soft);border-radius:9px;font-size:12px;line-height:1.5"><b style="color:var(--accent-hover)">Why this matters:</b> ${esc(g.why)}</div>
+    <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)">Implementation steps</div>
+    ${g.steps.map((s,i)=>`<div class="step"><div class="step-check ${s.done?"done":""}" role="button" tabindex="0" data-idx="${i}" aria-label="${s.done?"Mark not done":"Mark done"}: ${esc(s.what)}">${s.done?IC.check:""}</div><div class="step-body"><div class="step-what ${s.done?"done":""}">${esc(s.what)}</div><div class="step-meta">${esc(s.meta)}</div>${s.ifThen?`<div class="step-ifthen">⚡ ${esc(s.ifThen)}</div>`:""}</div></div>`).join("")}
+    <div style="padding:10px 13px;background:var(--sage-soft);border:1px solid var(--sage);border-radius:8px;font-size:11px;line-height:1.5;color:var(--text)"><b style="color:var(--sage)">🌱 Mastery framing:</b> You're cultivating a capacity, not chasing an outcome. ${g.progress}% grown — and growth isn't linear.</div>
+  `;
+  document.querySelectorAll(".step-check").forEach(c=>{
+    const toggle=()=>{
+      const g=goals.find(x=>x.id===selGoal);
+      const idx=+c.getAttribute("data-idx");
+      g.steps[idx].done=!g.steps[idx].done;
+      g.progress=Math.round(g.steps.filter(s=>s.done).length/g.steps.length*100);
+      // auto-advance stage
+      if(g.progress===100) g.stage="bloom";
+      else if(g.progress>0&&g.stage==="seedling") g.stage="tending";
+      renderBoard(); openDrawer(); showToast(g.steps[idx].done?"Step complete 🌱":"Step reopened");
+    };
+    c.onclick=toggle;
+    c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle();}};
+  });
+  document.getElementById("drawer").classList.add("show");
+  setTimeout(()=>document.getElementById("dhClose").focus(),120);
+}
+function closeDrawer(){document.getElementById("drawer").classList.remove("show");selGoal=null;}
+document.getElementById("dhClose").onclick=closeDrawer;
+document.getElementById("advanceBtn").onclick=()=>{
+  const g=goals.find(x=>x.id===selGoal); if(!g)return;
+  const order=["seedling","tending","bloom"];
+  const next=order[Math.min(order.indexOf(g.stage)+1,2)];
+  g.stage=next; if(next==="tending"&&g.progress===0) g.progress=10;
+  renderBoard(); closeDrawer(); showToast(`Moved to ${next} 🌿`);
+};
+document.getElementById("relaunchBtn").onclick=()=>showToast("Goal relaunched — fresh start, no shame 🌱");
+document.getElementById("addGoalBtn").onclick=()=>showToast("New goal flow — Kitsu will guide you 🦊");
+
+// Buddy chat
+const bcBody=document.getElementById("bcBody");
+const bcInput=document.getElementById("bcInput");
+const bcSend=document.getElementById("bcSend");
+const recList=document.getElementById("recList");
+const recs=["What's my next move on Chemistry?","Break my run goal into tiny steps","Which goal should I focus on today?","I'm overwhelmed by all my goals","Help me write an if-then plan"];
+function addMsg(role,html){
+  const div=document.createElement("div");div.className=`msg ${role}`;
+  const av=role==="ai"?"🦊":"Y";
+  div.innerHTML=`<span class="av">${av}</span><div class="bubble">${html}</div>`;
+  bcBody.appendChild(div);bcBody.scrollTop=bcBody.scrollHeight;return div;
+}
+function aiReply(text){
+  const t=text.toLowerCase();let html;
+  if(t.includes("next")||t.includes("move")||t.includes("chemistry")){
+    html=`Your next move on <b>Chemistry</b>: <b>Problems 4.1-4.5</b> at 1pm today. Just attempt them — wrong answers are data, not failure. Want me to break that into 3 micro-steps?`;
+  } else if(t.includes("break")||t.includes("run")||t.includes("tiny")){
+    html=`Let's make the run goal tiny:<div class="plan"><b>1. Put on running shoes</b><div class="row">2 min — just the shoes</div><b>2. Walk to the end of the block</b><div class="row">5 min — walking is fine</div><b>3. Jog one block, walk back</b><div class="row">8 min — that's a start</div><div class="acts"><button>Let's go!</button><button>Smaller?</button></div></div>You can stop after step 1. Momentum is optional.`;
+  } else if(t.includes("focus")||t.includes("today")||t.includes("which")){
+    html=`Today, focus on <b>Chemistry</b> — it's your tending goal with the clearest next action (problems at 1pm). The run goal can wait — it's a seedling, and seedlings don't need daily attention. One goal at a time.`;
+  } else if(t.includes("overwhelm")||t.includes("too many")||t.includes("stuck")){
+    html=`You have 5 goals but only <b>2 are tending</b> right now. That's manageable. The seedlings (run, journal) are paused and that's fine — they're <b>resting, not failed</b>. Want to archive one to reduce noise?`;
+  } else if(t.includes("if-then")){
+    html=`Here's an if-then for your next action:<div class="plan"><b>IF</b> I open my phone during the problem set,<br><b>THEN</b> I'll put it face-down in the drawer and take 3 breaths.<div class="acts"><button>Use this</button></div></div>Pre-deciding means you don't have to decide in the moment.`;
+  } else {
+    html=`I can find your next move, break a goal into tiny steps, or help you pick one goal to focus on today. What sounds good? 🦊`;
+  }
+  setTimeout(()=>{
+    const node=addMsg("ai",html);
+    node.querySelectorAll(".plan .acts button").forEach(b=>{b.onclick=()=>{if(b.textContent.includes("go")||b.textContent.includes("Use")){showToast("Added — go get 'em 🦊");addMsg("ai","You've got this. Start with step 1 — just the shoes (or the textbook). I'll be here.");}else{showToast("Let's make it smaller — tell me when 2 min feels too big");}};});
+  },380);
+}
+function sendMsg(text){if(!text.trim())return;addMsg("me",esc(text));bcInput.value="";bcSend.disabled=true;bcInput.style.height="auto";aiReply(text);}
+bcSend.onclick=()=>sendMsg(bcInput.value);
+bcInput.oninput=()=>{bcSend.disabled=!bcInput.value.trim();bcInput.style.height="auto";bcInput.style.height=Math.min(bcInput.scrollHeight,70)+"px";};
+bcInput.onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMsg(bcInput.value);}};
+addMsg("ai",`Hey friend. Kitsu here. I see 2 goals actively tending and 3 seedlings resting. Want to know your next move, or break something into tiny steps? 🦊`);
+bcSend.disabled=true;
+function renderRecs(){recList.innerHTML=recs.map(r=>`<button class="rec" data-rec="${esc(r)}">${IC.spark}<span>${esc(r)}</span></button>`).join("");recList.querySelectorAll(".rec").forEach(b=>{b.onclick=()=>{sendMsg(b.getAttribute("data-rec"));b.classList.add("sent");};});}
+renderRecs();
+
+document.getElementById("backBtn").onclick=()=>{ if(window.opener) window.close(); else if(document.referrer) history.back(); else window.location.href="dashboard-template-3-terracotta-bloom.html"; };
+renderBoard();
+</script>
+</body>
+</html>

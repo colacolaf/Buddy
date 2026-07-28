@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FocusPath Goals — Goal Cultivator · Template 1</title>
+<style>
+  :root{
+    --bg:#F7EDE4; --surface:#FBF3EB; --surface-2:#FFFFFF; --surface-sunken:#ECD9C8;
+    --border:#E0C7B2; --border-strong:#C8A88C;
+    --text:#3B2A22; --text-muted:#6E574A; --text-faint:#907A6B;
+    --accent:#C76A3E; --accent-hover:#A8562E; --accent-press:#8A4624; --accent-soft:#F2D8C5;
+    --cocoa:#7A4F3A; --cocoa-soft:#E8D9CC;
+    --sage:#7A8A6E; --sage-soft:#DDE3D4;
+    --dusk:#7A6A8A; --dusk-soft:#E2DCE6;
+    --amber:#B89366; --amber-soft:#F0E2D2;
+    --success:#7A8A6E; --warning:#B89366; --danger:#B05A4E; --danger-soft:#EBD6D0;
+    --shadow-sm:0 1px 2px rgba(59,42,34,.05), 0 2px 6px rgba(59,42,34,.05);
+    --shadow:0 1px 2px rgba(59,42,34,.05), 0 6px 18px rgba(59,42,34,.08);
+    --shadow-lg:0 2px 8px rgba(59,42,34,.07), 0 18px 48px rgba(59,42,34,.14);
+    --radius:14px; --radius-sm:9px; --radius-xs:6px;
+    --ease:cubic-bezier(.4,0,.2,1);
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+    --font-num:"SF Mono","ui-monospace","Menlo","Consolas",monospace;
+    --font-disp:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0;height:100%;overflow:hidden}
+  body{font-family:var(--font-ui);color:var(--text);background:radial-gradient(1100px 600px at 80% -10%,#F0D8C2 0%,transparent 60%),radial-gradient(900px 500px at -10% 25%,#F4E0CE 0%,transparent 55%),var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+
+  .app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+  .rail{flex:0 0 auto;display:flex;align-items:center;gap:14px;padding:9px 22px;background:rgba(251,243,235,.82);backdrop-filter:saturate(140%) blur(14px);-webkit-backdrop-filter:saturate(140%) blur(14px);border-bottom:1px solid var(--border)}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-.01em;font-size:14px}
+  .brand .mark{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent-hover));display:grid;place-items:center;color:#fff;box-shadow:var(--shadow-sm)}
+  .brand small{color:var(--text-muted);font-weight:500;margin-left:2px;font-size:12px}
+  .rail .spacer{flex:1}
+  .rail .meta-tag{font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px}
+  .rail .meta-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+  .rail .date{font-family:var(--font-disp);font-size:13px;color:var(--text-muted);font-style:italic}
+  .back-btn{font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);padding:7px 13px;border-radius:9px;display:inline-flex;align-items:center;gap:7px;transition:.15s var(--ease);box-shadow:var(--shadow-sm)}
+  .back-btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent-hover)}
+  .back-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .back-btn .ic{width:14px;height:14px}
+  .add-btn{font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-hover);padding:7px 13px;border-radius:9px;display:inline-flex;align-items:center;gap:7px;transition:.15s var(--ease);box-shadow:var(--shadow-sm)}
+  .add-btn:hover{background:var(--accent);color:#fff}
+  .add-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .add-btn .ic{width:14px;height:14px}
+
+  .body{flex:1 1 auto;min-height:0;overflow:hidden;display:grid;grid-template-columns:300px 1fr 320px;gap:14px;padding:14px 18px 8px}
+  .body>*{min-width:0;min-height:0}
+
+  .panel{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-height:0}
+  .panel-head{display:flex;align-items:center;gap:9px;padding:11px 13px;border-bottom:1px solid var(--border);background:var(--surface)}
+  .panel-head .ph-title{font-size:13px;font-weight:700;letter-spacing:-.01em;font-family:var(--font-disp)}
+  .panel-head .ph-sub{font-size:10.5px;color:var(--text-muted);margin-left:auto;white-space:nowrap}
+  .panel-head .ph-ic{width:15px;height:15px;color:var(--accent);flex:0 0 auto}
+  .panel-body{padding:12px 13px;display:flex;flex-direction:column;gap:10px;flex:1 1 auto;min-height:0;overflow:auto}
+
+  /* Goal garden — tree with growth metaphor */
+  .garden-hero{text-align:center;padding:14px 8px 10px}
+  .garden-hero .gh-emoji{font-size:36px;margin-bottom:6px}
+  .garden-hero .gh-title{font-size:14px;font-weight:700;font-family:var(--font-disp)}
+  .garden-hero .gh-sub{font-size:10.5px;color:var(--text-muted);margin-top:2px}
+  .garden-hero .gh-bar{height:7px;border-radius:999px;background:var(--surface-sunken);margin-top:9px;overflow:hidden}
+  .garden-hero .gh-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent-hover));transition:width .5s var(--ease)}
+
+  .goal-list{display:flex;flex-direction:column;gap:7px}
+  .goal-card{padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface);cursor:pointer;transition:.14s var(--ease);display:flex;flex-direction:column;gap:5px}
+  .goal-card:hover{border-color:var(--accent);background:var(--accent-soft);transform:translateX(2px)}
+  .goal-card.active{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1.5px var(--accent)}
+  .goal-card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .goal-card .gc-top{display:flex;align-items:center;gap:8px}
+  .goal-card .gc-emoji{font-size:16px;flex:0 0 auto}
+  .goal-card .gc-title{font-size:12.5px;font-weight:600;flex:1;min-width:0}
+  .goal-card .gc-meta{font-size:10px;color:var(--text-muted);display:flex;align-items:center;gap:6px}
+  .goal-card .gc-bar{height:5px;border-radius:999px;background:var(--surface-sunken);overflow:hidden}
+  .goal-card .gc-fill{height:100%;border-radius:999px;background:var(--accent);transition:width .4s var(--ease)}
+
+  /* Tree nodes — expandable, growth metaphor */
+  .tree{display:flex;flex-direction:column;gap:4px}
+  .tnode{display:flex;flex-direction:column;gap:2px}
+  .tnode-row{display:grid;grid-template-columns:18px 1fr auto;gap:9px;align-items:center;padding:8px 10px;border-radius:8px;transition:.13s var(--ease);cursor:pointer}
+  .tnode-row:hover{background:var(--surface)}
+  .tnode-row:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .tnode-row.selected{background:var(--accent-soft)}
+  .tnode-dot{width:12px;height:12px;border-radius:50%;border:2px solid;flex:0 0 auto}
+  .tnode.done .tnode-dot{background:var(--sage);border-color:var(--sage)}
+  .tnode.active .tnode-dot{border-color:var(--accent);background:var(--accent)}
+  .tnode.locked .tnode-dot{border-color:var(--border-strong);background:transparent}
+  .tnode-label{font-size:12.5px;min-width:0}
+  .tnode.done .tnode-label{color:var(--text-muted);text-decoration:line-through;text-decoration-color:var(--border-strong)}
+  .tnode.locked .tnode-label{color:var(--text-faint)}
+  .tnode-meta{font-size:10px;color:var(--text-muted);font-family:var(--font-num);flex:0 0 auto}
+  .tnode-chev{width:16px;height:16px;color:var(--text-faint);transition:.2s var(--ease);flex:0 0 auto}
+  .tnode.expanded .tnode-chev{transform:rotate(90deg)}
+  .tnode-children{display:none;padding-left:20px;flex-direction:column;gap:2px}
+  .tnode.expanded .tnode-children{display:flex}
+  .tnode-child{display:grid;grid-template-columns:14px 1fr auto;gap:8px;align-items:center;padding:6px 9px;border-radius:7px;cursor:pointer;transition:.12s var(--ease)}
+  .tnode-child:hover{background:var(--surface)}
+  .tnode-child.selected{background:var(--accent-soft)}
+  .tnode-child-dot{width:9px;height:9px;border-radius:50%;border:1.5px solid;flex:0 0 auto}
+  .tnode-child.done .tnode-child-dot{background:var(--sage);border-color:var(--sage)}
+  .tnode-child.active .tnode-child-dot{border-color:var(--accent);background:var(--accent)}
+  .tnode-child-label{font-size:11.5px;min-width:0}
+  .tnode-child.done .tnode-child-label{color:var(--text-muted);text-decoration:line-through}
+  .tnode-child-meta{font-size:9.5px;color:var(--text-faint);font-family:var(--font-num)}
+
+  /* Center: II editor + brain dump */
+  .editor-hero{padding:14px 16px;background:linear-gradient(135deg,var(--accent-soft),var(--surface));border-bottom:1px solid var(--border)}
+  .editor-hero .eh-eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-hover)}
+  .editor-hero .eh-title{font-size:18px;font-weight:700;font-family:var(--font-disp);margin-top:3px;letter-spacing:-.01em}
+  .editor-hero .eh-sub{font-size:11.5px;color:var(--text-muted);margin-top:3px}
+  .ii-field{display:flex;flex-direction:column;gap:5px}
+  .ii-field label{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);display:flex;align-items:center;gap:6px}
+  .ii-field label .ic{width:12px;height:12px;color:var(--accent)}
+  .ii-field input,.ii-field textarea{font:inherit;font-size:12.5px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:8px;padding:8px 10px;transition:.15s var(--ease);font-family:var(--font-ui);width:100%}
+  .ii-field input:focus,.ii-field textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .ii-field textarea{resize:vertical;min-height:44px}
+  .ii-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .ifthen-box{padding:11px 13px;border-left:3px solid var(--dusk);background:var(--dusk-soft);border-radius:8px;font-size:12px;line-height:1.5;color:var(--text)}
+  .ifthen-box .it-label{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--dusk);margin-bottom:4px;display:block}
+  .ifthen-box b{color:var(--dusk)}
+  .ifthen-box b[contenteditable="true"]{background:#fff;border-radius:4px;padding:1px 4px;outline:1.5px solid var(--dusk);cursor:text}
+  .mastery-box{padding:11px 13px;border-radius:8px;background:var(--sage-soft);border:1px solid var(--sage);font-size:11.5px;line-height:1.5;color:var(--text)}
+  .mastery-box .mb-label{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--sage);margin-bottom:3px}
+  .btn{font:inherit;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);padding:8px 13px;border-radius:8px;display:inline-flex;align-items:center;gap:7px;transition:.15s var(--ease);box-shadow:var(--shadow-sm)}
+  .btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent-hover)}
+  .btn.primary{background:var(--accent-hover);border-color:var(--accent-hover);color:#fff}
+  .btn.primary:hover{background:var(--accent-press);border-color:var(--accent-press);color:#fff}
+  .btn.ghost{border:none;background:transparent;box-shadow:none;padding:6px 9px}
+  .btn.ghost:hover{background:var(--surface-sunken);transform:none}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .btn .ic{width:13px;height:13px}
+
+  /* Right: brain dump + buddy chat */
+  .brain-dump{flex:0 0 auto}
+  .bd-textarea{font:inherit;font-size:11.5px;line-height:1.5;resize:none;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:9px 11px;min-height:70px;width:100%;transition:.15s var(--ease);font-family:var(--font-ui)}
+  .bd-textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .bd-hint{font-size:10px;color:var(--text-faint);margin-top:5px;font-style:italic}
+
+  .buddy-chat{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+  .bc-head{display:flex;align-items:center;gap:9px;padding:10px 12px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--surface),var(--surface-2))}
+  .bc-stage{width:32px;height:32px;border-radius:9px;background:radial-gradient(circle at 30% 30%,var(--accent-soft) 0%,transparent 70%),linear-gradient(135deg,var(--surface-sunken),var(--surface));border:1px dashed var(--accent);display:grid;place-items:center;flex:0 0 auto;overflow:hidden}
+  .bc-stage .ph-emoji{font-size:19px;opacity:.75;animation:breathe 3.6s var(--ease) infinite}
+  @keyframes breathe{0%,100%{transform:scale(1)} 50%{transform:scale(1.06)}}
+  .bc-name{font-size:12.5px;font-weight:700;font-family:var(--font-disp)}
+  .bc-state{font-size:10px;color:var(--success);font-weight:600;display:flex;align-items:center;gap:4px}
+  .bc-state .dot{width:5px;height:5px;border-radius:50%;background:var(--success)}
+  .bc-body{flex:1 1 auto;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:0}
+  .msg{display:flex;gap:7px;max-width:94%;animation:fadeIn .25s var(--ease)}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none}}
+  .msg .av{width:20px;height:20px;border-radius:6px;flex:0 0 auto;display:grid;place-items:center;color:#fff;font-size:10px}
+  .msg.ai .av{background:linear-gradient(135deg,var(--accent),var(--accent-hover))}
+  .msg.me .av{background:var(--cocoa)}
+  .msg .bubble{font-size:11.5px;line-height:1.45;padding:8px 10px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);color:var(--text)}
+  .msg.me{align-self:flex-end;flex-direction:row-reverse}
+  .msg.me .bubble{background:var(--cocoa);color:#fff;border-color:var(--cocoa)}
+  .msg.ai .bubble b{color:var(--accent-hover)}
+  .msg.ai .bubble .plan{margin-top:7px;padding:7px;border:1px solid var(--border);border-radius:7px;background:var(--surface)}
+  .msg.ai .bubble .plan b{display:block;font-size:10.5px;margin-bottom:3px}
+  .msg.ai .bubble .plan .acts{margin-top:6px;display:flex;gap:5px}
+  .msg.ai .bubble .plan .acts button{font:inherit;font-size:10px;font-weight:600;padding:4px 8px;border-radius:6px;cursor:pointer;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-hover);transition:.14s var(--ease)}
+  .msg.ai .bubble .plan .acts button:hover{background:var(--accent);color:#fff}
+  .bc-recs{flex:0 0 auto;padding:0 10px 8px}
+  .bc-recs .rec-label{font-size:8.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-faint);margin-bottom:5px;padding-left:1px}
+  .bc-recs .rec-list{display:flex;flex-direction:column;gap:4px}
+  .rec{width:100%;text-align:left;font:inherit;font-size:10.5px;line-height:1.35;border:1px solid var(--border);background:var(--surface-2);color:var(--text);padding:6px 9px;border-radius:7px;cursor:pointer;display:flex;align-items:flex-start;gap:5px;transition:.13s var(--ease);box-shadow:var(--shadow-sm)}
+  .rec:hover{border-color:var(--accent);color:var(--accent-hover);transform:translateY(-1px)}
+  .rec:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .rec .rec-ico{width:12px;height:12px;flex:0 0 auto;color:var(--accent);margin-top:1px}
+  .rec.sent{opacity:.45;pointer-events:none}
+  .bc-input{flex:0 0 auto;border-top:1px solid var(--border);padding:8px 10px;background:rgba(255,255,255,.5);display:flex;gap:6px;align-items:flex-end}
+  .bc-input textarea{flex:1;font:inherit;font-size:11.5px;line-height:1.4;resize:none;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:8px;padding:7px 9px;max-height:70px;min-height:32px;transition:.15s var(--ease);font-family:var(--font-ui)}
+  .bc-input textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .sendbtn{width:32px;height:32px;border-radius:8px;flex:0 0 auto;border:none;background:var(--accent-hover);color:#fff;cursor:pointer;display:grid;place-items:center;transition:.15s var(--ease);box-shadow:var(--shadow-sm)}
+  .sendbtn:hover{background:var(--accent-press)}
+  .sendbtn:disabled{background:var(--border-strong);cursor:not-allowed}
+  .sendbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .sendbtn .ic{width:14px;height:14px}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--text);color:#FBF3EB;padding:10px 16px;border-radius:999px;font-size:12.5px;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.22s var(--ease);z-index:300}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="rail">
+    <div class="brand">
+      <span class="mark"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></span>
+      FocusPath <small>· Goals</small>
+    </div>
+    <div class="spacer"></div>
+    <span class="meta-tag"><span class="dot"></span>Cultivate, don't chase</span>
+    <span class="date">Tuesday, July 22, 2025</span>
+    <button class="add-btn" id="addGoalBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>New goal</button>
+    <button class="back-btn" id="backBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Dashboard</button>
+  </div>
+
+  <div class="body">
+    <!-- LEFT: goal garden -->
+    <div class="panel">
+      <div class="panel-head">
+        <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L8 8h3v4H7l5 6 5-6h-4V8h3z"/></svg>
+        <span class="ph-title">Your goal garden</span>
+        <span class="ph-sub" id="gardenCount">2 goals</span>
+      </div>
+      <div class="panel-body">
+        <div class="garden-hero" id="gardenHero"></div>
+        <div class="goal-list" id="goalList"></div>
+        <div class="tree" id="goalTree" role="tree" aria-label="Goal breakdown tree"></div>
+      </div>
+    </div>
+
+    <!-- CENTER: implementation-intention editor + brain dump -->
+    <div class="panel">
+      <div class="editor-hero" id="editorHero"></div>
+      <div class="panel-body">
+        <div class="ii-field">
+          <label><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>What exactly?</label>
+          <input id="fWhat" type="text" placeholder="e.g. Read Chemistry Ch.4, sections 4.1-4.5" />
+        </div>
+        <div class="ii-row">
+          <div class="ii-field">
+            <label><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>When</label>
+            <input id="fWhen" type="text" placeholder="Tue 7pm" />
+          </div>
+          <div class="ii-field">
+            <label><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Where</label>
+            <input id="fWhere" type="text" placeholder="At my desk, phone away" />
+          </div>
+        </div>
+        <div class="ii-field">
+          <label><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>First concrete step (2-min)</label>
+          <input id="fFirst" type="text" placeholder="Open textbook to page 142" />
+        </div>
+        <div class="ifthen-box">
+          <span class="it-label">⚡ If-then intention</span>
+          IF <b id="itIf">I feel the urge to check Discord</b>, THEN <b id="itThen">I'll stand up and stretch for 30 seconds</b>
+          <div style="margin-top:7px;display:flex;gap:6px"><button class="btn ghost" id="editIfThen">Edit</button></div>
+        </div>
+        <div class="mastery-box">
+          <div class="mb-label">🌱 Mastery framing</div>
+          You're not chasing a grade — you're <b style="color:var(--sage)">building chemistry intuition</b>. Every problem you attempt is growth, even the ones you get wrong.
+        </div>
+        <div style="display:flex;gap:9px;flex-wrap:wrap">
+          <button class="btn primary" id="markDoneBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Mark step done</button>
+          <button class="btn" id="saveBtn">Save intention</button>
+          <button class="btn ghost" id="relaunchBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg>Relaunch goal</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: brain dump + buddy chat -->
+    <div class="panel buddy-chat">
+      <div class="panel-head">
+        <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>
+        <span class="ph-title">Brain dump + Kitsu</span>
+        <span class="ph-sub">externalize it</span>
+      </div>
+      <div style="padding:10px 12px;border-bottom:1px solid var(--border)">
+        <textarea class="bd-textarea" id="brainDump" placeholder="Dump anything here — the why, the fear, the idea you don't want to forget. Kitsu will remember it for you."></textarea>
+        <div class="bd-hint">Offloading this frees your working memory for the actual task.</div>
+      </div>
+      <div class="bc-head">
+        <div class="bc-stage" aria-label="Buddy placeholder — Kitsu the Fox"><span class="ph-emoji">🦊</span></div>
+        <div>
+          <div class="bc-name">Kitsu — Goal buddy</div>
+          <div class="bc-state"><span class="dot"></span>Here to lower the friction</div>
+        </div>
+      </div>
+      <div class="bc-body" id="bcBody"></div>
+      <div class="bc-recs"><div class="rec-label">Ask Kitsu</div><div class="rec-list" id="recList"></div></div>
+      <div class="bc-input">
+        <textarea id="bcInput" placeholder="e.g. 'Break this step into 3 tiny actions'" rows="1"></textarea>
+        <button class="sendbtn" id="bcSend" aria-label="Send"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const toast=document.getElementById("toast");
+function showToast(m){toast.textContent=m;toast.classList.add("show");clearTimeout(window._t);window._t=setTimeout(()=>toast.classList.remove("show"),1700);}
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML;}
+
+const IC={
+  spark:'<svg class="rec-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>',
+  chev:'<svg class="tnode-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>',
+};
+
+// Goal data — growth metaphor, no rigid streaks
+let goals=[
+  {id:1,emoji:"🌳",title:"A in Chemistry",type:"academic",why:"I need a strong GPA for pre-med apps — and I actually like the subject when I'm not rushing.",progress:35,brainDump:"The exam is Aug 1. I keep avoiding Ch.4 because the titration lab confused me. Maybe I should re-watch the lecture first? Also: Prof said the hard problems are weighted heavy.",
+    steps:[
+      {id:101,what:"Ch.1-3 Foundation review",state:"done",meta:"done"},
+      {id:102,what:"Ch.4 practice problems",state:"active",meta:"today · 1pm",
+        ii:{what:"Read Ch.4 + problems 4.1-4.10",when:"Tue 1pm",where:"At my desk, phone away",first:"Open textbook to page 142",obstacle:"Getting stuck on hard problems",ifThen:"IF I get stuck, THEN I'll re-read the example first before asking for help"},
+        children:[
+          {id:1021,what:"Read pp.142-158",state:"done",meta:"done"},
+          {id:1022,what:"Problems 4.1-4.5",state:"active",meta:"now"},
+          {id:1023,what:"Problems 4.6-4.10",state:"locked",meta:"next"},
+        ]},
+      {id:103,what:"Ch.4 review + weak spots",state:"locked",meta:"Wed 7pm"},
+      {id:104,what:"Exam prep + summary sheet",state:"locked",meta:"Jul 31"},
+    ]},
+  {id:2,emoji:"🧘",title:"Meditate daily",type:"habit",why:"Less anxiety, better focus. I notice I'm calmer on days I meditate.",progress:60,brainDump:"Struggled with mornings this week. Maybe move it to after dinner instead? The couch is comfy and I'm less likely to skip.",
+    steps:[
+      {id:201,what:"10-min meditation",state:"done",meta:"done"},
+      {id:202,what:"Journal one line after",state:"active",meta:"after med",
+        ii:{what:"Write one line in notebook",when:"After meditation",where:"Same spot on couch",first:"Open notebook to today's page",obstacle:"Forgetting to journal",ifThen:"IF I finish meditating, THEN I'll open the notebook before standing up"},
+      },
+    ]},
+];
+let selGoal=1, selStep=102, expandedNode=102;
+let nextGoalId=3, nextStepId=300;
+let ifThenEditing=false;
+
+function renderGarden(){
+  const g=goals.find(x=>x.id===selGoal);
+  const done=g.steps.filter(s=>s.state==="done").length;
+  document.getElementById("gardenHero").innerHTML=`<div class="gh-emoji">${g.emoji}</div><div class="gh-title">${esc(g.title)}</div><div class="gh-sub">${done}/${g.steps.length} steps · ${g.progress}% cultivated</div><div class="gh-bar"><div class="gh-fill" style="width:${g.progress}%"></div></div>`;
+  document.getElementById("gardenCount").textContent=`${goals.length} goals`;
+}
+function renderGoalList(){
+  document.getElementById("goalList").innerHTML=goals.map(g=>`<div class="goal-card ${g.id===selGoal?"active":""}" role="button" tabindex="0" data-gid="${g.id}" aria-label="${esc(g.title)}, ${g.progress}% cultivated">
+    <div class="gc-top"><span class="gc-emoji">${g.emoji}</span><span class="gc-title">${esc(g.title)}</span></div>
+    <div class="gc-meta">${g.type} · ${g.progress}%</div>
+    <div class="gc-bar"><div class="gc-fill" style="width:${g.progress}%"></div></div>
+  </div>`).join("");
+  document.querySelectorAll(".goal-card").forEach(c=>{
+    const pick=()=>{ selGoal=+c.getAttribute("data-gid"); const g=goals.find(x=>x.id===selGoal); const next=g.steps.find(s=>s.state==="active")||g.steps[0]; selStep=next.id; expandedNode=next.id; renderAll(); };
+    c.onclick=pick;
+    c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();pick();}};
+  });
+}
+function renderTree(){
+  const g=goals.find(x=>x.id===selGoal);
+  document.getElementById("goalTree").innerHTML=g.steps.map(s=>{
+    const hasChildren=s.children&&s.children.length;
+    const expanded=expandedNode===s.id;
+    const selected=selStep===s.id;
+    const childHtml=hasChildren?`<div class="tnode-children" role="group">${s.children.map(ch=>`<div class="tnode-child ${ch.state}${selStep===ch.id?" selected":""}" role="treeitem" tabindex="0" data-sid="${ch.id}" aria-label="${esc(ch.what)}, ${ch.meta}">
+      <span class="tnode-child-dot"></span><span class="tnode-child-label">${esc(ch.what)}</span><span class="tnode-child-meta">${esc(ch.meta)}</span>
+    </div>`).join("")}</div>`:"";
+    return `<div class="tnode ${s.state}${expanded?" expanded":""}" role="treeitem" aria-expanded="${expanded}">
+      <div class="tnode-row ${selected?"selected":""}" role="button" tabindex="0" data-sid="${s.id}" aria-label="${esc(s.what)}, ${s.meta}">
+        <span class="tnode-dot"></span>
+        <span class="tnode-label">${esc(s.what)}</span>
+        <span class="tnode-meta">${esc(s.meta)}</span>
+        ${hasChildren?IC.chev:""}
+      </div>
+      ${childHtml}
+    </div>`;
+  }).join("");
+  const attach=(el)=>{
+    const sid=+el.getAttribute("data-sid");
+    const pick=()=>{
+      selStep=sid;
+      const g=goals.find(x=>x.id===selGoal);
+      const parent=g.steps.find(s=>s.id===sid);
+      if(parent&&parent.children) expandedNode=expandedNode===sid?null:sid;
+      renderEditor(); renderTree();
+    };
+    el.onclick=pick;
+    el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();pick();}};
+  };
+  document.querySelectorAll(".tnode-row").forEach(attach);
+  document.querySelectorAll(".tnode-child").forEach(attach);
+}
+function renderEditor(){
+  const g=goals.find(x=>x.id===selGoal);
+  const s=g.steps.find(x=>x.id===selStep)||g.steps.find(s=>s.state==="active")||g.steps[0];
+  if(!s){document.getElementById("editorHero").innerHTML="";return;}
+  document.getElementById("editorHero").innerHTML=`<div class="eh-eyebrow">${g.emoji} ${g.type} goal · step</div><div class="eh-title">${esc(s.what)}</div><div class="eh-sub">${esc(s.meta)} · ${g.progress}% cultivated</div>`;
+  const ii=s.ii||{what:"",when:"",where:"",first:"",obstacle:"",ifThen:""};
+  document.getElementById("fWhat").value=ii.what||"";
+  document.getElementById("fWhen").value=ii.when||"";
+  document.getElementById("fWhere").value=ii.where||"";
+  document.getElementById("fFirst").value=ii.first||"";
+  if(ii.ifThen){
+    const parts=ii.ifThen.split(", THEN ");
+    document.getElementById("itIf").textContent=parts[0].replace(/^IF\s/i,"");
+    document.getElementById("itThen").textContent=(parts[1]||"").trim();
+  } else {
+    document.getElementById("itIf").textContent="add an obstacle…";
+    document.getElementById("itThen").textContent="what you'll do instead";
+  }
+  document.getElementById("brainDump").value=g.brainDump||"";
+  document.getElementById("markDoneBtn").innerHTML=s.state==="done"?'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg>Reopen step':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Mark step done';
+}
+
+function renderAll(){renderGarden();renderGoalList();renderTree();renderEditor();}
+
+// Editor actions
+document.getElementById("markDoneBtn").onclick=()=>{
+  const g=goals.find(x=>x.id===selGoal);
+  const s=g.steps.find(x=>x.id===selStep);
+  if(!s)return;
+  s.state=s.state==="done"?"active":"done";
+  // recalc progress
+  const done=g.steps.filter(x=>x.state==="done").length;
+  g.progress=Math.round(done/g.steps.length*100);
+  // unlock next
+  if(s.state==="done"){
+    const idx=g.steps.indexOf(s);
+    if(idx+1<g.steps.length&&g.steps[idx+1].state==="locked") g.steps[idx+1].state="active";
+  }
+  renderAll(); showToast(s.state==="done"?"Step complete 🌱":"Step reopened");
+};
+document.getElementById("saveBtn").onclick=()=>{
+  const g=goals.find(x=>x.id===selGoal);
+  const s=g.steps.find(x=>x.id===selStep); if(!s)return;
+  s.ii={what:document.getElementById("fWhat").value,when:document.getElementById("fWhen").value,where:document.getElementById("fWhere").value,first:document.getElementById("fFirst").value,obstacle:s.ii?.obstacle||"",ifThen:s.ii?.ifThen||""};
+  g.brainDump=document.getElementById("brainDump").value;
+  showToast("Intention saved ✨");
+};
+// Relaunch goal — fresh-start mechanic: reset all steps, keep the plan, no shame
+document.getElementById("relaunchBtn").onclick=()=>{
+  const g=goals.find(x=>x.id===selGoal);
+  g.steps.forEach((s,i)=>{
+    s.state=i===0?"active":"locked";
+    if(s.children) s.children.forEach((c,j)=>c.state=j===0?"active":"locked");
+  });
+  g.progress=0;
+  const first=g.steps[0]; selStep=first.id; expandedNode=first.children?first.id:null;
+  renderAll();
+  showToast("Goal relaunched — fresh start, no shame 🌱");
+};
+// Edit if-then inline — toggle contenteditable on the IF/THEN spans
+document.getElementById("editIfThen").onclick=()=>{
+  const itIf=document.getElementById("itIf"), itThen=document.getElementById("itThen"), btn=document.getElementById("editIfThen");
+  if(!ifThenEditing){
+    ifThenEditing=true;
+    itIf.contentEditable="true"; itThen.contentEditable="true";
+    itIf.focus();
+    btn.textContent="Save";
+  } else {
+    ifThenEditing=false;
+    itIf.contentEditable="false"; itThen.contentEditable="false";
+    const g=goals.find(x=>x.id===selGoal), s=g.steps.find(x=>x.id===selStep);
+    if(s){ s.ii=s.ii||{}; s.ii.ifThen=`IF ${itIf.textContent}, THEN ${itThen.textContent}`; }
+    btn.textContent="Edit";
+    showToast("If-then plan saved ⚡");
+  }
+};
+// Add new goal — creates a scaffold goal the user can rename and break down
+document.getElementById("addGoalBtn").onclick=()=>{
+  const ng={id:nextGoalId++,emoji:"🌱",title:"New goal — rename me",type:"personal",why:"Why does this matter to you?",progress:0,brainDump:"",
+    steps:[{id:nextStepId++,what:"Define your first step",state:"active",meta:"now",ii:{what:"",when:"",where:"",first:"",obstacle:"",ifThen:""}}]};
+  goals.push(ng);
+  selGoal=ng.id; selStep=ng.steps[0].id; expandedNode=null;
+  renderAll();
+  showToast("New goal added — name it and break it down 🌱");
+  setTimeout(()=>document.getElementById("fWhat").focus(),100);
+};
+
+// Buddy chat
+const bcBody=document.getElementById("bcBody");
+const bcInput=document.getElementById("bcInput");
+const bcSend=document.getElementById("bcSend");
+const recList=document.getElementById("recList");
+const recs=["Break this step into 3 tiny actions","What's the 2-minute first move?","I feel stuck — help me start","Write me an if-then plan","What did I learn from this step?"];
+function addMsg(role,html){
+  const div=document.createElement("div");div.className=`msg ${role}`;
+  const av=role==="ai"?"🦊":"Y";
+  div.innerHTML=`<span class="av">${av}</span><div class="bubble">${html}</div>`;
+  bcBody.appendChild(div);bcBody.scrollTop=bcBody.scrollHeight;return div;
+}
+function aiReply(text){
+  const t=text.toLowerCase();let html;let proposed=null;
+  if(t.includes("break")||t.includes("split")||t.includes("tiny")||t.includes("decompose")){
+    proposed={steps:["Open textbook to page 142","Read section 4.2 (titration) — 10 min","Attempt problem 4.1 — just attempt it"]};
+    html=`Let's make this tiny. Three micro-steps, each under 10 minutes:<div class="plan"><b>1. Open textbook to page 142</b><div class="row">2 min · just open it</div><b>2. Read section 4.2 (titration)</b><div class="row">10 min · skim, don't memorize</div><b>3. Attempt problem 4.1</b><div class="row">5 min · just attempt, wrong is fine</div><div class="acts"><button>Let's go!</button><button>Make them smaller</button></div></div>Nothing commits until you say go.`;
+  } else if(t.includes("first")||t.includes("2-min")||t.includes("start")){
+    html=`The 2-minute first move: <b>open the textbook to page 142</b>. That's it. Don't think about the problems yet — just open the book. Momentum does the rest.`;
+  } else if(t.includes("stuck")||t.includes("can't")||t.includes("paraly")){
+    html=`Stuck is okay — it's not laziness, it's high activation energy. Try the <b>5-minute rule</b>: commit to just 5 minutes. You can stop after. Most of the time, you won't want to. Want me to set a 5-min timer?`;
+  } else if(t.includes("if-then")||t.includes("if then")){
+    html=`Here's an if-then for this step:<div class="plan"><b>IF</b> I get stuck on a problem,<br><b>THEN</b> I'll re-read the worked example before asking for help.<div class="acts"><button>Use this</button><button>Different obstacle</button></div></div>Pre-deciding removes the decision in the moment.`;
+  } else if(t.includes("learn")||t.includes("mastery")){
+    html=`Mastery reframe: you're not chasing a grade — you're <b>building chemistry intuition</b>. Every problem you attempt (even wrong ones) is growth. What felt easier than you expected today?`;
+  } else {
+    html=`I can break this down, find your 2-minute first move, write an if-then plan, or just sit with you while you start. What sounds good?`;
+  }
+  setTimeout(()=>{ addMsg("ai",html); },380);
+}
+// Event delegation for plan action buttons (handles dynamically added messages too)
+bcBody.addEventListener("click",e=>{
+  const b=e.target.closest(".plan .acts button"); if(!b) return;
+  if(b.textContent.includes("go")||b.textContent.includes("Use")){
+    showToast("Added — go get 'em 🦊");
+    addMsg("ai","You've got this. I'll be right here. Start with step 1 — just open the book.");
+  } else if(b.textContent.includes("smaller")){
+    addMsg("ai",`Even smaller:<div class="plan"><b>1. Touch the textbook cover</b><div class="row">5 sec — just touch it</div><b>2. Open to page 142</b><div class="row">3 sec — flip pages</div><b>3. Read ONE sentence</b><div class="row">30 sec — any sentence</div><div class="acts"><button>Let's go!</button></div></div>You can stop after step 1. Seriously.`);
+  } else if(b.textContent.includes("Different")){
+    addMsg("ai",`Okay — what's YOUR obstacle? Boredom? Overwhelm? Phone? Tell me and I'll write a specific if-then for it.`);
+  } else {
+    showToast("Tell me what's too big — I'll make it smaller 🦊");
+  }
+});
+function sendMsg(text){if(!text.trim())return;addMsg("me",esc(text));bcInput.value="";bcSend.disabled=true;bcInput.style.height="auto";aiReply(text);}
+bcSend.onclick=()=>sendMsg(bcInput.value);
+bcInput.oninput=()=>{bcSend.disabled=!bcInput.value.trim();bcInput.style.height="auto";bcInput.style.height=Math.min(bcInput.scrollHeight,70)+"px";};
+bcInput.onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMsg(bcInput.value);}};
+addMsg("ai",`Hey friend. Kitsu here. I can break this step into tiny actions, find your 2-minute first move, or just body-double while you start. What's up? 🦊`);
+bcSend.disabled=true;
+function renderRecs(){recList.innerHTML=recs.map(r=>`<button class="rec" data-rec="${esc(r)}">${IC.spark}<span>${esc(r)}</span></button>`).join("");recList.querySelectorAll(".rec").forEach(b=>{b.onclick=()=>{sendMsg(b.getAttribute("data-rec"));b.classList.add("sent");};});}
+renderRecs();
+
+document.getElementById("backBtn").onclick=()=>{ if(window.opener) window.close(); else if(document.referrer) history.back(); else window.location.href="dashboard-template-3-terracotta-bloom.html"; };
+renderAll();
+</script>
+</body>
+</html>
