@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FocusPath Analytics — Flow & Friction · Template 3</title>
+<style>
+  :root{
+    --bg:#F7EDE4; --surface:#FBF3EB; --surface-2:#FFFFFF; --surface-sunken:#ECD9C8;
+    --border:#E0C7B2; --border-strong:#C8A88C;
+    --text:#3B2A22; --text-muted:#6E574A; --text-faint:#907A6B;
+    --accent:#C76A3E; --accent-hover:#A8562E; --accent-press:#8A4624; --accent-soft:#F2D8C5;
+    --cocoa:#7A4F3A; --cocoa-soft:#E8D9CC;
+    --sage:#7A8A6E; --sage-soft:#DDE3D4;
+    --dusk:#7A6A8A; --dusk-soft:#E2DCE6;
+    --amber:#B89366; --amber-soft:#F0E2D2;
+    --clay:#8A5F4A; --clay-soft:#E8D5C9;
+    --success:#7A8A6E; --warning:#B89366; --danger:#B05A4E; --danger-soft:#EBD6D0;
+    --shadow-sm:0 1px 2px rgba(59,42,34,.05), 0 2px 6px rgba(59,42,34,.05);
+    --shadow:0 1px 2px rgba(59,42,34,.05), 0 6px 18px rgba(59,42,34,.08);
+    --shadow-lg:0 2px 8px rgba(59,42,34,.07), 0 18px 48px rgba(59,42,34,.14);
+    --radius:14px; --radius-sm:9px; --radius-xs:6px;
+    --ease:cubic-bezier(.4,0,.2,1);
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+    --font-num:"SF Mono","ui-monospace","Menlo","Consolas",monospace;
+    --font-disp:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0;height:100%;overflow:hidden}
+  body{font-family:var(--font-ui);color:var(--text);background:radial-gradient(1100px 600px at 80% -10%,#F0D8C2 0%,transparent 60%),radial-gradient(900px 500px at -10% 25%,#F4E0CE 0%,transparent 55%),var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+
+  .app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+  .rail{flex:0 0 auto;display:flex;align-items:center;gap:14px;padding:9px 22px;background:rgba(251,243,235,.82);backdrop-filter:saturate(140%) blur(14px);-webkit-backdrop-filter:saturate(140%) blur(14px);border-bottom:1px solid var(--border)}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-.01em;font-size:14px}
+  .brand .mark{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent-hover));display:grid;place-items:center;color:#fff;box-shadow:var(--shadow-sm)}
+  .brand small{color:var(--text-muted);font-weight:500;margin-left:2px;font-size:12px}
+  .rail .spacer{flex:1}
+  .rail .meta-tag{font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px}
+  .rail .meta-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+  .rail .date{font-family:var(--font-disp);font-size:13px;color:var(--text-muted);font-style:italic}
+  .back-btn{font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);padding:7px 13px;border-radius:9px;display:inline-flex;align-items:center;gap:7px;transition:.15s var(--ease);box-shadow:var(--shadow-sm)}
+  .back-btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent-hover)}
+  .back-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .back-btn .ic{width:14px;height:14px}
+
+  .body{flex:1 1 auto;min-height:0;overflow:auto;padding:16px 22px 28px;display:grid;grid-template-columns:1.7fr 1fr;gap:14px}
+
+  .panel{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+  .panel.grow{flex:1 1 auto;min-height:0}
+  .panel-head{display:flex;align-items:center;gap:9px;padding:12px 15px;border-bottom:1px solid var(--border);background:var(--surface)}
+  .panel-head .ph-title{font-size:13px;font-weight:700;letter-spacing:-.01em;font-family:var(--font-disp)}
+  .panel-head .ph-sub{font-size:10.5px;color:var(--text-muted);margin-left:auto;white-space:nowrap}
+  .panel-head .ph-ic{width:15px;height:15px;color:var(--accent);flex:0 0 auto}
+  .panel-body{padding:14px 15px;display:flex;flex-direction:column;gap:11px;overflow:auto}
+
+  .left-col{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .right-col{display:flex;flex-direction:column;gap:14px;min-height:0}
+
+  /* Summary stats row */
+  .sumrow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .sum{padding:11px 13px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--border)}
+  .sum .sv{font-size:20px;font-weight:700;font-family:var(--font-num);color:var(--accent-hover);line-height:1.1}
+  .sum .sl{font-size:10px;color:var(--text-muted);margin-top:2px;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+  .sum .sd{font-size:10.5px;color:var(--sage);margin-top:1px;font-weight:600}
+
+  /* Area chart */
+  .area-wrap{position:relative;width:100%;flex:1 1 auto;min-height:200px}
+  .area-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+  .area-grid line{stroke:var(--border);stroke-width:1;stroke-dasharray:2 3}
+  .area-axis{font-size:10px;fill:var(--text-faint);font-family:var(--font-num)}
+  .area-line{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+  .area-fill{fill:url(#aGrad)}
+  .area-point{fill:var(--accent);stroke:#fff;stroke-width:2;cursor:pointer;transition:.14s var(--ease)}
+  .area-point:hover{r:7}
+  .area-point.today{fill:var(--accent-hover);r:6}
+  .chart-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--text-muted);padding:2px 2px 0}
+  .chart-legend span{display:inline-flex;align-items:center;gap:5px}
+  .chart-legend i{width:9px;height:9px;border-radius:3px;display:block}
+
+  /* Focus anatomy — timeline of one session */
+  .anatomy{position:relative;height:60px;background:var(--surface-sunken);border-radius:8px;overflow:hidden}
+  .an-seg{position:absolute;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;padding:0 8px;font-size:9px;font-weight:700;color:#fff;overflow:hidden;white-space:nowrap}
+  .an-deep{background:linear-gradient(180deg,var(--accent),var(--accent-hover))}
+  .an-warm{background:var(--amber)}
+  .an-break{background:var(--dusk)}
+  .an-drift{background:var(--danger)}
+  .anatomy-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--text-muted);margin-top:20px}
+  .anatomy-legend span{display:inline-flex;align-items:center;gap:5px}
+  .anatomy-legend i{width:10px;height:10px;border-radius:3px;display:block}
+
+  /* Scatter plot */
+  .scatter-wrap{position:relative;width:100%;height:170px}
+  .scatter-svg{width:100%;height:100%;overflow:visible}
+  .sc-grid line{stroke:var(--border);stroke-width:1;stroke-dasharray:2 3}
+  .sc-axis{font-size:9px;fill:var(--text-faint);font-family:var(--font-num)}
+  .sc-pt{fill:var(--accent);stroke:#fff;stroke-width:1.5;cursor:pointer;transition:.14s var(--ease)}
+  .sc-pt:hover{r:7;fill:var(--accent-hover)}
+
+  /* Activity stream */
+  .stream{display:flex;flex-direction:column;gap:6px;overflow:auto;max-height:none}
+  .stream-item{display:flex;gap:9px;padding:9px 11px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--border);transition:.13s var(--ease);cursor:pointer}
+  .stream-item:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .stream-item .st-ic{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;flex:0 0 auto;color:#fff;font-size:11px}
+  .stream-item .st-ic.focus{background:linear-gradient(135deg,var(--accent),var(--accent-hover))}
+  .stream-item .st-ic.done{background:linear-gradient(135deg,var(--sage),#62755A)}
+  .stream-item .st-ic.override{background:linear-gradient(135deg,var(--amber),#9A7848)}
+  .stream-item .st-ic.insight{background:linear-gradient(135deg,var(--dusk),#5E4E6E)}
+  .stream-item .st-body{flex:1;min-width:0}
+  .stream-item .st-title{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .stream-item .st-sub{font-size:10.5px;color:var(--text-muted);margin-top:1px}
+  .stream-item .st-time{font-size:10px;color:var(--text-faint);font-family:var(--font-num);flex:0 0 auto;white-space:nowrap}
+
+  /* JITAI insight cards */
+  .jitai{padding:13px 15px;border-radius:var(--radius-sm);background:var(--dusk-soft);border:1px solid var(--dusk);font-size:12px;line-height:1.5}
+  .jitai .j-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--dusk);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+  .jitai .j-label .ic{width:12px;height:12px}
+  .jitai b{color:var(--dusk)}
+  .jitai .j-act{margin-top:8px;display:flex;gap:6px}
+  .jitai .j-act button{font:inherit;font-size:10.5px;font-weight:600;padding:5px 10px;border-radius:6px;cursor:pointer;border:1px solid var(--dusk);background:var(--surface-2);color:var(--dusk);transition:.14s var(--ease)}
+  .jitai .j-act button:hover{background:var(--dusk);color:#fff}
+  .jitai .j-act button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* Expandable details (progressive disclosure) */
+  .expand-btn{font:inherit;font-size:11px;font-weight:600;color:var(--accent-hover);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;margin-top:4px}
+  .expand-btn:hover{color:var(--accent-press)}
+  .expand-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .expand-detail{display:none;margin-top:6px;padding:9px 11px;background:var(--surface-sunken);border-radius:7px;font-size:11px;line-height:1.5;color:var(--text-muted)}
+  .expand-detail.show{display:block}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--text);color:#FBF3EB;padding:10px 16px;border-radius:999px;font-size:12.5px;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.22s var(--ease);z-index:300}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="rail">
+    <div class="brand">
+      <span class="mark"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg></span>
+      FocusPath <small>· Flow & Friction</small>
+    </div>
+    <div class="spacer"></div>
+    <span class="meta-tag"><span class="dot"></span>Progressive disclosure · click to expand</span>
+    <span class="date">Tuesday, July 22, 2025</span>
+    <button class="back-btn" id="backBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Dashboard</button>
+  </div>
+
+  <div class="body">
+    <!-- LEFT: trend + anatomy + scatter -->
+    <div class="left-col">
+      <div class="panel grow">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
+          <span class="ph-title">Focus trend · 30 days</span>
+          <span class="ph-sub">hours per day · no judgment</span>
+        </div>
+        <div class="panel-body">
+          <div class="sumrow">
+            <div class="sum"><div class="sv">23.0h</div><div class="sl">This week</div><div class="sd">▲ 22%</div></div>
+            <div class="sum"><div class="sv">3.3h</div><div class="sl">Daily avg</div><div class="sd">▲ 0.4h</div></div>
+            <div class="sum"><div class="sv">5.1h</div><div class="sl">Best day (Fri)</div><div class="sd">personal best</div></div>
+            <div class="sum"><div class="sv">4/7</div><div class="sl">Days you showed up</div><div class="sd">that counts</div></div>
+          </div>
+          <div class="area-wrap"><svg class="area-svg" id="areaSvg" viewBox="0 0 700 220" preserveAspectRatio="none" role="img" aria-label="30-day focus trend area chart"></svg></div>
+          <div class="chart-legend">
+            <span><i style="background:var(--accent)"></i>Focus hours</span>
+            <span><i style="background:var(--surface-sunken)"></i>Avg 3.3h/day</span>
+            <span style="margin-left:auto;color:var(--accent-hover);font-weight:700">↑ 22% vs last week</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4z"/></svg>
+          <span class="ph-title">Focus anatomy · today's 1pm session</span>
+          <span class="ph-sub">deep vs shallow vs drift</span>
+        </div>
+        <div class="panel-body">
+          <div class="anatomy" id="anatomy" role="img" aria-label="Focus session anatomy: 60 minutes with 42 min deep work, 8 min warmup, 5 min break, 5 min drift"></div>
+          <div class="anatomy-legend">
+            <span><i style="background:var(--amber)"></i>Warm-up (8m)</span>
+            <span><i style="background:var(--accent)"></i>Deep work (42m)</span>
+            <span><i style="background:var(--dusk)"></i>Break (5m)</span>
+            <span><i style="background:var(--danger)"></i>Drift (5m)</span>
+          </div>
+          <p style="font-size:11.5px;color:var(--text-muted);margin:6px 0 0">You hit deep flow <b style="color:var(--accent-hover)">8 minutes in</b> and stayed there 42 min. The 5-min drift at the end was phone-checking — consider parking it in another room next time.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/></svg>
+          <span class="ph-title">Sleep vs focus · last 14 nights</span>
+          <span class="ph-sub">correlation scatter</span>
+        </div>
+        <div class="panel-body">
+          <div class="scatter-wrap"><svg class="scatter-svg" id="scatter" role="img" aria-label="Scatter plot of sleep hours vs focus hours, showing positive correlation"></svg></div>
+          <p style="font-size:11px;color:var(--text-muted);margin:4px 0 0">Each dot is a night. The pattern is clear: <b style="color:var(--accent-hover)">more sleep → more focus</b> (r = +0.72). This is biology, not willpower.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: activity stream + JITAI -->
+    <div class="right-col">
+      <div class="jitai">
+        <div class="j-label">🦊 JITAI · Predictive nudge</div>
+        Based on 30 days: <b>Tuesdays at 2pm are your friction point</b>. You've skipped 3 of the last 4 Tuesday-afternoon blocks. Want me to auto-suggest a 5-min walk before it next week?
+        <div class="j-act"><button id="j-yes">Yes, nudge me</button><button id="j-later">Maybe later</button></div>
+      </div>
+
+      <div class="panel grow">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+          <span class="ph-title">Activity stream · today</span>
+          <span class="ph-sub">click to expand</span>
+        </div>
+        <div class="panel-body">
+          <div class="stream" id="stream"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const toast=document.getElementById("toast");
+function showToast(m){toast.textContent=m;toast.classList.add("show");clearTimeout(window._t);window._t=setTimeout(()=>toast.classList.remove("show"),1700);}
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML;}
+
+// 30-day trend data
+const trend=[2.1,2.8,1.6,3.2,2.9,3.4,2.5,1.8,2.2,3.6,4.1,3.0,2.4,1.9,2.7,3.3,3.8,2.6,1.5,2.0,3.1,4.2,3.5,5.1,2.9,3.2,2.1,2.6,3.4,3.2];
+const areaSvg=document.getElementById("areaSvg");
+const areaWrap=document.querySelector(".area-wrap");
+function renderArea(){
+  const rect=areaWrap.getBoundingClientRect();
+  const W=Math.max(rect.width,320),H=Math.max(rect.height,200);
+  areaSvg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  const padX=36,padY=14,max=6,min=0;
+  const x=i=>padX+(i/(trend.length-1))*(W-padX-12);
+  const y=v=>padY+(1-(v-min)/(max-min))*(H-padY-22);
+  const pts=trend.map((v,i)=>[x(i),y(v)]);
+  const line=pts.map((p,i)=>`${i===0?"M":"L"} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" ");
+  const fill=`${line} L ${pts[pts.length-1][0].toFixed(1)} ${H-22} L ${pts[0][0].toFixed(1)} ${H-22} Z`;
+  const grid=[0,2,4,6].map(v=>`<line x1="${padX}" y1="${y(v)}" x2="${W-12}" y2="${y(v)}"/><text class="area-axis" x="${padX-6}" y="${y(v)+3}" text-anchor="end">${v}h</text>`).join("");
+  const xLabels=[0,7,14,21,29].map(i=>`<text class="area-axis" x="${x(i).toFixed(1)}" y="${H-6}" text-anchor="middle">Day ${i+1}</text>`).join("");
+  const points=pts.map((p,i)=>`<circle class="area-point${i===trend.length-1?" today":""}" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="4" data-i="${i}"><title>Day ${i+1}: ${trend[i]}h</title></circle>`).join("");
+  areaSvg.innerHTML=`<defs><linearGradient id="aGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#C76A3E" stop-opacity="0.28"/><stop offset="100%" stop-color="#C76A3E" stop-opacity="0.02"/></linearGradient></defs><g class="area-grid">${grid}</g><path class="area-fill" d="${fill}"/><path class="area-line" d="${line}"/><g>${points}</g><g>${xLabels}</g>`;
+  document.querySelectorAll(".area-point").forEach(p=>p.onclick=()=>{const i=+p.getAttribute("data-i");showToast(`Day ${i+1}: ${trend[i]}h focused`);});
+}
+renderArea();
+let areaRaf=null;
+const areaRO=new ResizeObserver(()=>{if(areaRaf)cancelAnimationFrame(areaRaf);areaRaf=requestAnimationFrame(renderArea);});
+areaRO.observe(areaWrap);
+
+// Focus anatomy timeline
+const segments=[
+  {type:"warm",label:"Warm-up",start:0,dur:8},
+  {type:"deep",label:"Deep",start:8,dur:42},
+  {type:"break",label:"Break",start:50,dur:5},
+  {type:"drift",label:"Drift",start:55,dur:5},
+];
+const totalMin=60;
+const anEl=document.getElementById("anatomy");
+anEl.innerHTML=segments.map(s=>{
+  const leftPct=(s.start/totalMin)*100;
+  const widthPct=(s.dur/totalMin)*100;
+  return `<div class="an-seg an-${s.type}" style="left:${leftPct}%;width:${widthPct}%" title="${s.label}: ${s.dur}min">${s.dur}m</div>`;
+}).join("");
+
+// Scatter plot — sleep vs focus (14 points)
+const scatterData=[
+  [5.2,1.8],[6.0,2.4],[7.1,3.6],[6.5,3.0],[5.8,2.1],[7.5,4.2],[6.8,3.3],
+  [5.5,1.9],[7.2,3.8],[6.3,2.8],[7.8,4.5],[6.1,2.6],[7.0,3.5],[6.7,3.2]
+];
+const scSvg=document.getElementById("scatter");
+function renderScatter(){
+  const rect=scSvg.getBoundingClientRect();
+  const W=Math.max(rect.width,280),H=170;
+  scSvg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  const padX=34,padY=14;
+  const xMax=9,xMin=4,yMax=5,yMin=0;
+  const x=v=>padX+((v-xMin)/(xMax-xMin))*(W-padX-12);
+  const y=v=>padY+(1-(v-yMin)/(yMax-yMin))*(H-padY-20);
+  const grid=[0,1,2,3,4,5].map(v=>`<line x1="${padX}" y1="${y(v)}" x2="${W-12}" y2="${y(v)}"/><text class="sc-axis" x="${padX-5}" y="${y(v)+3}" text-anchor="end">${v}h</text>`).join("");
+  const xGrid=[4,5,6,7,8,9].map(v=>`<text class="sc-axis" x="${x(v)}" y="${H-5}" text-anchor="middle">${v}h</text>`).join("");
+  // trend line (approximate positive correlation)
+  const x1=x(4.5),y1=y(1.5),x2=x(8.5),y2=y(4.6);
+  const pts=scatterData.map(d=>`<circle class="sc-pt" cx="${x(d[0]).toFixed(1)}" cy="${y(d[1]).toFixed(1)}" r="5" data-s="${d[0]}" data-f="${d[1]}"><title>${d[0]}h sleep → ${d[1]}h focus</title></circle>`).join("");
+  scSvg.innerHTML=`<g class="sc-grid">${grid}</g><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.5"/><g>${pts}</g><g>${xGrid}</g><text class="sc-axis" x="${W/2}" y="${H+0}" text-anchor="middle" style="font-size:9px">Sleep (hours)</text>`;
+  document.querySelectorAll(".sc-pt").forEach(p=>p.onclick=()=>showToast(`${p.getAttribute("data-s")}h sleep → ${p.getAttribute("data-f")}h focus`));
+}
+renderScatter();
+let scRaf=null;
+const scRO=new ResizeObserver(()=>{if(scRaf)cancelAnimationFrame(scRaf);scRaf=requestAnimationFrame(renderScatter);});
+scRO.observe(scSvg);
+
+// Activity stream with progressive disclosure
+const stream=[
+  {ic:"focus",title:"Focus block · Chem Ch.4 practice",sub:"60 min · 42 min deep work · ended 2:00pm",time:"1:00pm",detail:"You hit flow at 1:08pm and stayed deep for 42 minutes. One 5-min drift at the end (phone). Overall: excellent session. Buffer auto-added after."},
+  {ic:"done",title:"Completed: 5/7 tasks today",sub:"2 remaining · recovery rate 100%",time:"12:30pm",detail:"Tasks done: chem problems, dentist appt booked, essay outline, gym check-in, reply to advisor. Remaining: read Ch.5, tidy desk. No rush — they roll to tomorrow."},
+  {ic:"override",title:"Override: postponed 'Email professor'",sub:"Reason: overwhelmed · tagged for reflection",time:"11:15am",detail:"You skipped emailing your professor because the morning meeting ran long and your brain was fried. That's a valid override. Kitsu suggests breaking it into a tiny first step tomorrow: 'Just open the draft.'"},
+  {ic:"insight",title:"Kitsu noticed: best focus window 9-11am Tue/Fri",sub:"3 of your deepest sessions landed there",time:"9:00am",detail:"Pattern from 30 days: Tuesday and Friday mornings 9-11am are your biological prime time. Protecting that window next week could lift your weekly focus by ~15%."},
+  {ic:"focus",title:"Warm-up task · inbox triage",sub:"12 min · led into focus block smoothly",time:"12:45pm",detail:"You did a 12-min inbox triage as a warm-up before the chem block. This 'easy → hard' ramp is a known flow trigger for ADHD brains. It worked — you entered deep work 8 min into the real block."},
+];
+function renderStream(){
+  document.getElementById("stream").innerHTML=stream.map((s,i)=>`<div class="stream-item" role="button" tabindex="0" data-i="${i}">
+    <span class="st-ic ${s.ic}">${s.ic==="focus"?"⚡":s.ic==="done"?"✓":s.ic==="override"?"↺":"🦊"}</span>
+    <div class="st-body"><div class="st-title">${esc(s.title)}</div><div class="st-sub">${esc(s.sub)}</div></div>
+    <span class="st-time">${esc(s.time)}</span>
+  </div>`).join("");
+  document.querySelectorAll(".stream-item").forEach(item=>{
+    const i=+item.getAttribute("data-i");
+    const toggle=()=>{
+      const existing=item.querySelector(".expand-detail");
+      if(existing){existing.classList.toggle("show");}
+      else{
+        const d=document.createElement("div");
+        d.className="expand-detail show";
+        d.textContent=stream[i].detail;
+        item.appendChild(d);
+      }
+    };
+    item.onclick=toggle;
+    item.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle();}};
+  });
+}
+renderStream();
+
+document.getElementById("j-yes").onclick=()=>showToast("Nudge scheduled for next Tuesday 1:55pm 🦊");
+document.getElementById("j-later").onclick=()=>showToast("Okay — I'll keep watching the pattern");
+document.getElementById("backBtn").onclick=()=>{ if(window.opener) window.close(); else if(document.referrer) history.back(); else window.location.href="dashboard-template-3-terracotta-bloom.html"; };
+</script>
+</body>
+</html>

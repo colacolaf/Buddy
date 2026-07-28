@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FocusPath Analytics — Momentum Grid · Template 1</title>
+<style>
+  :root{
+    --bg:#F7EDE4; --surface:#FBF3EB; --surface-2:#FFFFFF; --surface-sunken:#ECD9C8;
+    --border:#E0C7B2; --border-strong:#C8A88C;
+    --text:#3B2A22; --text-muted:#6E574A; --text-faint:#907A6B;
+    --accent:#C76A3E; --accent-hover:#A8562E; --accent-press:#8A4624; --accent-soft:#F2D8C5;
+    --cocoa:#7A4F3A; --cocoa-soft:#E8D9CC;
+    --sage:#7A8A6E; --sage-soft:#DDE3D4;
+    --dusk:#7A6A8A; --dusk-soft:#E2DCE6;
+    --amber:#B89366; --amber-soft:#F0E2D2;
+    --clay:#8A5F4A; --clay-soft:#E8D5C9;
+    --success:#7A8A6E; --warning:#B89366; --danger:#B05A4E; --danger-soft:#EBD6D0;
+    --shadow-sm:0 1px 2px rgba(59,42,34,.05), 0 2px 6px rgba(59,42,34,.05);
+    --shadow:0 1px 2px rgba(59,42,34,.05), 0 6px 18px rgba(59,42,34,.08);
+    --shadow-lg:0 2px 8px rgba(59,42,34,.07), 0 18px 48px rgba(59,42,34,.14);
+    --radius:14px; --radius-sm:9px; --radius-xs:6px;
+    --ease:cubic-bezier(.4,0,.2,1);
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+    --font-num:"SF Mono","ui-monospace","Menlo","Consolas",monospace;
+    --font-disp:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0;height:100%;overflow:hidden}
+  body{font-family:var(--font-ui);color:var(--text);background:radial-gradient(1100px 600px at 80% -10%,#F0D8C2 0%,transparent 60%),radial-gradient(900px 500px at -10% 25%,#F4E0CE 0%,transparent 55%),var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+
+  .app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+  .rail{flex:0 0 auto;display:flex;align-items:center;gap:14px;padding:9px 22px;background:rgba(251,243,235,.82);backdrop-filter:saturate(140%) blur(14px);-webkit-backdrop-filter:saturate(140%) blur(14px);border-bottom:1px solid var(--border)}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-.01em;font-size:14px}
+  .brand .mark{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent-hover));display:grid;place-items:center;color:#fff;box-shadow:var(--shadow-sm)}
+  .brand small{color:var(--text-muted);font-weight:500;margin-left:2px;font-size:12px}
+  .rail .spacer{flex:1}
+  .rail .meta-tag{font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px}
+  .rail .meta-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+  .rail .date{font-family:var(--font-disp);font-size:13px;color:var(--text-muted);font-style:italic}
+  .back-btn{font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);padding:7px 13px;border-radius:9px;display:inline-flex;align-items:center;gap:7px;transition:.15s var(--ease);box-shadow:var(--shadow-sm)}
+  .back-btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent-hover)}
+  .back-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .back-btn .ic{width:14px;height:14px}
+  .seg{display:flex;gap:3px;background:var(--surface-sunken);border-radius:8px;padding:3px}
+  .seg button{font:inherit;font-size:11px;font-weight:600;padding:5px 11px;border-radius:6px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;transition:.14s var(--ease)}
+  .seg button.active{background:var(--surface-2);color:var(--accent-hover);box-shadow:var(--shadow-sm)}
+  .seg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .body{flex:1 1 auto;min-height:0;overflow:auto;padding:16px 22px 28px;display:flex;flex-direction:column;gap:14px}
+
+  .highlights{display:flex;align-items:center;gap:14px;padding:18px 22px;background:linear-gradient(135deg,var(--accent-soft),var(--surface));border:1px dashed var(--accent);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+  .highlights .hl-emoji{font-size:34px;flex:0 0 auto}
+  .highlights .hl-body{flex:1;min-width:0}
+  .highlights .hl-title{font-size:18px;font-weight:700;font-family:var(--font-disp);letter-spacing:-.01em}
+  .highlights .hl-sub{font-size:13px;color:var(--text-muted);margin-top:2px;line-height:1.45}
+  .highlights .hl-nudge{font:inherit;font-size:12px;font-weight:600;color:#fff;background:var(--accent-hover);border:none;padding:9px 14px;border-radius:9px;cursor:pointer;transition:.15s var(--ease);box-shadow:var(--shadow-sm);flex:0 0 auto;white-space:nowrap}
+  .highlights .hl-nudge:hover{background:var(--accent-press)}
+  .highlights .hl-nudge:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .kpi-card{padding:14px;border-radius:var(--radius-sm);background:var(--surface-2);border:1px solid var(--border);box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:8px;cursor:pointer;transition:.14s var(--ease);position:relative;overflow:hidden}
+  .kpi-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow)}
+  .kpi-card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .kpi-card .kpi-top{display:flex;align-items:center;gap:8px}
+  .kpi-card .kpi-ic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;flex:0 0 auto;color:#fff}
+  .kpi-card .kpi-ic .ic{width:15px;height:15px}
+  .kpi-card .kpi-ic.a{background:linear-gradient(135deg,var(--accent),var(--accent-hover))}
+  .kpi-card .kpi-ic.b{background:linear-gradient(135deg,var(--sage),#62755A)}
+  .kpi-card .kpi-ic.c{background:linear-gradient(135deg,var(--dusk),#5E4E6E)}
+  .kpi-card .kpi-ic.d{background:linear-gradient(135deg,var(--amber),#9A7848)}
+  .kpi-card .kpi-lab{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);font-weight:700}
+  .kpi-card .kpi-val{font-size:24px;font-weight:700;color:var(--accent-hover);font-family:var(--font-num);line-height:1.1}
+  .kpi-card .kpi-sub{font-size:11px;color:var(--text-muted)}
+  .kpi-card .kpi-delta{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;width:fit-content}
+  .kpi-card .kpi-delta.up{background:var(--sage-soft);color:var(--sage)}
+  .kpi-card .kpi-delta.flat{background:var(--surface-sunken);color:var(--text-faint)}
+  .kpi-card .kpi-delta.gentle{background:var(--dusk-soft);color:var(--dusk)}
+  .sparkline{width:100%;height:28px;margin-top:auto}
+  .sparkline polyline{fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .sparkline .sp-fill{fill:var(--accent-soft);opacity:.5}
+  .sparkline .sp-dot{fill:var(--accent-hover);stroke:#fff;stroke-width:1.5}
+
+  .row2{display:grid;grid-template-columns:1.4fr 1fr;gap:14px}
+  .row3{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .panel{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+  .panel-head{display:flex;align-items:center;gap:9px;padding:12px 15px;border-bottom:1px solid var(--border);background:var(--surface)}
+  .panel-head .ph-title{font-size:13px;font-weight:700;letter-spacing:-.01em;font-family:var(--font-disp)}
+  .panel-head .ph-sub{font-size:10.5px;color:var(--text-muted);margin-left:auto;white-space:nowrap}
+  .panel-head .ph-ic{width:15px;height:15px;color:var(--accent);flex:0 0 auto}
+  .panel-body{padding:14px 15px;display:flex;flex-direction:column;gap:11px}
+
+  .bar-chart{display:flex;align-items:flex-end;gap:10px;height:150px;padding:10px 0 26px}
+  .bar{flex:1;border-radius:7px 7px 4px 4px;background:var(--accent-soft);transition:.3s var(--ease);position:relative;min-height:8px;cursor:pointer}
+  .bar:hover{background:var(--accent)}
+  .bar.today{background:linear-gradient(180deg,var(--accent),var(--accent-hover))}
+  .bar-label{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--text-muted);font-weight:600}
+  .bar-val{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--text);font-family:var(--font-num);opacity:0;transition:.2s var(--ease)}
+  .bar:hover .bar-val{opacity:1}
+
+  .hbar{display:flex;align-items:center;gap:10px}
+  .hbar-track{flex:1;height:10px;background:var(--surface-sunken);border-radius:999px;overflow:hidden}
+  .hbar-fill{height:100%;border-radius:999px;transition:width .4s var(--ease)}
+  .hbar-label{font-size:12px;white-space:nowrap;width:80px}
+  .hbar-val{font-size:12px;color:var(--text-muted);width:46px;text-align:right;font-family:var(--font-num)}
+
+  .garden{display:flex;gap:7px;flex-wrap:wrap;padding:4px 0}
+  .dg-item{width:36px;height:36px;border-radius:50%;background:var(--accent-soft);border:1.5px solid var(--accent);display:grid;place-items:center;font-size:16px;cursor:pointer;transition:.14s var(--ease)}
+  .dg-item:hover{transform:scale(1.12);box-shadow:var(--shadow-sm)}
+  .dg-item:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .insight{padding:15px 17px;border-radius:var(--radius-sm);background:var(--dusk-soft);border:1px solid var(--dusk);font-size:13px;line-height:1.55;color:var(--text)}
+  .insight .in-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dusk);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+  .insight .in-label .ic{width:12px;height:12px}
+  .insight b{color:var(--dusk);font-weight:700}
+
+  .review-card{padding:20px;border-radius:var(--radius);background:linear-gradient(135deg,var(--surface-sunken),var(--surface));border:1px dashed var(--accent);text-align:center}
+  .review-card .rv-title{font-size:17px;font-weight:700;font-family:var(--font-disp);margin-bottom:6px}
+  .review-card .rv-sub{font-size:13px;color:var(--text-muted);margin:0 0 14px;max-width:380px;margin-left:auto;margin-right:auto}
+  .review-card .rv-wins{text-align:left;font-size:12.5px;color:var(--text-muted);line-height:1.7;padding-left:20px;margin:12px 0}
+  .review-card .rv-wins li{margin-bottom:2px}
+  .review-card .rv-btn{font:inherit;font-size:12.5px;font-weight:600;color:var(--accent-hover);background:var(--surface-2);border:1px solid var(--accent);padding:9px 16px;border-radius:9px;cursor:pointer;transition:.15s var(--ease);box-shadow:var(--shadow-sm)}
+  .review-card .rv-btn:hover{background:var(--accent);color:#fff}
+  .review-card .rv-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--text);color:#FBF3EB;padding:10px 16px;border-radius:999px;font-size:12.5px;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.22s var(--ease);z-index:300}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="rail">
+    <div class="brand">
+      <span class="mark"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg></span>
+      FocusPath <small>· Analytics</small>
+    </div>
+    <div class="seg" role="tablist" aria-label="Time range">
+      <button class="active" data-range="today" role="tab" aria-selected="true">Today</button>
+      <button data-range="week" role="tab" aria-selected="false">Week</button>
+      <button data-range="month" role="tab" aria-selected="false">Month</button>
+    </div>
+    <div class="spacer"></div>
+    <span class="meta-tag"><span class="dot"></span>Gentle review · no judgment</span>
+    <span class="date">Tuesday, July 22, 2025</span>
+    <button class="back-btn" id="backBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Dashboard</button>
+  </div>
+
+  <div class="body">
+    <!-- Daily highlights — one screen, one message -->
+    <div class="highlights">
+      <span class="hl-emoji">🌅</span>
+      <div class="hl-body">
+        <div class="hl-title">You're trending up this week.</div>
+        <div class="hl-sub">Focus time is up <b style="color:var(--accent-hover)">22%</b> vs last week, and you came back strong after Monday's slower start. That recovery is the real win.</div>
+      </div>
+      <button class="hl-nudge" id="nudgeBtn">Ask Kitsu what's next →</button>
+    </div>
+
+    <!-- KPI grid with sparklines -->
+    <div class="kpi-grid" id="kpiGrid"></div>
+
+    <div class="row2">
+      <!-- Weekly trend bar chart -->
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
+          <span class="ph-title">Focus momentum · 7 days</span>
+          <span class="ph-sub">hours per day</span>
+        </div>
+        <div class="panel-body">
+          <div class="bar-chart" id="weekChart" role="img" aria-label="Weekly focus hours bar chart"></div>
+        </div>
+      </div>
+      <!-- Category balance -->
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span class="ph-title">Where your time went</span>
+          <span class="ph-sub">this week</span>
+        </div>
+        <div class="panel-body" id="catBars"></div>
+      </div>
+    </div>
+
+    <div class="row3">
+      <!-- Done garden -->
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          <span class="ph-title">Done garden</span>
+          <span class="ph-sub">8 wins this week</span>
+        </div>
+        <div class="panel-body">
+          <div class="garden" id="garden"></div>
+          <p style="font-size:11.5px;color:var(--text-muted);margin:4px 0 0">Each bloom is a win you logged. No streak to break — just a growing record of what went well.</p>
+        </div>
+      </div>
+      <!-- AI nudge insight -->
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>
+          <span class="ph-title">Kitsu noticed a pattern</span>
+          <span class="ph-sub">AI insight</span>
+        </div>
+        <div class="panel-body">
+          <div class="insight">
+            <div class="in-label"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>Pattern found</div>
+            You focus best <b>9am–11am on Tuesdays and Fridays</b>. Three of your deepest sessions landed there. Want me to protect that window next week?
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gentle review -->
+    <div class="review-card">
+      <div class="rv-title">This week was uneven. That's okay.</div>
+      <p class="rv-sub">Stats don't define you — they're just data. You showed up 5 of 7 days, and you used your Shame-Free Reset once. That's resilience, not failure.</p>
+      <ul class="rv-wins">
+        <li>✓ You logged <b style="color:var(--accent-hover)">8 wins</b> this week.</li>
+        <li>✓ You focused over <b style="color:var(--accent-hover)">3 hours on Friday</b> — your best day.</li>
+        <li>✓ You came back after Monday's slow start — <b style="color:var(--accent-hover)">recovery rate: 100%</b>.</li>
+      </ul>
+      <button class="rv-btn" id="resetBtn">Start fresh next week →</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const toast=document.getElementById("toast");
+function showToast(m){toast.textContent=m;toast.classList.add("show");clearTimeout(window._t);window._t=setTimeout(()=>toast.classList.remove("show"),1700);}
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML;}
+
+const IC={
+  bolt:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>',
+  check:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+  shield:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  spark:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>',
+};
+
+// KPI cards with sparklines — recovery rate replaces rigid streaks
+const kpis=[
+  {ic:'a',icon:IC.bolt,lab:"Focus today",val:"3h 12m",sub:"+42 min vs yesterday",delta:"▲ 22%",deltaCls:"up",spark:[2.1,2.8,1.6,3.2,2.9,3.4,3.2]},
+  {ic:'b',icon:IC.check,lab:"Tasks done",val:"5 / 7",sub:"2 remaining · no rush",delta:"71%",deltaCls:"flat",spark:[3,4,5,4,6,5,5]},
+  {ic:'c',icon:IC.shield,lab:"Recovery rate",val:"100%",sub:"came back after every break",delta:"resilient",deltaCls:"gentle",spark:[0,1,0,1,0,0,1]},
+  {ic:'d',icon:IC.spark,lab:"Wins logged",val:"8",sub:"see Done Garden →",delta:"▲ 60%",deltaCls:"up",spark:[3,5,4,6,5,7,8]},
+];
+function sparkHTML(data){
+  const w=120,h=28,max=Math.max(...data),min=Math.min(...data);
+  const range=max-min||1;
+  const pts=data.map((v,i)=>[ (i/(data.length-1))*w, h-3-((v-min)/range)*(h-6) ]);
+  const line=pts.map((p,i)=>`${i===0?"M":"L"} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" ");
+  const fill=`${line} L ${w} ${h} L 0 ${h} Z`;
+  const last=pts[pts.length-1];
+  return `  <svg class="sparkline" viewBox="0 0 ${w} ${h}" role="img" aria-label="7-day trend">
+    <path class="sp-fill" d="${fill}"/><polyline points="${pts.map(p=>`${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ")}"/>
+    <circle class="sp-dot" cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.5"/>
+  </svg>`;
+}
+document.getElementById("kpiGrid").innerHTML=kpis.map(k=>`<div class="kpi-card" role="button" tabindex="0" data-kpi="${esc(k.lab)}: ${esc(k.val)}">
+  <div class="kpi-top"><span class="kpi-ic ${k.ic}">${k.icon}</span><span class="kpi-lab">${esc(k.lab)}</span></div>
+  <div class="kpi-val">${esc(k.val)}</div>
+  <div class="kpi-sub">${esc(k.sub)}</div>
+  <span class="kpi-delta ${k.deltaCls}">${esc(k.delta)}</span>
+  ${sparkHTML(k.spark)}
+</div>`).join("");
+document.querySelectorAll(".kpi-card").forEach(c=>{const act=()=>showToast(c.getAttribute("data-kpi"));c.onclick=act;c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act();}};});
+
+// Weekly bar chart
+const weekData=[{d:"Mon",h:2.4},{d:"Tue",h:3.1},{d:"Wed",h:1.8},{d:"Thu",h:4.2},{d:"Fri",h:5.1},{d:"Sat",h:2.9},{d:"Sun",h:3.2}];
+const maxH=Math.max(...weekData.map(x=>x.h));
+document.getElementById("weekChart").innerHTML=weekData.map((x,i)=>`<div class="bar${i===weekData.length-1?" today":""}" style="height:${(x.h/maxH)*100}%" role="img" aria-label="${x.d}: ${x.h} hours focused"><span class="bar-val">${x.h}h</span><span class="bar-label">${x.d}</span></div>`).join("");
+
+// Category hbars
+const cats=[{n:"Study",v:12,c:"var(--accent)"},{n:"Work",v:8,c:"var(--cocoa)"},{n:"Health",v:4,c:"var(--sage)"},{n:"Social",v:3,c:"var(--dusk)"},{n:"Admin",v:2,c:"var(--amber)"}];
+document.getElementById("catBars").innerHTML=cats.map(c=>`<div class="hbar"><span class="hbar-label">${esc(c.n)}</span><div class="hbar-track"><div class="hbar-fill" style="width:${Math.min(c.v*5,100)}%;background:${c.c}"></div></div><span class="hbar-val">${c.v}h</span></div>`).join("");
+
+// Done garden
+const plants=["🌿","🌱","🌸","🪴","🌷","🌻","🍀","🌳"];
+document.getElementById("garden").innerHTML=plants.map((p,i)=>`<div class="dg-item" role="button" tabindex="0" aria-label="Win ${i+1}">${p}</div>`).join("");
+document.querySelectorAll(".dg-item").forEach((g,i)=>{const act=()=>showToast(`Win #${i+1} 🎉`);g.onclick=act;g.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act();}};});
+
+// Time range segment
+document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".seg button").forEach(x=>{x.classList.remove("active");x.setAttribute("aria-selected","false");});
+  b.classList.add("active");b.setAttribute("aria-selected","true");
+  showToast(`Showing: ${b.textContent}`);
+});
+
+document.getElementById("nudgeBtn").onclick=()=>showToast("Kitsu: 'Try a 25-min focus block at 9am Tuesday — your best window 🦊'");
+document.getElementById("resetBtn").onclick=()=>showToast("Fresh week ahead — no streak to break, just momentum to build 🌱");
+document.getElementById("backBtn").onclick=()=>{ if(window.opener) window.close(); else if(document.referrer) history.back(); else window.location.href="dashboard-template-3-terracotta-bloom.html"; };
+</script>
+</body>
+</html>

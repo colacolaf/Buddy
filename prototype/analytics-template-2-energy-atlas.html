@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FocusPath Analytics — Energy Atlas · Template 2</title>
+<style>
+  :root{
+    --bg:#F7EDE4; --surface:#FBF3EB; --surface-2:#FFFFFF; --surface-sunken:#ECD9C8;
+    --border:#E0C7B2; --border-strong:#C8A88C;
+    --text:#3B2A22; --text-muted:#6E574A; --text-faint:#907A6B;
+    --accent:#C76A3E; --accent-hover:#A8562E; --accent-press:#8A4624; --accent-soft:#F2D8C5;
+    --cocoa:#7A4F3A; --cocoa-soft:#E8D9CC;
+    --sage:#7A8A6E; --sage-soft:#DDE3D4;
+    --dusk:#7A6A8A; --dusk-soft:#E2DCE6;
+    --amber:#B89366; --amber-soft:#F0E2D2;
+    --clay:#8A5F4A; --clay-soft:#E8D5C9;
+    --success:#7A8A6E; --warning:#B89366; --danger:#B05A4E; --danger-soft:#EBD6D0;
+    --shadow-sm:0 1px 2px rgba(59,42,34,.05), 0 2px 6px rgba(59,42,34,.05);
+    --shadow:0 1px 2px rgba(59,42,34,.05), 0 6px 18px rgba(59,42,34,.08);
+    --shadow-lg:0 2px 8px rgba(59,42,34,.07), 0 18px 48px rgba(59,42,34,.14);
+    --radius:14px; --radius-sm:9px; --radius-xs:6px;
+    --ease:cubic-bezier(.4,0,.2,1);
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+    --font-num:"SF Mono","ui-monospace","Menlo","Consolas",monospace;
+    --font-disp:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0;height:100%;overflow:hidden}
+  body{font-family:var(--font-ui);color:var(--text);background:radial-gradient(1100px 600px at 80% -10%,#F0D8C2 0%,transparent 60%),radial-gradient(900px 500px at -10% 25%,#F4E0CE 0%,transparent 55%),var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+
+  .app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+  .rail{flex:0 0 auto;display:flex;align-items:center;gap:14px;padding:9px 22px;background:rgba(251,243,235,.82);backdrop-filter:saturate(140%) blur(14px);-webkit-backdrop-filter:saturate(140%) blur(14px);border-bottom:1px solid var(--border)}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-.01em;font-size:14px}
+  .brand .mark{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent-hover));display:grid;place-items:center;color:#fff;box-shadow:var(--shadow-sm)}
+  .brand small{color:var(--text-muted);font-weight:500;margin-left:2px;font-size:12px}
+  .rail .spacer{flex:1}
+  .rail .meta-tag{font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px}
+  .rail .meta-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+  .rail .date{font-family:var(--font-disp);font-size:13px;color:var(--text-muted);font-style:italic}
+  .back-btn{font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);padding:7px 13px;border-radius:9px;display:inline-flex;align-items:center;gap:7px;transition:.15s var(--ease);box-shadow:var(--shadow-sm)}
+  .back-btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent-hover)}
+  .back-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .back-btn .ic{width:14px;height:14px}
+
+  .body{flex:1 1 auto;min-height:0;overflow:auto;padding:16px 22px 28px;display:grid;grid-template-columns:1.5fr 1fr;gap:14px}
+
+  .panel{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+  .panel.grow{flex:1 1 auto;min-height:0}
+  .panel-head{display:flex;align-items:center;gap:9px;padding:12px 15px;border-bottom:1px solid var(--border);background:var(--surface)}
+  .panel-head .ph-title{font-size:13px;font-weight:700;letter-spacing:-.01em;font-family:var(--font-disp)}
+  .panel-head .ph-sub{font-size:10.5px;color:var(--text-muted);margin-left:auto;white-space:nowrap}
+  .panel-head .ph-ic{width:15px;height:15px;color:var(--accent);flex:0 0 auto}
+  .panel-body{padding:14px 15px;display:flex;flex-direction:column;gap:11px;overflow:auto}
+
+  .left-col{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .right-col{display:flex;flex-direction:column;gap:14px;min-height:0}
+
+  /* Heatmap */
+  .heat-wrap{overflow:auto}
+  .heatmap{display:grid;grid-template-columns:42px repeat(24,1fr);gap:3px;min-width:560px}
+  .heatmap .hmh{font-size:9px;color:var(--text-faint);font-family:var(--font-num);text-align:right;padding-right:6px;display:flex;align-items:center;justify-content:flex-end}
+  .heatmap .hml{font-size:8.5px;font-weight:700;text-align:center;color:var(--text-faint);padding:3px 0}
+  .hm-cell{height:24px;border-radius:4px;transition:.12s var(--ease);cursor:pointer}
+  .hm-cell:hover{outline:2px solid var(--accent);outline-offset:1px}
+  .hm-cell:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+  .heat-scale{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text-muted);margin-top:6px}
+  .heat-scale .sc{display:flex;gap:3px}
+  .heat-scale .sc i{width:14px;height:14px;border-radius:3px;display:block}
+
+  /* Correlation matrix */
+  .corr{display:grid;grid-template-columns:90px repeat(3,1fr);gap:4px;font-size:10.5px}
+  .corr .ch{font-weight:700;color:var(--text-muted);text-align:center;padding:4px 0;font-size:9.5px}
+  .corr .rl{font-weight:600;color:var(--text-muted);display:flex;align-items:center;padding-right:8px}
+  .corr .cv{border-radius:6px;display:grid;place-items:center;font-family:var(--font-num);font-weight:700;font-size:11px;min-height:36px;padding:4px}
+
+  /* Ratio bars */
+  .hbar{display:flex;align-items:center;gap:10px}
+  .hbar-track{flex:1;height:11px;background:var(--surface-sunken);border-radius:999px;overflow:hidden}
+  .hbar-fill{height:100%;border-radius:999px;transition:width .4s var(--ease)}
+  .hbar-label{font-size:12px;white-space:nowrap;width:84px}
+  .hbar-val{font-size:12px;color:var(--text-muted);width:50px;text-align:right;font-family:var(--font-num)}
+
+  /* Insight cards */
+  .insight{padding:14px 16px;border-radius:var(--radius-sm);background:var(--dusk-soft);border:1px solid var(--dusk);font-size:12.5px;line-height:1.55;color:var(--text)}
+  .insight .in-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dusk);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+  .insight .in-label .ic{width:12px;height:12px}
+  .insight b{color:var(--dusk);font-weight:700}
+  .insight.warm{background:var(--accent-soft);border-color:var(--accent)}
+  .insight.warm .in-label,.insight.warm b{color:var(--accent-hover)}
+
+  /* Override journal */
+  .ov-item{padding:11px 13px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--amber);display:flex;flex-direction:column;gap:4px}
+  .ov-item .ov-top{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-faint);font-family:var(--font-num)}
+  .ov-item .ov-what{font-size:12.5px;font-weight:600}
+  .ov-item .ov-why{font-size:11px;color:var(--text-muted)}
+  .ov-item .ov-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;background:var(--amber-soft);color:var(--amber);text-transform:uppercase;letter-spacing:.04em;width:fit-content;margin-top:2px}
+  .ov-item.overwhelm{border-left-color:var(--danger)}
+  .ov-item.overwhelm .ov-tag{background:var(--danger-soft);color:var(--danger)}
+  .ov-item.nodopamine{border-left-color:var(--dusk)}
+  .ov-item.nodopamine .ov-tag{background:var(--dusk-soft);color:var(--dusk)}
+  .ov-item.bored{border-left-color:var(--sage)}
+  .ov-item.bored .ov-tag{background:var(--sage-soft);color:var(--sage)}
+
+  /* Chrono card */
+  .chrono{display:flex;align-items:center;gap:14px;padding:14px;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--surface-sunken),var(--surface));border:1px dashed var(--accent)}
+  .chrono .ch-emoji{font-size:32px;flex:0 0 auto}
+  .chrono .ch-body{flex:1}
+  .chrono .ch-title{font-size:14px;font-weight:700;font-family:var(--font-disp)}
+  .chrono .ch-sub{font-size:11.5px;color:var(--text-muted);margin-top:2px;line-height:1.45}
+
+  /* Metric pills */
+  .pills{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .pill{padding:10px 12px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--border);text-align:center}
+  .pill .pv{font-size:18px;font-weight:700;font-family:var(--font-num);color:var(--accent-hover)}
+  .pill .pl{font-size:10px;color:var(--text-muted);margin-top:2px}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--text);color:#FBF3EB;padding:10px 16px;border-radius:999px;font-size:12.5px;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.22s var(--ease);z-index:300}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="rail">
+    <div class="brand">
+      <span class="mark"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+      FocusPath <small>· Energy Atlas</small>
+    </div>
+    <div class="spacer"></div>
+    <span class="meta-tag"><span class="dot"></span>Curiosity over judgment</span>
+    <span class="date">Tuesday, July 22, 2025</span>
+    <button class="back-btn" id="backBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Dashboard</button>
+  </div>
+
+  <div class="body">
+    <!-- LEFT: heatmap + chrono + correlation -->
+    <div class="left-col">
+      <div class="panel grow">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2M12 2v2M12 20v2"/></svg>
+          <span class="ph-title">Focus intensity by hour · 7 days</span>
+          <span class="ph-sub">darker = more focused</span>
+        </div>
+        <div class="panel-body">
+          <div class="heat-wrap"><div class="heatmap" id="heatmap" role="grid" aria-label="Focus intensity heatmap by hour and day"></div></div>
+          <div class="heat-scale">
+            <span>Less</span>
+            <div class="sc"><i style="background:var(--surface-sunken)"></i><i style="background:#F0DCC8"></i><i style="background:#E0B894"></i><i style="background:#C76A3E"></i><i style="background:#8A4624"></i></div>
+            <span>More</span>
+            <span style="margin-left:auto;color:var(--text-faint)">Click a cell for details</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chrono">
+        <span class="ch-emoji">🦉</span>
+        <div class="ch-body">
+          <div class="ch-title">Your chronotype: Evening-leaning</div>
+          <div class="ch-sub">~73% of ADHD brains have a delayed circadian phase. Your data confirms it — your peak focus lands <b style="color:var(--accent-hover)">6pm–9pm</b>. That's not a flaw; it's a strategy signal.</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/><path d="M3 12h18M12 3a9 9 0 0 1 0 18"/></svg>
+          <span class="ph-title">Correlation · what predicts your focus</span>
+          <span class="ph-sub">last 30 days</span>
+        </div>
+        <div class="panel-body">
+          <div class="corr" id="corr"></div>
+          <p style="font-size:10.5px;color:var(--text-faint);margin:2px 0 0">Sleep is your strongest predictor. Even one short night drops next-day focus by ~38%. This is your body, not a discipline problem.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: ratio + override journal + JITAI -->
+    <div class="right-col">
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
+          <span class="ph-title">Intentional vs drift time</span>
+          <span class="ph-sub">this week</span>
+        </div>
+        <div class="panel-body" id="ratio"></div>
+      </div>
+
+      <div class="pills">
+        <div class="pill"><div class="pv">6pm</div><div class="pl">Peak focus hour</div></div>
+        <div class="pill"><div class="pv">Fri</div><div class="pl">Best focus day</div></div>
+        <div class="pill"><div class="pv">6.3:1</div><div class="pl">Productive ratio</div></div>
+        <div class="pill"><div class="pv">7.2h</div><div class="pl">Avg sleep on good days</div></div>
+      </div>
+
+      <div class="insight warm">
+        <div class="in-label">🦊 JITAI · Just-in-time nudge</div>
+        Based on 30 days: you tend to <b>lose focus around 2pm on Mondays</b>. Try a 5-minute walk before that block next week — your data says it lifts afternoon output by ~40%.
+      </div>
+
+      <div class="panel grow">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4z"/></svg>
+          <span class="ph-title">Override journal</span>
+          <span class="ph-sub">reflection, not shame</span>
+        </div>
+        <div class="panel-body" id="overrides"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const toast=document.getElementById("toast");
+function showToast(m){toast.textContent=m;toast.classList.add("show");clearTimeout(window._t);window._t=setTimeout(()=>toast.classList.remove("show"),1700);}
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML;}
+
+// Heatmap data — 7 days × 24 hours (6am–6am). Values 0-5.
+const heatData=[
+  [0,0,0,1,1,2,3,4,3,2,1,1,2,2,1,1,3,4,4,3,2,1,0,0], // Mon
+  [0,0,1,1,2,3,4,5,4,3,2,2,1,1,2,2,3,4,3,2,1,0,0,0], // Tue
+  [0,0,0,1,1,2,2,3,2,1,1,0,1,1,2,1,2,3,3,2,1,0,0,0], // Wed
+  [0,0,1,2,3,4,4,3,2,1,2,3,3,2,2,1,3,4,4,3,2,1,0,0], // Thu
+  [0,0,1,2,3,4,5,4,3,2,1,1,2,3,3,2,4,5,5,4,3,2,1,0], // Fri
+  [0,0,0,1,2,3,3,2,1,1,1,2,2,2,1,1,3,4,4,3,2,1,0,0], // Sat
+  [0,0,0,0,1,1,2,2,1,1,0,1,1,1,1,1,2,3,3,2,1,0,0,0], // Sun
+];
+const hours=["6a","7a","8a","9a","10a","11a","12p","1p","2p","3p","4p","5p","6p","7p","8p","9p","10p","11p","12a","1a","2a","3a","4a","5a"];
+const days=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+function heatColor(v){
+  if(v===0) return "var(--surface-sunken)";
+  if(v<=1) return "#F0DCC8";
+  if(v<=2) return "#E0B894";
+  if(v<=3) return "#C76A3E";
+  if(v<=4) return "#A8562E";
+  return "#8A4624";
+}
+function renderHeat(){
+  let html=`<div class="hmh"></div>${hours.map(h=>`<div class="hml">${h}</div>`).join("")}`;
+  days.forEach((d,di)=>{
+    html+=`<div class="hmh">${d}</div>${heatData[di].map((v,hi)=>{
+      const label=`${d} ${hours[hi]}: ${v===0?"no focus":v+" units"}`;
+      return `<div class="hm-cell" style="background:${heatColor(v)}" role="gridcell" tabindex="0" aria-label="${label}" data-label="${esc(label)}"></div>`;
+    }).join("")}`;
+  });
+  document.getElementById("heatmap").innerHTML=html;
+  document.querySelectorAll(".hm-cell").forEach(c=>{
+    const act=()=>showToast(c.getAttribute("data-label"));
+    c.onclick=act;
+    c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act();}};
+  });
+}
+renderHeat();
+
+// Correlation matrix — 3 lifestyle factors vs focus
+const corr=[
+  {label:"Sleep (7h+)",vs:[{v:0.72,c:"#7A8A6E"},{v:0.61,c:"#7A8A6E"},{v:0.45,c:"#B89366"}]},
+  {label:"Screen time <2h",vs:[{v:0.55,c:"#B89366"},{v:0.48,c:"#B89366"},{v:0.31,c:"#C8A88C"}]},
+  {label:"Mood (good)",vs:[{v:0.68,c:"#7A8A6E"},{v:0.52,c:"#B89366"},{v:0.39,c:"#C8A88C"}]},
+];
+function renderCorr(){
+  const cols=["Focus min","Deep work","Tasks done"];
+  let html=`<div class="ch"></div>${cols.map(c=>`<div class="ch">${esc(c)}</div>`).join("")}`;
+  corr.forEach(r=>{
+    html+=`<div class="rl">${esc(r.label)}</div>${r.vs.map(x=>`<div class="cv" style="background:${x.c}22;color:${x.c}">+${x.v}</div>`).join("")}`;
+  });
+  document.getElementById("corr").innerHTML=html;
+}
+renderCorr();
+
+// Ratio bars
+const ratio=[
+  {n:"Productive",v:8.2,c:"var(--accent)"},
+  {n:"Neutral",v:2.5,c:"var(--dusk)"},
+  {n:"Distracting",v:1.3,c:"var(--amber)"},
+];
+const rtot=ratio.reduce((a,b)=>a+b.v,0);
+document.getElementById("ratio").innerHTML=ratio.map(r=>`<div class="hbar"><span class="hbar-label">${esc(r.n)}</span><div class="hbar-track"><div class="hbar-fill" style="width:${(r.v/rtot)*100}%;background:${r.c}"></div></div><span class="hbar-val">${r.v}h</span></div>`).join("")+`<p style="font-size:11px;color:var(--text-muted);margin:4px 0 0">8.2h productive vs 1.3h drift. The ratio is strong — and drifting isn't a moral failure, it's data.</p>`;
+
+// Override journal
+const overrides=[
+  {when:"Mon 2:15pm",what:"Skipped: Study block (Ch.4)",why:"Felt overwhelmed after the morning meeting ran long. Brain was fried.",tag:"Overwhelmed",cls:"overwhelm"},
+  {when:"Sun 8pm",what:"Cancelled: Gym session",why:"Zero dopamine after a low-energy day. Chose rest instead — no guilt.",tag:"No dopamine",cls:"nodopamine"},
+  {when:"Wed 3pm",what:"Postponed: Essay outline",why:"Task felt too big to start. Broke it into 3 tiny steps after, which helped.",tag:"Bored / stuck",cls:"bored"},
+];
+document.getElementById("overrides").innerHTML=overrides.map(o=>`<div class="ov-item ${o.cls}">
+  <div class="ov-top">${esc(o.when)}</div>
+  <div class="ov-what">${esc(o.what)}</div>
+  <div class="ov-why">${esc(o.why)}</div>
+  <span class="ov-tag">${esc(o.tag)}</span>
+</div>`).join("")+`<p style="font-size:10.5px;color:var(--text-faint);margin:4px 0 0;text-align:center">Every override is a learning point, not a failure. You're building self-awareness.</p>`;
+
+document.getElementById("backBtn").onclick=()=>{ if(window.opener) window.close(); else if(document.referrer) history.back(); else window.location.href="dashboard-template-3-terracotta-bloom.html"; };
+</script>
+</body>
+</html>
