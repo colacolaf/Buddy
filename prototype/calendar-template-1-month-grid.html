@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FocusPath Calendar — Month Grid · Template 1</title>
+<style>
+  /* ═══════════════════════════════════════════════════════════
+     TERRACOTTA BLOOM PALETTE (matches dashboard)
+     ═══════════════════════════════════════════════════════════ */
+  :root{
+    --bg:#F7EDE4; --surface:#FBF3EB; --surface-2:#FFFFFF; --surface-sunken:#ECD9C8;
+    --border:#E0C7B2; --border-strong:#C8A88C;
+    --text:#3B2A22; --text-muted:#6E574A; --text-faint:#907A6B;
+    --accent:#C76A3E; --accent-hover:#A8562E; --accent-press:#8A4624; --accent-soft:#F2D8C5;
+    --cocoa:#7A4F3A; --cocoa-soft:#E8D9CC;
+    --sage:#7A8A6E; --sage-soft:#DDE3D4;
+    --dusk:#7A6A8A; --dusk-soft:#E2DCE6;
+    --success:#7A8A6E; --warning:#B89366; --danger:#B05A4E; --danger-soft:#EBD6D0;
+    --shadow-sm:0 1px 2px rgba(59,42,34,.05), 0 2px 6px rgba(59,42,34,.05);
+    --shadow:0 1px 2px rgba(59,42,34,.05), 0 6px 18px rgba(59,42,34,.08);
+    --shadow-lg:0 2px 8px rgba(59,42,34,.07), 0 18px 48px rgba(59,42,34,.14);
+    --radius:14px; --radius-sm:9px; --radius-xs:6px;
+    --ease:cubic-bezier(.4,0,.2,1);
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+    --font-num:"SF Mono","ui-monospace","Menlo","Consolas",monospace;
+    --font-disp:Georgia,"Times New Roman",serif;
+    --c-work:var(--cocoa); --c-school:var(--dusk); --c-study:var(--accent); --c-personal:var(--sage); --c-health:#8A7A4E; --c-social:#B06A6A; --c-other:#907A6B; --c-buffer:var(--border-strong);
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0;height:100%;overflow:hidden}
+  body{font-family:var(--font-ui);color:var(--text);background:radial-gradient(1100px 600px at 80% -10%,#F0D8C2 0%,transparent 60%),radial-gradient(900px 500px at -10% 25%,#F4E0CE 0%,transparent 55%),var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+
+  .app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+  .rail{flex:0 0 auto;display:flex;align-items:center;gap:14px;padding:9px 22px;background:rgba(251,243,235,.82);backdrop-filter:saturate(140%) blur(14px);-webkit-backdrop-filter:saturate(140%) blur(14px);border-bottom:1px solid var(--border)}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-.01em;font-size:14px}
+  .brand .mark{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent-hover));display:grid;place-items:center;color:#fff;box-shadow:var(--shadow-sm)}
+  .brand small{color:var(--text-muted);font-weight:500;margin-left:2px;font-size:12px}
+  .rail .spacer{flex:1}
+  .rail .meta-tag{font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px}
+  .rail .meta-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+  .rail .date{font-family:var(--font-disp);font-size:13px;color:var(--text-muted);font-style:italic}
+  .btn{font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);padding:7px 13px;border-radius:9px;display:inline-flex;align-items:center;gap:7px;transition:.15s var(--ease);box-shadow:var(--shadow-sm)}
+  .btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent-hover)}
+  .btn:active{transform:translateY(0)}
+  .btn.primary{background:var(--accent-hover);border-color:var(--accent-hover);color:#fff}
+  .btn.primary:hover{background:var(--accent-press);border-color:var(--accent-press);color:#fff}
+  .btn .ic{width:14px;height:14px}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .btn-sm{padding:6px 11px;font-size:11.5px}
+
+  .dash{flex:1 1 auto;min-height:0;padding:12px 16px 8px;overflow:hidden;display:grid;grid-template-columns:248px 1fr 320px;gap:12px}
+  .dash>*{min-width:0;min-height:0}
+
+  /* ── Panels ── */
+  .panel{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-height:0}
+  .panel-head{display:flex;align-items:center;gap:9px;padding:11px 13px;border-bottom:1px solid var(--border);background:var(--surface)}
+  .panel-head .ph-title{font-size:13px;font-weight:700;letter-spacing:-.01em;font-family:var(--font-disp)}
+  .panel-head .ph-sub{font-size:10.5px;color:var(--text-muted);margin-left:auto;white-space:nowrap}
+  .panel-head .ph-ic{width:15px;height:15px;color:var(--accent);flex:0 0 auto}
+  .panel-body{padding:12px 13px;display:flex;flex-direction:column;gap:10px;flex:1 1 auto;min-height:0;overflow:auto}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;font-size:10.5px;color:var(--text-muted);padding:2px 0}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .legend i{width:8px;height:8px;border-radius:50%;display:block}
+
+  /* ── LEFT: day detail ── */
+  .left-col{display:flex;flex-direction:column;min-height:0;gap:12px}
+  .detail-head{padding:12px 13px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--surface),var(--surface-2))}
+  .detail-head .ddow{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-hover)}
+  .detail-head .ddate{font-size:18px;font-weight:700;font-family:var(--font-disp);letter-spacing:-.01em;margin-top:1px}
+  .detail-head .dsub{font-size:11px;color:var(--text-muted);margin-top:2px}
+  .evcard{border:1px solid var(--border);border-left-width:4px;border-radius:9px;padding:9px 11px;background:var(--surface);transition:.14s var(--ease);display:flex;flex-direction:column;gap:3px;cursor:pointer}
+  .evcard:hover{box-shadow:var(--shadow-sm)}
+  .evcard.work{border-left-color:var(--c-work)} .evcard.school{border-left-color:var(--c-school)} .evcard.study{border-left-color:var(--c-study)} .evcard.personal{border-left-color:var(--c-personal)} .evcard.health{border-left-color:var(--c-health)} .evcard.social{border-left-color:var(--c-social)} .evcard.other{border-left-color:var(--c-other)} .evcard.buffer{border-left-color:var(--c-buffer);background:var(--surface-sunken);opacity:.7}
+  .evcard{position:relative}
+  .evcard.is-focus{box-shadow:inset 0 0 0 1.5px var(--accent)} .evcard.is-focus .focus-flag{display:inline-flex}
+  .evcard .focus-flag{display:none;align-items:center;gap:3px;font-size:8.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--accent-hover);background:var(--accent-soft);padding:1px 6px;border-radius:5px;margin-top:3px;width:fit-content}
+  .evcard .ev-toggle{position:absolute;right:9px;top:11px;color:var(--text-faint);transition:.2s var(--ease);pointer-events:none}
+  .evcard.expanded{box-shadow:var(--shadow);border-color:var(--border-strong)}
+  .evcard.expanded .ev-toggle{transform:rotate(90deg);color:var(--accent-hover)}
+  .evcard .ev-notes,.evcard .ifthen{display:none}
+  .evcard .ev-notes{margin-top:7px;padding:9px 11px;background:var(--surface-sunken);border-radius:8px;font-size:11px;line-height:1.5;color:var(--text)}
+  .evcard .ifthen{margin-top:7px}
+  .evcard.expanded .ev-notes,.evcard.expanded .ifthen{display:block}
+  .evcard .ev-notes .nt-label{font-size:8.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;display:flex;align-items:center;gap:5px}
+  .evcard .ev-notes .nt-label .ic{width:11px;height:11px;color:var(--accent)}
+  .evcard .et{font-size:11px;font-family:var(--font-num);color:var(--text-faint)}
+  .evcard .en{font-size:13px;font-weight:600;padding-right:22px}
+  .evcard .eenergy{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:5px;margin-top:3px;width:fit-content}
+  .evcard .eenergy.high{background:var(--accent-soft);color:var(--accent-hover)}
+  .evcard .eenergy.low{background:var(--sage-soft);color:var(--sage)}
+  .empty-state{margin:auto;text-align:center;color:var(--text-faint);padding:30px 16px;max-width:200px}
+  .empty-state .ico{width:40px;height:40px;border-radius:50%;margin:0 auto 10px;background:var(--surface-sunken);display:grid;place-items:center;color:var(--text-faint)}
+  .empty-state .ico .ic{width:20px;height:20px}
+  .empty-state b{display:block;color:var(--text-muted);font-size:12.5px;margin-bottom:4px}
+  .empty-state span{font-size:11px}
+
+  /* ── CENTER: month grid ── */
+  .center-col{display:flex;flex-direction:column;min-height:0}
+  .month-head{display:flex;align-items:center;gap:9px;padding:11px 13px;border-bottom:1px solid var(--border);background:var(--surface)}
+  .month-head .title{font-size:17px;font-weight:700;font-family:var(--font-disp);flex:1}
+  .month-head .title span{color:var(--text-muted);font-weight:500}
+  .iconbtn{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);display:grid;place-items:center;cursor:pointer;color:var(--text-muted);transition:.15s var(--ease)}
+  .iconbtn:hover{color:var(--accent-hover);border-color:var(--accent);background:var(--accent-soft)}
+  .iconbtn .ic{width:14px;height:14px}
+  .iconbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .pill-add{font:inherit;font-size:11.5px;font-weight:600;color:var(--accent-hover);border:1px dashed var(--accent);background:var(--accent-soft);padding:6px 11px;border-radius:8px;cursor:pointer;transition:.15s var(--ease);display:inline-flex;align-items:center;gap:6px}
+  .pill-add:hover{background:var(--accent);color:#fff}
+  .pill-add .ic{width:13px;height:13px}
+  .pill-add:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .month-dow{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border);background:var(--surface)}
+  .month-dow span{padding:7px 4px;font-size:9.5px;font-weight:700;letter-spacing:.07em;color:var(--text-faint);text-align:center;text-transform:uppercase}
+  .month-grid{flex:1;display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;min-height:0}
+  .cell{border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:4px 5px;cursor:pointer;transition:.13s var(--ease);display:flex;flex-direction:column;gap:2px;min-width:0;overflow:hidden;background:transparent}
+  .cell:nth-child(7n){border-right:none}
+  .cell:hover{background:var(--surface-sunken)}
+  .cell.is-today{background:var(--accent-soft)}
+  .cell.is-selected{outline:2px solid var(--accent);outline-offset:-2px;background:var(--surface-2);z-index:2}
+  .cell.is-outside{color:var(--text-faint);background:rgba(0,0,0,.012)}
+  .cell .dnum{font-size:12px;font-weight:600;font-family:var(--font-disp);width:20px;height:20px;display:grid;place-items:center;border-radius:50%;line-height:1}
+  .cell.is-today .dnum{background:var(--accent-hover);color:#fff}
+  .cell.is-selected .dnum{color:var(--accent-hover)}
+  .evs{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .ev{font-size:9px;line-height:1.15;padding:2px 5px;border-radius:4px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;transition:.12s var(--ease)}
+  .ev:hover{filter:brightness(1.08)}
+  .ev.work{background:var(--c-work)} .ev.school{background:var(--c-school)} .ev.study{background:var(--c-study)} .ev.personal{background:var(--c-personal)} .ev.health{background:var(--c-health)} .ev.social{background:var(--c-social)} .ev.other{background:var(--c-other)} .ev.buffer{background:var(--c-buffer);color:var(--text-muted);border:1px dashed var(--border-strong)}
+  .ev.is-focus::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:#fff;margin-right:3px;vertical-align:middle}
+  .evmore{font-size:8.5px;color:var(--text-faint);padding-left:2px}
+
+  /* ── RIGHT: AI chat ── */
+  .ai{display:flex;flex-direction:column;min-height:0}
+  .ai-head{display:flex;align-items:center;gap:9px;padding:11px 13px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--surface),var(--surface-2))}
+  .ai-stage{width:32px;height:32px;border-radius:9px;background:radial-gradient(circle at 30% 30%,var(--accent-soft) 0%,transparent 70%),linear-gradient(135deg,var(--surface-sunken),var(--surface));border:1px dashed var(--accent);display:grid;place-items:center;flex:0 0 auto;overflow:hidden}
+  .ai-stage .ph-emoji{font-size:19px;opacity:.75;animation:breathe 3.6s var(--ease) infinite}
+  @keyframes breathe{0%,100%{transform:scale(1)} 50%{transform:scale(1.06)}}
+  .ai-name{font-size:12.5px;font-weight:700;font-family:var(--font-disp)}
+  .ai-state{font-size:10px;color:var(--success);font-weight:600;display:flex;align-items:center;gap:4px}
+  .ai-state .dot{width:5px;height:5px;border-radius:50%;background:var(--success)}
+  .ai-body{flex:1;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:0}
+  .msg{display:flex;gap:7px;max-width:94%;animation:fadeIn .25s var(--ease)}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none}}
+  .msg .av{width:22px;height:22px;border-radius:7px;flex:0 0 auto;display:grid;place-items:center;color:#fff;font-size:11px}
+  .msg.ai .av{background:linear-gradient(135deg,var(--accent),var(--accent-hover))}
+  .msg.me .av{background:var(--cocoa)}
+  .msg .bubble{font-size:11.5px;line-height:1.45;padding:8px 10px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);color:var(--text)}
+  .msg.me{align-self:flex-end;flex-direction:row-reverse}
+  .msg.me .bubble{background:var(--cocoa);color:#fff;border-color:var(--cocoa)}
+  .msg.ai .bubble b{color:var(--accent-hover)}
+
+  /* Event card inside chat — proposed event awaiting approval */
+  .evcard-chat{margin-top:7px;border:1px solid var(--accent);border-radius:9px;overflow:hidden;background:var(--surface)}
+  .evcard-chat .ec-head{padding:8px 10px;background:var(--accent-soft);display:flex;align-items:center;gap:7px}
+  .evcard-chat .ec-head .ec-dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  .evcard-chat .ec-head .ec-title{font-size:12px;font-weight:700;flex:1;min-width:0}
+  .evcard-chat .ec-head .ec-status{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accent-hover)}
+  .evcard-chat .ec-body{padding:8px 10px;display:flex;flex-direction:column;gap:4px}
+  .evcard-chat .ec-row{font-size:10.5px;color:var(--text-muted);display:flex;align-items:center;gap:6px}
+  .evcard-chat .ec-row .ic{width:11px;height:11px;color:var(--accent)}
+  .evcard-chat .ec-actions{padding:7px 10px 9px;display:flex;gap:6px}
+  .evcard-chat .ec-actions button{font:inherit;font-size:10.5px;font-weight:600;padding:5px 9px;border-radius:7px;cursor:pointer;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-hover);transition:.14s var(--ease);flex:1}
+  .evcard-chat .ec-actions button.confirm{background:var(--accent-hover);color:#fff}
+  .evcard-chat .ec-actions button:hover{transform:translateY(-1px)}
+  .evcard-chat .ec-actions button.confirm:hover{background:var(--accent-press)}
+  .evcard-chat .ec-actions button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* if-then intention chip */
+  .ifthen{margin-top:7px;padding:8px 10px;border-left:3px solid var(--dusk);background:var(--dusk-soft);border-radius:8px;font-size:10.5px;line-height:1.45;color:var(--text)}
+  .ifthen b{color:var(--dusk);font-weight:700}
+  .ifthen .it-label{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--dusk);margin-bottom:3px;display:block}
+
+  .ai-recs{flex:0 0 auto;padding:0 10px 8px}
+  .ai-recs .rec-label{font-size:8.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-faint);margin-bottom:5px;padding-left:1px}
+  .ai-recs .rec-list{display:flex;flex-direction:column;gap:4px}
+  .rec{width:100%;text-align:left;font:inherit;font-size:10.5px;line-height:1.35;border:1px solid var(--border);background:var(--surface-2);color:var(--text);padding:6px 9px;border-radius:7px;cursor:pointer;display:flex;align-items:flex-start;gap:5px;transition:.13s var(--ease);box-shadow:var(--shadow-sm)}
+  .rec:hover{border-color:var(--accent);color:var(--accent-hover);transform:translateY(-1px)}
+  .rec:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .rec .rec-ico{width:12px;height:12px;flex:0 0 auto;color:var(--accent);margin-top:1px}
+  .rec.sent{opacity:.45;pointer-events:none}
+  .ai-input{flex:0 0 auto;border-top:1px solid var(--border);padding:8px 10px;background:rgba(255,255,255,.5);display:flex;gap:6px;align-items:flex-end}
+  .ai-input textarea{flex:1;font:inherit;font-size:11.5px;line-height:1.4;resize:none;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:8px;padding:7px 9px;max-height:70px;min-height:32px;transition:.15s var(--ease);font-family:var(--font-ui)}
+  .ai-input textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .sendbtn{width:32px;height:32px;border-radius:8px;flex:0 0 auto;border:none;background:var(--accent-hover);color:#fff;cursor:pointer;display:grid;place-items:center;transition:.15s var(--ease);box-shadow:var(--shadow-sm)}
+  .sendbtn:hover{background:var(--accent-press)}
+  .sendbtn:disabled{background:var(--border-strong);cursor:not-allowed}
+  .sendbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .sendbtn .ic{width:14px;height:14px}
+
+  /* Add-event modal */
+  .overlay{position:fixed;inset:0;background:rgba(59,42,34,.32);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s var(--ease)}
+  .overlay.show{display:flex}
+  .modal{width:100%;max-width:420px;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:18px;box-shadow:var(--shadow-lg);overflow:hidden;animation:popIn .22s var(--ease)}
+  @keyframes popIn{from{opacity:0;transform:translateY(12px) scale(.98)} to{opacity:1;transform:none}}
+  .modal-head{display:flex;align-items:center;gap:10px;padding:15px 17px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--surface),var(--surface-2))}
+  .modal-head .m-title{font-size:15px;font-weight:700;letter-spacing:-.01em;flex:1}
+  .modal-head .close{width:28px;height:28px;border-radius:7px;border:none;background:transparent;cursor:pointer;color:var(--text-muted);display:grid;place-items:center;transition:.14s var(--ease)}
+  .modal-head .close:hover{background:var(--surface-sunken);color:var(--text)}
+  .modal-head .close .ic{width:17px;height:17px}
+  .modal-body{padding:15px 17px;display:flex;flex-direction:column;gap:13px}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field label{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted)}
+  .field input,.field select,.field textarea{font:inherit;font-size:12.5px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:8px;padding:8px 10px;transition:.15s var(--ease);font-family:var(--font-ui);width:100%}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .field textarea{resize:vertical;min-height:48px}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .type-row{display:flex;gap:6px;flex-wrap:wrap}
+  .type-opt{flex:1;min-width:72px;display:flex;align-items:center;gap:6px;font:inherit;font-size:11.5px;font-weight:600;padding:7px 9px;border-radius:7px;cursor:pointer;border:1px solid var(--border);background:var(--surface-2);color:var(--text);transition:.14s var(--ease)}
+  .type-opt .swatch{width:13px;height:13px;border-radius:4px;flex:0 0 auto}
+  .type-opt.sel{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-hover)}
+  .type-opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .energy-row{display:flex;gap:6px}
+  .energy-opt{flex:1;font:inherit;font-size:11px;font-weight:600;padding:6px 9px;border-radius:7px;cursor:pointer;border:1px solid var(--border);background:var(--surface-2);color:var(--text);transition:.14s var(--ease);text-align:center}
+  .energy-opt.sel{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-hover)}
+  .focus-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;width:fit-content;padding:6px 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);transition:.18s var(--ease);user-select:none}
+  .focus-toggle:hover{border-color:var(--border-strong)}
+  .focus-toggle .ft-knob{width:34px;height:20px;border-radius:999px;background:var(--border-strong);position:relative;transition:.22s var(--ease);flex:0 0 auto}
+  .focus-toggle .ft-knob::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.22s var(--ease);box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .focus-toggle.on{border-color:var(--accent);background:var(--accent-soft)}
+  .focus-toggle.on .ft-knob{background:var(--accent-hover)}
+  .focus-toggle.on .ft-knob::after{left:16px}
+  .focus-toggle .ft-label-no{font-size:11px;font-weight:600;color:var(--text-muted)}
+  .focus-toggle .ft-label-yes{font-size:11px;font-weight:600;color:var(--accent-hover);display:none}
+  .focus-toggle.on .ft-label-no{display:none}
+  .focus-toggle.on .ft-label-yes{display:inline}
+  .focus-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .modal-foot{display:flex;gap:9px;padding:11px 17px 15px;justify-content:flex-end}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--text);color:#FBF3EB;padding:10px 16px;border-radius:999px;font-size:12.5px;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.22s var(--ease);z-index:300}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Status rail -->
+  <div class="rail">
+    <div class="brand">
+      <span class="mark"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
+      FocusPath <small>· Calendar</small>
+    </div>
+    <div class="spacer"></div>
+    <span class="meta-tag"><span class="dot"></span>Buddy online · Kitsu</span>
+    <span class="date">Template 1 · Month Grid + AI</span>
+    <button class="btn" id="focusMode" title="Hide past events to reduce overwhelm"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg>Focus mode</button>
+    <button class="btn primary" id="addBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add event</button>
+  </div>
+
+  <!-- Three columns: detail LEFT · month CENTER · AI RIGHT -->
+  <div class="dash">
+    <!-- LEFT: day detail -->
+    <div class="panel">
+      <div class="panel-head">
+        <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span class="ph-title">Day detail</span>
+        <span class="ph-sub" id="detailCount">0 events</span>
+      </div>
+      <div class="detail-head">
+        <div class="ddow" id="detailDow">Tuesday</div>
+        <div class="ddate" id="detailDate">July 22</div>
+        <div class="dsub" id="detailSub">3 events · 2h 15m scheduled · 5h free</div>
+      </div>
+      <div class="panel-body" id="detailList"></div>
+    </div>
+
+    <!-- CENTER: month grid -->
+    <div class="panel center-col">
+      <div class="month-head">
+        <button class="iconbtn" id="prevMonth" aria-label="Previous month"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <span class="title" id="monthTitle">July <span>2025</span></span>
+        <button class="iconbtn" id="nextMonth" aria-label="Next month"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+        <button class="btn btn-sm" id="todayBtn">Today</button>
+        <button class="pill-add" id="addBtn2"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Event</button>
+      </div>
+      <div class="month-dow" id="monthDow"></div>
+      <div class="month-grid" id="monthGrid"></div>
+      <div style="padding:8px 13px;border-top:1px solid var(--border);background:var(--surface)">
+        <div class="legend">
+          <span><i style="background:var(--c-work)"></i>Work</span>
+          <span><i style="background:var(--c-school)"></i>School</span>
+          <span><i style="background:var(--c-study)"></i>Study</span>
+          <span><i style="background:var(--c-personal)"></i>Personal</span>
+          <span><i style="background:var(--c-health)"></i>Health</span>
+          <span><i style="background:var(--c-social)"></i>Social</span>
+          <span><i style="background:var(--c-buffer)"></i>Buffer</span>
+          <span style="margin-left:4px"><i style="background:#fff;border:1.5px solid var(--accent)"></i>★ = focus block</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: AI chat -->
+    <div class="panel ai">
+      <div class="ai-head">
+        <div class="ai-stage" aria-label="Buddy placeholder — Kitsu the Fox">
+          <span class="ph-emoji">🦊</span>
+        </div>
+        <div>
+          <div class="ai-name">Kitsu — Calendar AI</div>
+          <div class="ai-state"><span class="dot"></span>Ready to schedule</div>
+        </div>
+      </div>
+      <div class="ai-body" id="aiBody"></div>
+      <div class="ai-recs">
+        <div class="rec-label">Try asking</div>
+        <div class="rec-list" id="recList"></div>
+      </div>
+      <div class="ai-input">
+        <textarea id="aiInput" placeholder="e.g. 'Block 2 hours for chem study tomorrow at 7pm'" rows="1"></textarea>
+        <button class="sendbtn" id="aiSend" aria-label="Send"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add-event modal -->
+<div class="overlay" id="overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-head">
+      <span class="m-title" id="modalTitle">New event</span>
+      <button class="close" id="modalClose" aria-label="Close"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label for="fTitle">Title</label>
+        <input id="fTitle" type="text" placeholder="e.g. Study chemistry Ch.5" maxlength="80" />
+      </div>
+      <div class="field-row">
+        <div class="field"><label for="fDate">Date</label><input id="fDate" type="date" /></div>
+        <div class="field"><label for="fTime">Start time</label><input id="fTime" type="time" /></div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="fDur">Duration</label>
+          <select id="fDur">
+            <option value="15">15 min</option><option value="30">30 min</option><option value="45">45 min</option>
+            <option value="60" selected>1 hour</option><option value="90">1.5 hours</option><option value="120">2 hours</option><option value="180">3 hours</option>
+          </select>
+        </div>
+        <div class="field"><label>Type</label><div class="type-row" id="typeRow"></div></div>
+      </div>
+      <div class="field"><label>Energy needed</label><div class="energy-row" id="energyRow"></div></div>
+      <div class="field">
+        <label>Focus block? <span style="font-weight:400;text-transform:none;color:var(--text-faint)">(check if this needs deep, uninterrupted focus — adds a buffer + protects the time)</span></label>
+        <div class="focus-toggle" id="focusToggle" role="switch" aria-checked="false" tabindex="0" aria-label="Mark as focus block">
+          <span class="ft-knob"></span>
+          <span class="ft-label-no">No</span><span class="ft-label-yes">Yes — protect this time</span>
+        </div>
+      </div>
+      <div class="field"><label for="fNotes">Notes <span style="font-weight:400;text-transform:none;color:var(--text-faint)">(what exactly to do — book pages, workout reps, etc.)</span></label><textarea id="fNotes" rows="2" placeholder="e.g. Read pp.142–158 + problems 4.1–4.10  ·  Leg day: squats 4×8, RDL 3×10"></textarea></div>
+      <div class="field"><label for="fIfThen">If-then intention <span style="font-weight:400;text-transform:none;color:var(--text-faint)">(optional — boosts completion)</span></label><input id="fIfThen" type="text" placeholder="IF I feel distracted, THEN I'll stand and stretch 30 sec" /></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" type="button" id="modalCancel">Cancel</button>
+      <button class="btn primary" type="button" id="modalSave">Add event</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const toast = document.getElementById("toast");
+function showToast(m){ toast.textContent=m; toast.classList.add("show"); clearTimeout(window._t); window._t=setTimeout(()=>toast.classList.remove("show"),1700); }
+function esc(s){ const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+
+const DOW_FULL=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const DOW_SHORT=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const MONTHS_SHORT=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const TODAY=new Date(2025,6,22); TODAY.setHours(0,0,0,0);
+const TYPE_COLOR={work:"var(--c-work)",school:"var(--c-school)",study:"var(--c-study)",personal:"var(--c-personal)",health:"var(--c-health)",social:"var(--c-social)",other:"var(--c-other)",buffer:"var(--c-buffer)"};
+const TYPE_LABEL={work:"Work",school:"School",study:"Study",personal:"Personal",health:"Health",social:"Social",other:"Other",buffer:"Buffer"};
+const TYPES=[["work","Work","#7A4F3A"],["school","School","#7A6A8A"],["study","Study","#C76A3E"],["personal","Personal","#7A8A6E"],["health","Health","#8A7A4E"],["social","Social","#B06A6A"],["other","Other","#907A6B"]];
+const ENERGY_LABEL={high:"High focus",low:"Low energy",any:"Either"};
+const IC={
+  check:'<svg class="rec-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+  clock:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
+  bolt:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>',
+  tag:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12l-8 8-9-9V3h8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>',
+  spark:'<svg class="rec-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>',
+  notes:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>',
+};
+
+// Live event store keyed by date "YYYY-MM-DD"
+const EV={
+  "2025-07-01":[{id:"e1",t:"9:00",title:"Standup",type:"work",min:540,dur:30,energy:"low",isFocus:false,notes:"Sprint review prep — bring the burndown chart."}],
+  "2025-07-03":[{id:"e2",t:"14:00",title:"Lab session",type:"school",min:840,dur:90,energy:"high",isFocus:true,notes:"Titration lab. Pre-lab questions on Canvas. Lab coat + goggles.",ifthen:"IF I check my phone, THEN I'll put it face-down in the drawer"}],
+  "2025-07-08":[{id:"e6",t:"10:00",title:"Project sprint",type:"work",min:600,dur:120,energy:"high",isFocus:false,notes:"Ship the auth refactor. PR #142 review first, then wire up the new login flow."}],
+  "2025-07-10":[{id:"e3",t:"13:00",title:"Ch.1 review",type:"study",min:780,dur:60,energy:"high",isFocus:true,notes:"Re-read Ch.1 summary + redo the 12 practice problems at the end."},{id:"e4",t:"15:00",title:"Dentist",type:"health",min:900,dur:45,energy:"low",isFocus:false,notes:"6-month checkup. Bring insurance card + arrive 10 min early for X-rays."}],
+  "2025-07-15":[{id:"e7",t:"18:00",title:"Run",type:"health",min:1080,dur:45,energy:"low",isFocus:false,notes:"Easy 5k loop around the park. Stretch after."}],
+  "2025-07-17":[{id:"e5",t:"13:00",title:"Ch.2 problems",type:"study",min:780,dur:60,energy:"high",isFocus:true,notes:"Problem set 2.1–2.15. Skip 2.8 (too hard), come back with tutor."}],
+  "2025-07-22":[
+    {id:"e13",t:"1:00pm",title:"Chem Ch.4 practice",type:"study",min:780,dur:60,energy:"high",isFocus:true,notes:"Read pp.142–158 + problems 4.1–4.10. Bring the textbook, calculator, and your flashcards. Linked to your 'A in Chemistry' goal.",ifthen:"IF I feel stuck on a problem, THEN I'll skip it and come back at the end"},
+    {id:"e14",t:"2:30pm",title:"Dentist",type:"health",min:870,dur:45,energy:"low",isFocus:false,notes:"6-month checkup. Bring insurance card."},
+    {id:"e15",t:"7:00pm",title:"Dinner w/ friends",type:"social",min:1140,dur:90,energy:"any",isFocus:false,notes:"Noodles & Co. — Maya's birthday. Bring the card you bought."}
+  ],
+  "2025-07-23":[{id:"e16",t:"10:00am",title:"Gym",type:"health",min:600,dur:60,energy:"low",isFocus:false,notes:"Leg day: squats 4×8, RDL 3×10, calf raises 3×15, plank 3×45s."}],
+  "2025-07-24":[{id:"e17",t:"7:00pm",title:"Study group",type:"study",min:1140,dur:60,energy:"any",isFocus:false,notes:"Ch.4 review with Sam + Priya. Zoom link in the group chat."}],
+  "2025-07-26":[{id:"e8",t:"9:00",title:"Code review",type:"work",min:540,dur:45,energy:"high",isFocus:false,notes:"Review PRs #145, #147, #148. Focus on the auth middleware changes."}],
+  "2025-07-29":[{id:"e18",t:"1:00pm",title:"Ch.3 review",type:"study",min:780,dur:60,energy:"high",isFocus:true,notes:"Chapter 3 summary sheet + the practice exam questions."}],
+  "2025-07-31":[{id:"e19",t:"3:00pm",title:"Chem exam prep",type:"study",min:900,dur:120,energy:"high",isFocus:true,notes:"Final review + build a one-page summary sheet. Exam is Aug 1 at 9am. Bring 2 pencils + calculator."}],
+};
+let eventSeq=100;
+let focusMode=false;
+const FS={view:new Date(TODAY),selected:new Date(TODAY)};
+
+function key(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+function evsFor(d){ return (EV[key(d)]||[]).slice().sort((a,b)=>a.min-b.min); }
+function sameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+function fmtTime(min){ const h=Math.floor(min/60),m=min%60; const ap=h<12?"am":"pm"; const hr=h===0?12:(h>12?h-12:h); return `${hr}:${String(m).padStart(2,"0")}${ap}`; }
+
+/* ── Month grid ── */
+function renderMonth(){
+  const el=document.getElementById("monthGrid");
+  const v=FS.view;
+  document.getElementById("monthTitle").innerHTML=`${MONTHS[v.getMonth()]} <span>${v.getFullYear()}</span>`;
+  document.getElementById("monthDow").innerHTML=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=>`<span>${d}</span>`).join("");
+  const year=v.getFullYear(),month=v.getMonth();
+  const startWk=(new Date(year,month,1).getDay()+6)%7;
+  let html="";
+  for(let i=0;i<42;i++){
+    const d=new Date(year,month,i-startWk+1); d.setHours(0,0,0,0);
+    const outside=d.getMonth()!==month;
+    const isToday=sameDay(d,TODAY);
+    const isSel=sameDay(d,FS.selected);
+    let evs=evsFor(d);
+    if(focusMode && d<TODAY) evs=[]; // dim past in focus mode
+    const evChips=evs.slice(0,3).map(e=>`<span class="ev ${e.type}${e.isFocus?" is-focus":""}" data-evid="${e.id}"><span class="et" style="opacity:.85;font-family:var(--font-num);margin-right:3px">${e.t}</span>${esc(e.title)}</span>`).join("");
+    const more=evs.length>3?`<span class="evmore">+${evs.length-3} more</span>`:"";
+    const cls=`cell${outside?" is-outside":""}${isToday?" is-today":""}${isSel?" is-selected":""}`;
+    html+=`<div class="${cls}" role="button" tabindex="0" data-date="${key(d)}" aria-label="${DOW_FULL[d.getDay()]} ${MONTHS_SHORT[d.getMonth()]} ${d.getDate()}, ${evs.length} event${evs.length===1?"":"s"}"><span class="dnum">${d.getDate()}</span><span class="evs">${evChips}${more}</span></div>`;
+  }
+  el.innerHTML=html;
+  el.querySelectorAll(".cell").forEach(c=>{
+    const onPick=()=>{
+      const [y,m,d]=c.getAttribute("data-date").split("-").map(Number);
+      FS.selected=new Date(y,m-1,d);
+      if(m-1!==FS.view.getMonth()||y!==FS.view.getFullYear()) FS.view=new Date(y,m-1,1);
+      renderMonth(); renderDetail();
+    };
+    c.onclick=onPick;
+    c.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); onPick(); } };
+  });
+}
+
+/* ── Day detail ── */
+function renderDetail(){
+  const d=FS.selected;
+  document.getElementById("detailDow").textContent=DOW_FULL[d.getDay()];
+  document.getElementById("detailDate").textContent=`${MONTHS[d.getMonth()]} ${d.getDate()}`;
+  let evs=evsFor(d);
+  if(focusMode && d<TODAY) evs=[];
+  const totalMin=evs.reduce((a,b)=>a+b.dur,0);
+  const freeH=Math.max(0,8-Math.floor(totalMin/60));
+  document.getElementById("detailSub").textContent=`${evs.length} event${evs.length===1?"":"s"} · ${Math.floor(totalMin/60)}h ${totalMin%60}m scheduled · ${freeH}h free`;
+  document.getElementById("detailCount").textContent=`${evs.length} event${evs.length===1?"":"s"}`;
+  const list=document.getElementById("detailList");
+  if(!evs.length){
+    list.innerHTML=`<div class="empty-state"><div class="ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><b>No events today</b><span>A clean slate — click "Add event" or ask Kitsu to schedule something.</span></div>`;
+    return;
+  }
+  list.innerHTML=evs.map(e=>{
+    const energyChip = e.energy && e.energy!=="any" ? `<span class="eenergy ${e.energy}">${e.energy==="high"?"⚡ High focus":"🌿 Low energy"}</span>` : "";
+    const focusFlag = e.isFocus ? `<span class="focus-flag">★ Focus block</span>` : "";
+    const notes = e.notes ? `<div class="ev-notes"><span class="nt-label">${IC.notes}Notes</span>${esc(e.notes)}</div>` : `<div class="ev-notes" style="color:var(--text-faint);font-style:italic">No notes for this event.</div>`;
+    const ifthen = e.ifthen ? `<div class="ifthen" style="margin-top:5px"><span class="it-label">If-then intention</span>IF <b>${esc(e.ifthen.split(", THEN")[0].replace(/^IF\s/i,""))}</b>, THEN <b>${esc((e.ifthen.split("THEN")[1]||"").trim())}</b></div>` : "";
+    return `<div class="evcard ${e.type}${e.isFocus?" is-focus":""}" data-evid="${e.id}" role="button" tabindex="0" aria-expanded="false" aria-label="${esc(e.title)} at ${e.t}, ${e.dur} minutes, ${TYPE_LABEL[e.type]}.${e.notes?" Has notes.":""} Press to expand."><span class="et">${e.t} · ${e.dur}m · ${TYPE_LABEL[e.type]}</span><span class="en">${esc(e.title)}</span>${focusFlag}${energyChip}${notes}${ifthen}<svg class="ev-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="M9 18l6-6-6-6"/></svg></div>`;
+  }).join("");
+  list.querySelectorAll(".evcard").forEach(c=>{
+    const toggle=()=>{ const expanded=c.classList.toggle("expanded"); c.setAttribute("aria-expanded",expanded?"true":"false"); };
+    c.onclick=toggle;
+    c.onkeydown=ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();toggle();}};
+  });
+}
+
+/* ── AI chat ── */
+const aiBody=document.getElementById("aiBody");
+const aiInput=document.getElementById("aiInput");
+const aiSend=document.getElementById("aiSend");
+const recList=document.getElementById("recList");
+const recs=[
+  "Block 2 hours for chem study tomorrow at 7pm",
+  "Find me a focus window this week",
+  "Add buffer between my meetings",
+  "Break down 'write history essay' into blocks",
+  "Move my 7pm study block to Wednesday",
+  "Clear my afternoon tomorrow",
+];
+function addMsg(role,html){
+  const div=document.createElement("div");
+  div.className=`msg ${role}`;
+  const av=role==="ai"?"🦊":"Y";
+  div.innerHTML=`<span class="av">${av}</span><div class="bubble">${html}</div>`;
+  aiBody.appendChild(div);
+  aiBody.scrollTop=aiBody.scrollHeight;
+  return div;
+}
+function eventCardHTML(e){
+  return `<div class="evcard-chat">
+    <div class="ec-head"><span class="ec-dot" style="background:${TYPE_COLOR[e.type]}"></span><span class="ec-title">${esc(e.title)}</span><span class="ec-status">proposed</span></div>
+    <div class="ec-body">
+      <div class="ec-row">${IC.clock} ${e.t} · ${e.dur} min</div>
+      <div class="ec-row">${IC.tag} ${TYPE_LABEL[e.type]}${e.isFocus?` · ★ focus block`:""}</div>
+      ${e.energy&&e.energy!=="any"?`<div class="ec-row">${IC.bolt} ${ENERGY_LABEL[e.energy]}</div>`:""}
+      ${e.notes?`<div class="ec-row">${IC.notes} ${esc(e.notes)}</div>`:""}
+      <div class="ec-row" style="color:var(--text-faint)">${e.isFocus?"+ 15-min buffer auto-added after":"No buffer needed"}</div>
+    </div>
+    <div class="ec-actions">
+      <button class="confirm" data-confirm="${e.id}">Confirm & add</button>
+      <button data-edit="${e.id}">Edit</button>
+      <button data-cancel="${e.id}">Cancel</button>
+    </div>
+  </div>`;
+}
+function aiReply(text){
+  const t=text.toLowerCase();
+  let html;
+  let proposed=null;
+  if(t.includes("chem")||t.includes("study")||t.includes("block")){
+    proposed={id:"p"+(eventSeq++),t:"7:00pm",title:"Chem study",type:"study",isFocus:true,dur:120,energy:"high",notes:"Read pp.142–158 + problems 4.1–4.10. Bring textbook + flashcards."};
+    html=`Found a 2-hour window <b>tomorrow at 7pm</b>. Your energy is usually high then (based on your patterns). I'd mark this as a <b>focus block</b> (Study type) — nothing commits until you confirm:${eventCardHTML(proposed)}`;
+  } else if(t.includes("focus window")||t.includes("find")){
+    proposed={id:"p"+(eventSeq++),t:"10:00am",title:"Focus block",type:"study",isFocus:true,dur:60,energy:"high",notes:"Deep work — gather what you need before you start."};
+    html=`Your best focus hours are <b>9am–12pm weekdays</b>. I'd suggest <b>Thursday 10am</b> — you have nothing scheduled. ${eventCardHTML(proposed)}`;
+  } else if(t.includes("buffer")){
+    proposed={buffer:true};
+    html=`Good idea. I scanned your week and found <b>2 back-to-back blocks</b> (Wed 2pm meeting → 2:30pm task). I'd add a <b>15-min buffer</b> at 2:15pm. Want me to insert it? <div class="ec-actions" style="padding:7px 0 0"><button class="confirm" data-buffer="1">Add buffers</button></div>`;
+  } else if(t.includes("break down")||t.includes("essay")){
+    proposed={plan:true,steps:[{min:900,dur:120,title:"Research",type:"study",isFocus:true,t:"3:00pm",notes:"Gather 5 sources + skim each."},{min:1140,dur:60,title:"Outline",type:"study",isFocus:true,t:"7:00pm",notes:"Thesis + 3 body-section skeletons."},{min:780,dur:180,title:"Draft",type:"study",isFocus:true,t:"1:00pm",notes:"Write body paragraphs. Don't edit yet."},{min:960,dur:60,title:"Edit",type:"study",isFocus:true,t:"4:00pm",notes:"Tighten prose + check citations."}]};
+    html=`Breaking <b>"write history essay"</b> into tiny steps. Here's a 4-block plan spread across your free slots: <div style="margin-top:7px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);font-size:10.5px;line-height:1.5"><b>1. Research</b> · 2h · Tue 3pm<br><b>2. Outline</b> · 1h · Wed 7pm<br><b>3. Draft</b> · 3h · Thu 1pm<br><b>4. Edit</b> · 1h · Fri 4pm</div> <div class="ec-actions" style="padding:7px 0 0"><button class="confirm" data-plan="essay">Add all 4 blocks</button><button data-edit="essay">Adjust</button></div>`;
+  } else if(t.includes("move")||t.includes("reschedule")){
+    proposed={move:true};
+    html=`Got it — moving your <b>7pm study block</b> to <b>Wednesday at 6pm</b> (your next free high-energy slot). Original stays until you confirm. <div class="ec-actions" style="padding:7px 0 0"><button class="confirm" data-move="1">Confirm move</button><button data-cancel="1">Keep original</button></div>`;
+  } else if(t.includes("clear")){
+    html=`Tomorrow afternoon (1pm–5pm) you have <b>2 events</b>: gym at 10am and study group at 7pm. Afternoon is actually free already! Did you mean a different day?`;
+  } else {
+    html=`I can help with that. Try one of the suggested chips below — I'll propose a block and you confirm before anything's added. Nothing auto-commits, ever.`;
+  }
+  setTimeout(()=>{
+    const node=addMsg("ai",html);
+    node.querySelectorAll(".ec-actions button").forEach(b=>{
+      const act=b.getAttribute("data-confirm")||b.getAttribute("data-edit")||b.getAttribute("data-cancel")||b.getAttribute("data-buffer")||b.getAttribute("data-plan")||b.getAttribute("data-move");
+      b.onclick=()=>{
+        if(b.classList.contains("confirm")){
+          if(proposed && proposed.buffer){
+            // insert a buffer block on the selected day at 13:15
+            const dKey=key(FS.selected);
+            if(!EV[dKey]) EV[dKey]=[];
+            if(!EV[dKey].some(e=>e.min===13*60+75&&e.type==="buffer")){
+              EV[dKey].push({id:"b"+(eventSeq++),t:"2:15pm",title:"Buffer",type:"buffer",min:13*60+75,dur:15,energy:"any"});
+            }
+            renderMonth(); renderDetail();
+            showToast("Buffer added at 2:15pm");
+            addMsg("ai",`Buffer in place. Nice — that'll help you switch gears without rushing.`);
+          } else if(proposed && proposed.plan){
+            // add all 4 essay blocks across the week (demo: all on selected day + following days)
+            proposed.steps.forEach((s,i)=>{
+              const dKey=key(new Date(FS.selected.getFullYear(),FS.selected.getMonth(),FS.selected.getDate()+i));
+              if(!EV[dKey]) EV[dKey]=[];
+              EV[dKey].push({id:"e"+(eventSeq++),...s,energy:"high"});
+            });
+            renderMonth(); renderDetail();
+            showToast(`Added ${proposed.steps.length} essay blocks`);
+            addMsg("ai",`Done — <b>${proposed.steps.length} blocks</b> added with buffers between. Your essay now has a real path to Friday 🦊`);
+          } else if(proposed && proposed.move){
+            // demo: move the 7pm study block on selected day to Wed 6pm
+            const dKey=key(FS.selected);
+            const moved=(EV[dKey]||[]).find(e=>e.title.includes("study")||e.title.includes("Chem")||e.title.includes("Focus")||e.isFocus);
+            if(moved){ moved.min=18*60; moved.t="6:00pm"; }
+            renderMonth(); renderDetail();
+            showToast("Study block moved to Wed 6pm");
+            addMsg("ai",`Moved. Original cleared, new slot confirmed.`);
+          } else if(proposed){
+            // commit a single proposed event to "tomorrow" for demo
+            const dKey=key(new Date(FS.selected.getTime()+86400000));
+            if(!EV[dKey]) EV[dKey]=[];
+            EV[dKey].push({...proposed,id:"e"+(eventSeq++),min:19*60,title:proposed.title,type:proposed.type,dur:proposed.dur,energy:proposed.energy,t:proposed.t});
+            renderMonth(); renderDetail();
+            showToast(`Added: ${proposed.title} · ${proposed.t}`);
+            addMsg("ai",`Done — <b>${proposed.title}</b> added. I also dropped a 15-min buffer after it. Kitsu's proud of you 🦊`);
+          } else {
+            showToast("Applied!");
+            addMsg("ai",`Applied. Anything else you want me to line up?`);
+          }
+        } else {
+          showToast("Cancelled — nothing changed");
+        }
+      };
+    });
+  },380);
+}
+function sendMsg(text){
+  if(!text.trim()) return;
+  addMsg("me",esc(text));
+  aiInput.value=""; aiSend.disabled=true;
+  aiInput.style.height="auto";
+  aiReply(text);
+}
+aiSend.onclick=()=>sendMsg(aiInput.value);
+aiInput.oninput=()=>{ aiSend.disabled=!aiInput.value.trim(); aiInput.style.height="auto"; aiInput.style.height=Math.min(aiInput.scrollHeight,70)+"px"; };
+aiInput.onkeydown=e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); sendMsg(aiInput.value); } };
+// seed + suggestions
+addMsg("ai",`Hey friend. Kitsu here. I can schedule things for you — just describe what you need and I'll <b>propose a block you can confirm</b>. Nothing auto-commits. What's on your mind?`);
+aiSend.disabled=true;
+function renderRecs(){
+  recList.innerHTML=recs.map(r=>`<button class="rec" data-rec="${esc(r)}">${IC.spark}<span>${esc(r)}</span></button>`).join("");
+  recList.querySelectorAll(".rec").forEach(b=>{ b.onclick=()=>{ sendMsg(b.getAttribute("data-rec")); b.classList.add("sent"); }; });
+}
+renderRecs();
+
+/* ── Month nav ── */
+document.getElementById("prevMonth").onclick=()=>{ FS.view=new Date(FS.view.getFullYear(),FS.view.getMonth()-1,1); renderMonth(); };
+document.getElementById("nextMonth").onclick=()=>{ FS.view=new Date(FS.view.getFullYear(),FS.view.getMonth()+1,1); renderMonth(); };
+document.getElementById("todayBtn").onclick=()=>{ FS.view=new Date(TODAY); FS.selected=new Date(TODAY); renderMonth(); renderDetail(); showToast("Jumped to today"); };
+
+/* ── Focus mode (ADHD: hide past to reduce overwhelm) ── */
+document.getElementById("focusMode").onclick=function(){ focusMode=!focusMode; this.classList.toggle("primary",focusMode); renderMonth(); renderDetail(); showToast(focusMode?"Focus mode on — past events dimmed":"Focus mode off"); };
+
+/* ── Add-event modal ── */
+const overlay=document.getElementById("overlay");
+let selType="study",selEnergy="any",selFocus=false;
+const focusToggle=document.getElementById("focusToggle");
+function setFocus(v){ selFocus=v; focusToggle.classList.toggle("on",v); focusToggle.setAttribute("aria-checked",v?"true":"false"); }
+focusToggle.onclick=()=>setFocus(!selFocus);
+focusToggle.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); setFocus(!selFocus); } };
+function openModal(){
+  document.getElementById("fDate").value=key(FS.selected);
+  document.getElementById("fTime").value="09:00";
+  document.getElementById("fTitle").value="";
+  document.getElementById("fDur").value="60";
+  document.getElementById("fIfThen").value="";
+  document.getElementById("fNotes").value="";
+  selType="study"; selEnergy="any"; setFocus(false); renderTypeRow(); renderEnergyRow();
+  overlay.classList.add("show");
+  setTimeout(()=>document.getElementById("fTitle").focus(),100);
+}
+function closeModal(){ overlay.classList.remove("show"); }
+function renderTypeRow(){
+  document.getElementById("typeRow").innerHTML=TYPES.map(([v,l,c])=>`<button class="type-opt ${selType===v?"sel":""}" data-type="${v}" aria-pressed="${selType===v}"><span class="swatch" style="background:${c}"></span>${l}</button>`).join("");
+  document.querySelectorAll("#typeRow .type-opt").forEach(b=>b.onclick=()=>{ selType=b.getAttribute("data-type"); renderTypeRow(); });
+}
+function renderEnergyRow(){
+  document.getElementById("energyRow").innerHTML=["high","low","any"].map(v=>`<button class="energy-opt ${selEnergy===v?"sel":""}" data-energy="${v}" aria-pressed="${selEnergy===v}">${ENERGY_LABEL[v]}</button>`).join("");
+  document.querySelectorAll("#energyRow .energy-opt").forEach(b=>b.onclick=()=>{ selEnergy=b.getAttribute("data-energy"); renderEnergyRow(); });
+}
+document.getElementById("addBtn").onclick=openModal;
+document.getElementById("addBtn2").onclick=openModal;
+document.getElementById("modalClose").onclick=closeModal;
+document.getElementById("modalCancel").onclick=closeModal;
+overlay.onclick=e=>{ if(e.target===overlay) closeModal(); };
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&overlay.classList.contains("show")) closeModal(); });
+document.getElementById("modalSave").onclick=()=>{
+  const title=document.getElementById("fTitle").value.trim()||"Untitled";
+  const date=document.getElementById("fDate").value;
+  const time=document.getElementById("fTime").value;
+  const dur=parseInt(document.getElementById("fDur").value,10);
+  const ifthen=document.getElementById("fIfThen").value.trim();
+  const notes=document.getElementById("fNotes").value.trim();
+  const [h,m]=time.split(":").map(Number);
+  const min=h*60+m;
+  const tFmt=fmtTime(min);
+  if(!EV[date]) EV[date]=[];
+  EV[date].push({id:"e"+(eventSeq++),t:tFmt,title,type:selType,min,dur,energy:selEnergy,isFocus:selFocus,notes:notes||undefined,ifthen:ifthen||undefined});
+  const [y,mo,d]=date.split("-").map(Number);
+  FS.selected=new Date(y,mo-1,d); FS.view=new Date(y,mo-1,1);
+  renderMonth(); renderDetail(); closeModal();
+  showToast(`Added: ${title} · ${tFmt}${selFocus?" · focus block":""}`);
+  // auto-insert buffer after focus blocks (ADHD feature — protects deep work)
+  if(selFocus){
+    setTimeout(()=>{
+      const bufferMin=min+dur+15;
+      if(!EV[date].some(e=>e.min===bufferMin&&e.type==="buffer")){
+        EV[date].push({id:"b"+(eventSeq++),t:fmtTime(bufferMin),title:"Buffer",type:"buffer",min:bufferMin,dur:15,energy:"any"});
+        renderMonth(); renderDetail();
+      }
+    },200);
+  }
+};
+
+renderMonth(); renderDetail();
+</script>
+</body>
+</html>

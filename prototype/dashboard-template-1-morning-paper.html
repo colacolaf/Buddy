@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FocusPath Dashboard — Morning Paper</title>
+<style>
+  /* ═══════════════════════════════════════════════════════════
+     MORNING PAPER PALETTE — Warm cream + burnt sienna + slate
+     Calm, intellectual, bookstore-desk feeling. WCAG AA verified.
+     ═══════════════════════════════════════════════════════════ */
+  :root{
+    --bg:#F4EFE6; --surface:#FAF6EE; --surface-2:#FFFFFF; --surface-sunken:#E8E0D2;
+    --border:#D9CFBE; --border-strong:#B8AC97;
+    --text:#3A342B; --text-muted:#6B6358; --text-faint:#8C8478;
+    --accent:#B86C45; --accent-hover:#9A5A39; --accent-press:#7E482D; --accent-soft:#EBDAC8;
+    --sienna:#B86C45; --sienna-soft:#EBDAC8;
+    --slate:#5E7A8A; --slate-soft:#DCE4E8;
+    --olive:#7A8A5E; --olive-soft:#DDE3D0;
+    --plum:#8A5E7A; --plum-soft:#E6DCE5;
+    --success:#7A8A5E; --warning:#A38E66; --danger:#B05A4E; --danger-soft:#EBD6D0;
+    --shadow-sm:0 1px 2px rgba(58,52,43,.05), 0 2px 6px rgba(58,52,43,.05);
+    --shadow:0 1px 2px rgba(58,52,43,.05), 0 6px 18px rgba(58,52,43,.08);
+    --shadow-lg:0 2px 8px rgba(58,52,43,.07), 0 18px 48px rgba(58,52,43,.14);
+    --radius:14px; --radius-sm:9px; --radius-xs:6px;
+    --ease:cubic-bezier(.4,0,.2,1);
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+    --font-num:"SF Mono","ui-monospace","Menlo","Consolas",monospace;
+    --font-disp:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0}
+  body{
+    font-family:var(--font-ui); color:var(--text);
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #EFE7D8 0%, transparent 60%),
+      radial-gradient(900px 500px at -10% 20%, #EAE0CD 0%, transparent 55%), var(--bg);
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; line-height:1.5;
+  }
+
+  /* ── Toolbar ── */
+  .toolbar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:14px; padding:12px 22px;
+    background:rgba(250,246,238,.82);
+    backdrop-filter:saturate(140%) blur(14px); -webkit-backdrop-filter:saturate(140%) blur(14px);
+    border-bottom:1px solid var(--border);
+  }
+  .brand{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:-.01em}
+  .brand .mark{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-hover));display:grid;place-items:center;color:#fff;box-shadow:var(--shadow-sm)}
+  .brand small{color:var(--text-muted); font-weight:500; margin-left:2px}
+  .toolbar .spacer{flex:1}
+  .toolbar .meta-tag{font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:6px}
+  .toolbar .meta-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+  .btn{
+    font:inherit; font-size:13px; font-weight:600; cursor:pointer;
+    border:1px solid var(--border-strong); background:var(--surface-2);
+    color:var(--text); padding:8px 14px; border-radius:10px;
+    display:inline-flex; align-items:center; gap:8px;
+    transition:.16s var(--ease); box-shadow:var(--shadow-sm);
+  }
+  .btn:hover{transform:translateY(-1px); border-color:var(--accent); color:var(--accent-hover)}
+  .btn:active{transform:translateY(0)}
+  .btn.primary{background:var(--accent-hover); border-color:var(--accent-hover); color:#fff}
+  .btn.primary:hover{background:var(--accent-press); border-color:var(--accent-press); color:#fff}
+  .btn .ic{width:15px;height:15px}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+  /* ── Page shell ── */
+  .wrap{max-width:1240px; margin:0 auto; padding:28px 22px 120px}
+  .intro{display:flex; align-items:baseline; gap:14px; margin-bottom:22px}
+  .intro .h{flex:1}
+  .intro h1{font-size:30px; letter-spacing:-.02em; margin:0 0 4px; font-family:var(--font-disp)}
+  .intro .sub{color:var(--text-muted); margin:0; font-size:14px}
+  .intro .right{display:flex; gap:8px; align-items:center}
+  .intro .date{font-family:var(--font-disp); font-size:14px; color:var(--text-muted); font-style:italic}
+
+  /* ── Palette chip ── */
+  .palchip{display:inline-flex; align-items:center; gap:10px; font-size:12px; color:var(--text-muted); background:var(--surface-2); border:1px solid var(--border); border-radius:999px; padding:5px 12px; box-shadow:var(--shadow-sm)}
+  .palchip .sw{display:flex; gap:3px}
+  .palchip .sw i{width:12px; height:12px; border-radius:4px; display:block}
+
+  /* ── Layout: newspaper grid ── */
+  .grid{display:grid; grid-template-columns:repeat(12,1fr); gap:16px}
+  .col-12{grid-column:span 12} .col-8{grid-column:span 8} .col-7{grid-column:span 7}
+  .col-6{grid-column:span 6} .col-5{grid-column:span 5} .col-4{grid-column:span 4}
+  .col-3{grid-column:span 3}
+
+  /* ── Panel / card ── */
+  .panel{background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column}
+  .panel-head{display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid var(--border); background:var(--surface)}
+  .panel-head .ph-title{font-size:14px; font-weight:700; letter-spacing:-.01em; font-family:var(--font-disp)}
+  .panel-head .ph-sub{font-size:11px; color:var(--text-muted); margin-left:auto}
+  .panel-head .ph-ic{width:18px;height:18px; color:var(--accent)}
+  .panel-body{padding:14px 16px; display:flex; flex-direction:column; gap:12px}
+  .panel-foot{padding:10px 16px; border-top:1px solid var(--border); background:var(--surface); display:flex; gap:8px; align-items:center; justify-content:flex-end}
+
+  /* ── Stat row (4 KPI cards) ── */
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
+  .stat{padding:14px; border-radius:var(--radius-sm); background:var(--surface); border:1px solid var(--border); display:flex; flex-direction:column; gap:4px; transition:.16s var(--ease); cursor:pointer}
+  .stat:hover{border-color:var(--accent); background:var(--accent-soft); transform:translateY(-1px)}
+  .stat:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .stat .lab{font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); font-weight:600}
+  .stat .val{font-size:26px; font-weight:700; color:var(--accent-hover); font-family:var(--font-num); line-height:1.1}
+  .stat .sub{font-size:11.5px; color:var(--text-muted)}
+  .stat .bar{height:5px; border-radius:999px; background:var(--surface-sunken); overflow:hidden; margin-top:auto}
+  .stat .fill{height:100%; border-radius:999px; background:linear-gradient(90deg,var(--accent),var(--accent-hover)); transition:width .4s var(--ease)}
+
+  /* ── Today's Agenda Strip ── */
+  .agenda-track{position:relative; height:64px; background:var(--surface-sunken); border-radius:10px; border:1px solid var(--border); overflow:visible; margin-top:6px}
+  .agenda-hours{display:flex; justify-content:space-between; padding:0 2px; margin-bottom:6px}
+  .agenda-hours span{font-size:10px; color:var(--text-faint); font-family:var(--font-num)}
+  .ag-block{position:absolute; top:8px; bottom:8px; border-radius:7px; padding:5px 8px; color:#fff; font-size:11px; line-height:1.2; overflow:hidden; box-shadow:var(--shadow-sm); cursor:pointer; transition:.15s var(--ease); min-width:0}
+  .ag-block:hover{transform:translateY(-2px); box-shadow:var(--shadow)}
+  .ag-block b{display:block; font-weight:600; font-size:11.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .ag-block small{opacity:.85; font-size:10px}
+  .ag-block.focus{background:linear-gradient(135deg,var(--accent),var(--accent-hover))}
+  .ag-block.slate{background:linear-gradient(135deg,#6E8C9C,var(--slate))}
+  .ag-block.olive{background:linear-gradient(135deg,#8A9B6E,var(--olive))}
+  .ag-block.plum{background:linear-gradient(135deg,#9B7A8A,var(--plum))}
+  .ag-now{position:absolute; top:-4px; bottom:-4px; width:2px; background:var(--accent); z-index:5; border-radius:2px; box-shadow:0 0 0 4px rgba(184,108,69,.18)}
+  .ag-now::before{content:""; position:absolute; top:-5px; left:-4px; width:10px;height:10px;border-radius:50%; background:var(--accent); box-shadow:0 0 0 3px rgba(255,255,255,.9)}
+  .ag-now::after{content:"now"; position:absolute; top:-20px; left:6px; font-size:9.5px; font-weight:700; color:var(--accent); font-family:var(--font-num); letter-spacing:.05em}
+  .agenda-next{margin-top:12px; display:flex; gap:8px; flex-wrap:wrap}
+  .agenda-next .it{flex:1; min-width:140px; border:1px solid var(--border); border-radius:9px; padding:8px 10px; background:var(--surface)}
+  .agenda-next .it .t{font-size:11px; color:var(--text-faint); font-family:var(--font-num)}
+  .agenda-next .it .n{font-size:13px; font-weight:600; margin-top:2px}
+  .agenda-next .it .b{height:3px;border-radius:3px;margin-top:6px}
+
+  /* ── Done List ── */
+  .done-list{display:flex; flex-direction:column; gap:7px}
+  .done-item{display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; background:var(--surface); border:1px solid var(--border); transition:.12s var(--ease)}
+  .done-item:hover{border-color:var(--accent); background:var(--accent-soft)}
+  .done-check{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;flex:0 0 auto}
+  .done-check .ic{width:11px;height:11px}
+  .done-text{flex:1; min-width:0}
+  .done-title{font-size:13.5px; font-weight:600}
+  .done-meta{font-size:11px; color:var(--text-muted)}
+  .done-time{font-size:11px; color:var(--text-faint); font-family:var(--font-num); white-space:nowrap}
+  .quick-add{display:flex; gap:8px; margin-top:4px}
+  .quick-add input{flex:1; font:inherit; font-size:13px; border:1px solid var(--border); background:var(--surface-2); color:var(--text); border-radius:9px; padding:9px 12px; transition:.15s var(--ease)}
+  .quick-add input:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+  .quick-add input::placeholder{color:var(--text-faint)}
+
+  /* ── Bar chart (weekly) ── */
+  .bar-chart{display:flex; align-items:flex-end; gap:10px; height:150px; padding:14px 0 26px}
+  .bar{flex:1; border-radius:7px 7px 4px 4px; background:var(--accent-soft); transition:.3s var(--ease); position:relative; min-height:8px; cursor:pointer}
+  .bar:hover{background:var(--accent)}
+  .bar.today{background:linear-gradient(180deg,var(--accent),var(--accent-hover))}
+  .bar-label{position:absolute; bottom:-20px; left:50%; transform:translateX(-50%); font-size:10px; color:var(--text-muted)}
+  .bar-val{position:absolute; top:-18px; left:50%; transform:translateX(-50%); font-size:10px; font-weight:600; color:var(--text); font-family:var(--font-num)}
+
+  /* ── Horizontal bars (categories) ── */
+  .hbar{display:flex; align-items:center; gap:12px}
+  .hbar-track{flex:1; height:9px; background:var(--surface-sunken); border-radius:999px; overflow:hidden}
+  .hbar-fill{height:100%; border-radius:999px; transition:width .4s var(--ease)}
+  .hbar-label{font-size:12px; white-space:nowrap; width:88px}
+  .hbar-val{font-size:12px; color:var(--text-muted); width:44px; text-align:right; font-family:var(--font-num)}
+
+  /* ── Goal bars ── */
+  .goal{display:flex; flex-direction:column; gap:5px}
+  .goal-row{display:flex; justify-content:space-between; font-size:13px}
+  .goal-row .p{font-family:var(--font-num); color:var(--text-muted)}
+  .goal-bar{height:8px; background:var(--surface-sunken); border-radius:999px; overflow:hidden}
+  .goal-fill{height:100%; border-radius:999px; background:linear-gradient(90deg,var(--accent),var(--accent-hover)); transition:width .4s var(--ease)}
+
+  /* ── Buddy panel (inline dashboard placeholder) ── */
+  .buddy{display:grid; grid-template-columns:120px 1fr; gap:14px; padding:14px; align-items:start}
+  .buddy-stage{
+    width:120px; height:120px; border-radius:18px;
+    background:
+      radial-gradient(circle at 30% 30%, var(--accent-soft) 0%, transparent 60%),
+      linear-gradient(135deg, var(--surface-sunken), var(--surface));
+    border:1px dashed var(--accent);
+    display:grid; place-items:center; position:relative; overflow:hidden;
+    box-shadow:inset 0 0 0 1px rgba(184,108,69,.08);
+  }
+  .buddy-stage .placeholder{display:flex; flex-direction:column; align-items:center; gap:6px; color:var(--text-faint)}
+  .buddy-stage .placeholder .ico{width:42px; height:42px; opacity:.55}
+  .buddy-stage .placeholder .lbl{font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase}
+  .buddy-stage .ph-emoji{font-size:46px; opacity:.7; animation:breathe 3.6s var(--ease) infinite}
+  @keyframes breathe{0%,100%{transform:scale(1)} 50%{transform:scale(1.04)}}
+  .buddy-body{display:flex; flex-direction:column; gap:9px; min-width:0}
+  .buddy-body .b-name{font-size:14px; font-weight:700; font-family:var(--font-disp)}
+  .buddy-body .b-state{font-size:11px; color:var(--success); font-weight:600; display:flex; align-items:center; gap:5px}
+  .buddy-body .b-state .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+  .buddy-body .b-msg{font-size:12.5px; color:var(--text-muted); line-height:1.5; padding:10px 12px; background:var(--surface); border:1px solid var(--border); border-radius:10px; border-left:3px solid var(--accent)}
+  .buddy-body .b-msg b{color:var(--accent-hover)}
+  .buddy-quick{display:flex; gap:7px; flex-wrap:wrap}
+  .buddy-quick .qb{font:inherit; font-size:11px; font-weight:600; padding:6px 10px; border-radius:8px; cursor:pointer; border:1px solid var(--border-strong); background:var(--surface-2); color:var(--text); transition:.14s var(--ease)}
+  .buddy-quick .qb:hover{border-color:var(--accent); color:var(--accent-hover); background:var(--accent-soft)}
+  .buddy-quick .qb.primary{background:var(--accent-soft); border-color:var(--accent); color:var(--accent-hover)}
+  .buddy-quick .qb:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+  /* ── Reset / fresh start card ── */
+  .reset{padding:18px; border-radius:var(--radius); background:linear-gradient(135deg,var(--surface-sunken),var(--surface)); border:1px dashed var(--accent); text-align:center}
+  .reset .r-title{font-size:17px; font-weight:700; font-family:var(--font-disp); margin-bottom:6px}
+  .reset .r-sub{font-size:13px; color:var(--text-muted); margin:0 0 12px}
+  .reset .r-btn{font:inherit; font-size:13px; font-weight:600; cursor:pointer; border:1px solid var(--accent); background:var(--surface-2); color:var(--accent-hover); padding:8px 16px; border-radius:10px; transition:.15s var(--ease); box-shadow:var(--shadow-sm)}
+  .reset .r-btn:hover{background:var(--accent); color:#fff}
+  .reset .r-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+  /* toast */
+  .toast{position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(20px); background:var(--text); color:#FAF6EE; padding:10px 16px; border-radius:999px; font-size:12.5px; font-weight:500; box-shadow:var(--shadow-lg); opacity:0; pointer-events:none; transition:.22s var(--ease); z-index:300}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+  footer.foot{margin-top:48px; padding-top:18px; border-top:1px solid var(--border); color:var(--text-faint); font-size:12px; text-align:center}
+  .legend-row{display:flex; gap:14px; flex-wrap:wrap; padding:2px 0}
+  .legend-row span{display:inline-flex; align-items:center; gap:6px; font-size:11px; color:var(--text-muted)}
+  .legend-row i{width:8px;height:8px;border-radius:50%}
+</style>
+</head>
+<body>
+
+<!-- ───────────────────── Toolbar ───────────────────── -->
+<div class="toolbar">
+  <div class="brand">
+    <span class="mark"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></span>
+    FocusPath <small>· Dashboard</small>
+  </div>
+  <div class="spacer"></div>
+  <span class="meta-tag"><span class="dot"></span>Buddy online · Sage</span>
+  <button class="btn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Today</button>
+  <button class="btn primary"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Plan day</button>
+</div>
+
+<div class="wrap">
+
+  <!-- ───────────────────── Intro ───────────────────── -->
+  <div class="intro">
+    <div class="h">
+      <h1>Good morning, friend</h1>
+      <p class="sub">It's Tuesday — you've got one focus block left today. The chemistry chapter's still waiting, and that's okay.</p>
+    </div>
+    <div class="right">
+      <span class="date">July 22, 2025</span>
+      <span class="palchip">
+        <span class="sw"><i style="background:#F4EFE6"></i><i style="background:#B86C45"></i><i style="background:#5E7A8A"></i><i style="background:#7A8A5E"></i><i style="background:#8A5E7A"></i></span>
+        Morning Paper
+      </span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       ROW 1 — 4 KPI STAT CARDS (full width)
+       Widget A: stat row
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="grid" style="margin-bottom:16px">
+    <div class="col-12">
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
+          <span class="ph-title">Today at a glance</span>
+          <span class="ph-sub">4 metrics · click any to expand</span>
+        </div>
+        <div class="panel-body">
+          <div class="stats">
+            <div class="stat" role="button" tabindex="0" data-stat="Focus today: 3h 12m"><div class="lab">Focus today</div><div class="val">3h 12m</div><div class="sub">+42 min vs yesterday</div><div class="bar"><div class="fill" style="width:72%"></div></div></div>
+            <div class="stat" role="button" tabindex="0" data-stat="Tasks done: 5 of 7"><div class="lab">Tasks done</div><div class="val">5 / 7</div><div class="sub">2 remaining · no rush</div><div class="bar"><div class="fill" style="width:71%"></div></div></div>
+            <div class="stat" role="button" tabindex="0" data-stat="Streak: 12 days"><div class="lab">Streak</div><div class="val">12d</div><div class="sub">1 freeze left · forgiving</div><div class="bar"><div class="fill" style="width:80%"></div></div></div>
+            <div class="stat" role="button" tabindex="0" data-stat="Wins today: 8"><div class="lab">Wins today</div><div class="val">8</div><div class="sub">See Done List below</div><div class="bar"><div class="fill" style="width:60%"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       ROW 2 — Agenda strip (full width)
+       Widget B: today agenda strip
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="grid" style="margin-bottom:16px">
+    <div class="col-12">
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+          <span class="ph-title">Today's schedule</span>
+          <span class="ph-sub">3 events · next at 2:30pm</span>
+          <button class="btn" id="addEventBtn" style="margin-left:auto"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add event</button>
+        </div>
+        <div class="panel-body">
+          <div class="agenda">
+            <div class="agenda-hours" id="agendaHours"></div>
+            <div class="agenda-track" id="agendaTrack"></div>
+          </div>
+          <div class="agenda-next" id="agendaNext"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       ROW 3 — Done List (7) + Buddy panel (5)
+       Widget C: done list   Widget D: buddy panel
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="grid" style="margin-bottom:16px">
+    <!-- Done list -->
+    <div class="col-7">
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          <span class="ph-title">Done List — what you've finished</span>
+          <span class="ph-sub" id="doneCount">3 wins today</span>
+        </div>
+        <div class="panel-body">
+          <div class="done-list" id="doneList"></div>
+          <div class="quick-add">
+            <input type="text" id="winInput" placeholder="Log another win — anything counts" />
+            <button class="btn primary" id="addWinBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Log win</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Buddy panel -->
+    <div class="col-5">
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>
+          <span class="ph-title">Your buddy — Sage</span>
+          <span class="ph-sub">always-on companion</span>
+        </div>
+        <div class="buddy">
+          <div class="buddy-stage" aria-label="Buddy placeholder — character renders here">
+            <div class="placeholder">
+              <span class="ph-emoji">🐱</span>
+              <span class="lbl">Buddy</span>
+            </div>
+          </div>
+          <div class="buddy-body">
+            <div class="b-name">Sage the Cat</div>
+            <div class="b-state"><span class="dot"></span>Focused · watching quietly</div>
+            <div class="b-msg">You've been on task for <b>2h 14m</b>. Chemistry Ch.4 practice is your one thing today — I'll hold space for it. Want to start a 25-minute sprint?</div>
+            <div class="buddy-quick">
+              <button class="qb primary" data-qb="Start 25-min focus sprint">Start focus</button>
+              <button class="qb" data-qb="What should I do next?">What next?</button>
+              <button class="qb" data-qb="Mark task done">Mark done</button>
+              <button class="qb" data-qb="Snooze buddy for 30 min">Snooze 30m</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       ROW 4 — Weekly chart (8) + Category hbars (4)
+       Widget E: weekly bar chart   Widget F: category horizontal bars
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="grid" style="margin-bottom:16px">
+    <div class="col-8">
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
+          <span class="ph-title">This week's focus</span>
+          <span class="ph-sub">hours per day · no judgment</span>
+        </div>
+        <div class="panel-body">
+          <div class="bar-chart" id="weekChart"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span class="ph-title">Time by category</span>
+          <span class="ph-sub">this week</span>
+        </div>
+        <div class="panel-body" id="catBars"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       ROW 5 — Goal bars (8) + Reset card (4)
+       Widget G: goal progress bars   Widget H: shame-free reset
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="grid" style="margin-bottom:16px">
+    <div class="col-8">
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+          <span class="ph-title">Goals in motion</span>
+          <span class="ph-sub">3 active · implementation intentions</span>
+        </div>
+        <div class="panel-body" id="goalBars"></div>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg>
+          <span class="ph-title">Fresh start</span>
+          <span class="ph-sub">no shame · ever</span>
+        </div>
+        <div class="panel-body">
+          <div class="reset">
+            <div class="r-title">Need a reset?</div>
+            <p class="r-sub">3 overdue tasks rolled over. Clear them with one click — no guilt, no streak break.</p>
+            <button class="r-btn" id="resetBtn">Shame-Free Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────────── Legend ───────────────────── -->
+  <div class="legend-row" style="margin-top:8px">
+    <span><i style="background:var(--accent)"></i>Focus block</span>
+    <span><i style="background:var(--slate)"></i>Appointment</span>
+    <span><i style="background:var(--olive)"></i>Personal</span>
+    <span><i style="background:var(--plum)"></i>Reminder</span>
+  </div>
+
+  <footer class="foot">
+    FocusPath dashboard · Template 1 of 3 · Morning Paper palette · 8 widgets (stat row, agenda strip, done list, weekly chart, category bars, goal bars, buddy panel, reset card) · every button functional.
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─────────────────────────────────────────────────────────
+   DATA + helpers
+   ───────────────────────────────────────────────────────── */
+const toast = document.getElementById("toast");
+function showToast(m){ toast.textContent = m; toast.classList.add("show"); clearTimeout(window._t); window._t = setTimeout(()=>toast.classList.remove("show"), 1700); }
+function esc(s){ const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+
+const IC = {
+  check:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+};
+
+/* ── Widget A: stat cards ── */
+document.querySelectorAll(".stat").forEach(s=>{
+  const act = ()=>showToast(s.getAttribute("data-stat"));
+  s.onclick = act; s.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); act(); } };
+});
+
+/* ── Widget B: agenda strip ── */
+const AG = { start:8*60, end:22*60 };
+const events = [
+  { t:"1:00pm", title:"Chem Ch.4 practice", type:"focus", min:780, dur:60 },
+  { t:"2:30pm", title:"Dentist", type:"slate", min:870, dur:45 },
+  { t:"7:00pm", title:"Dinner w/ friends", type:"olive", min:1140, dur:90 }
+];
+function renderAgenda(){
+  const span = AG.end - AG.start;
+  const pct = m => ((m - AG.start)/span)*100;
+  const hours = [8,10,12,14,16,18,20,22];
+  document.getElementById("agendaHours").innerHTML = hours.map(h=>`<span>${h<=12?h:h-12}${h<12?"a":"p"}</span>`).join("");
+  const blocks = events.map(e=>{
+    const left = pct(e.min), w = pct(e.min + e.dur) - left;
+    return `<div class="ag-block ${e.type}" style="left:${left}%;width:${w}%" title="${esc(e.title)}"><b>${esc(e.title)}</b><small>${e.t} · ${e.dur}m</small></div>`;
+  }).join("");
+  const now = pct(13*60 + 45);
+  document.getElementById("agendaTrack").innerHTML = blocks + `<div class="ag-now" style="left:${now}%"></div>`;
+  document.getElementById("agendaNext").innerHTML = events.map(e=>`<div class="it"><div class="t">${e.t}</div><div class="n">${esc(e.title)}</div><div class="b" style="background:var(--${e.type==='focus'?'accent':e.type})"></div></div>`).join("");
+  document.querySelectorAll(".ag-block").forEach(b=>b.onclick=()=>showToast(b.title));
+}
+renderAgenda();
+document.getElementById("addEventBtn").onclick = ()=>showToast("Event editor opens here (placeholder)");
+
+/* ── Widget C: done list ── */
+let done = [
+  { id:1, title:"Read chem chapter 4 sections 4.1-4.3", time:"2h ago", source:"from calendar" },
+  { id:2, title:"Sent email to professor", time:"4h ago", source:"manual" },
+  { id:3, title:"15 min meditation", time:"6h ago", source:"habit" }
+];
+function renderDone(){
+  document.getElementById("doneCount").textContent = `${done.length} win${done.length===1?"":"s"} today`;
+  const list = document.getElementById("doneList");
+  if(!done.length){ list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-faint);font-size:13px">No wins yet — that's fine. Log one tiny thing.</div>`; return; }
+  list.innerHTML = done.map(i=>`<div class="done-item"><span class="done-check">${IC.check}</span><div class="done-text"><div class="done-title">${esc(i.title)}</div><div class="done-meta">${esc(i.source)}</div></div><span class="done-time">${esc(i.time)}</span></div>`).join("");
+}
+renderDone();
+function addWin(){
+  const inp = document.getElementById("winInput");
+  const v = inp.value.trim();
+  if(!v){ showToast("Type what you finished"); return; }
+  done.unshift({ id:Date.now(), title:v, time:"just now", source:"manual" });
+  inp.value = ""; renderDone(); showToast("Win logged — nice work");
+}
+document.getElementById("addWinBtn").onclick = addWin;
+document.getElementById("winInput").onkeydown = e=>{ if(e.key==="Enter") addWin(); };
+
+/* ── Widget D: buddy quick actions ── */
+document.querySelectorAll(".buddy-quick .qb").forEach(b=>b.onclick=()=>showToast(b.getAttribute("data-qb")));
+
+/* ── Widget E: weekly bar chart ── */
+const weekData = [ {d:"M",h:2.4}, {d:"T",h:3.1}, {d:"W",h:1.8}, {d:"T",h:4.2}, {d:"F",h:3.5}, {d:"S",h:5.1}, {d:"S",h:2.9, today:true} ];
+function renderWeek(){
+  const max = Math.max(...weekData.map(x=>x.h));
+  document.getElementById("weekChart").innerHTML = weekData.map(x=>{
+    const pct = (x.h/max)*100;
+    return `<div class="bar ${x.today?'today':''}" style="height:${pct}%" role="img" aria-label="${x.d}: ${x.h} hours focus"><div class="bar-val">${x.h}h</div><div class="bar-label">${x.d}</div></div>`;
+  }).join("");
+  document.querySelectorAll("#weekChart .bar").forEach((b,i)=>b.onclick=()=>showToast(`${weekData[i].d}: ${weekData[i].h}h focused`));
+}
+renderWeek();
+
+/* ── Widget F: category hbars ── */
+const cats = [ {n:"Study",v:12,c:"var(--accent)"}, {n:"Work",v:8,c:"var(--slate)"}, {n:"Creative",v:4,c:"var(--olive)"}, {n:"Rest",v:6,c:"var(--plum)"}, {n:"Admin",v:3,c:"var(--warning)"} ];
+document.getElementById("catBars").innerHTML = cats.map(c=>`<div class="hbar"><span class="hbar-label">${esc(c.n)}</span><div class="hbar-track"><div class="hbar-fill" style="width:${Math.min(c.v*5,100)}%;background:${c.c}"></div></div><span class="hbar-val">${c.v}h</span></div>`).join("");
+
+/* ── Widget G: goal bars ── */
+const goals = [ {t:"A in Chemistry",p:35,sub:"Ch.4 practice today"}, {t:"Meditate daily",p:60,sub:"streak 12 days · 1 freeze"}, {t:"History essay draft",p:20,sub:"rough outline started"} ];
+document.getElementById("goalBars").innerHTML = goals.map(g=>`<div class="goal"><div class="goal-row"><span><b style="font-size:13.5px">${esc(g.t)}</b> <span style="color:var(--text-faint);font-size:12px">· ${esc(g.sub)}</span></span><span class="p">${g.p}%</span></div><div class="goal-bar"><div class="goal-fill" style="width:${g.p}%"></div></div></div>`).join("");
+
+/* ── Widget H: reset ── */
+document.getElementById("resetBtn").onclick = ()=>{ done=[]; renderDone(); showToast("All overdue cleared — fresh start. Buddy: 'Clean slate. What's your one thing?'"); };
+</script>
+</body>
+</html>

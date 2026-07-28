@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FocusPath Calendar — Week View · Template 3</title>
+<style>
+  :root{
+    --bg:#F7EDE4; --surface:#FBF3EB; --surface-2:#FFFFFF; --surface-sunken:#ECD9C8;
+    --border:#E0C7B2; --border-strong:#C8A88C;
+    --text:#3B2A22; --text-muted:#6E574A; --text-faint:#907A6B;
+    --accent:#C76A3E; --accent-hover:#A8562E; --accent-press:#8A4624; --accent-soft:#F2D8C5;
+    --cocoa:#7A4F3A; --cocoa-soft:#E8D9CC;
+    --sage:#7A8A6E; --sage-soft:#DDE3D4;
+    --dusk:#7A6A8A; --dusk-soft:#E2DCE6;
+    --success:#7A8A6E; --warning:#B89366; --danger:#B05A4E; --danger-soft:#EBD6D0;
+    --shadow-sm:0 1px 2px rgba(59,42,34,.05),0 2px 6px rgba(59,42,34,.05);
+    --shadow:0 1px 2px rgba(59,42,34,.05),0 6px 18px rgba(59,42,34,.08);
+    --shadow-lg:0 2px 8px rgba(59,42,34,.07),0 18px 48px rgba(59,42,34,.14);
+    --radius:14px; --radius-sm:9px; --radius-xs:6px;
+    --ease:cubic-bezier(.4,0,.2,1);
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+    --font-num:"SF Mono","ui-monospace","Menlo","Consolas",monospace;
+    --font-disp:Georgia,"Times New Roman",serif;
+    --c-focus:var(--accent); --c-meeting:var(--dusk); --c-task:var(--cocoa); --c-personal:var(--sage); --c-buffer:var(--border-strong);
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0;height:100%;overflow:hidden}
+  body{font-family:var(--font-ui);color:var(--text);background:radial-gradient(1100px 600px at 80% -10%,#F0D8C2 0%,transparent 60%),radial-gradient(900px 500px at -10% 25%,#F4E0CE 0%,transparent 55%),var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5}
+
+  .app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+  .rail{flex:0 0 auto;display:flex;align-items:center;gap:14px;padding:9px 22px;background:rgba(251,243,235,.82);backdrop-filter:saturate(140%) blur(14px);-webkit-backdrop-filter:saturate(140%) blur(14px);border-bottom:1px solid var(--border)}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-.01em;font-size:14px}
+  .brand .mark{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent-hover));display:grid;place-items:center;color:#fff;box-shadow:var(--shadow-sm)}
+  .brand small{color:var(--text-muted);font-weight:500;margin-left:2px;font-size:12px}
+  .rail .spacer{flex:1}
+  .rail .meta-tag{font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px}
+  .rail .meta-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+  .rail .date{font-family:var(--font-disp);font-size:13px;color:var(--text-muted);font-style:italic}
+  .btn{font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);padding:7px 13px;border-radius:9px;display:inline-flex;align-items:center;gap:7px;transition:.15s var(--ease);box-shadow:var(--shadow-sm)}
+  .btn:hover{transform:translateY(-1px);border-color:var(--accent);color:var(--accent-hover)}
+  .btn:active{transform:translateY(0)}
+  .btn.primary{background:var(--accent-hover);border-color:var(--accent-hover);color:#fff}
+  .btn.primary:hover{background:var(--accent-press);border-color:var(--accent-press);color:#fff}
+  .btn .ic{width:14px;height:14px}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .btn-sm{padding:6px 11px;font-size:11.5px}
+
+  .dash{flex:1 1 auto;min-height:0;padding:12px 16px 8px;overflow:hidden;display:grid;grid-template-columns:240px 1fr 320px;gap:12px}
+  .dash>*{min-width:0;min-height:0}
+  .panel{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-height:0}
+  .panel-head{display:flex;align-items:center;gap:9px;padding:11px 13px;border-bottom:1px solid var(--border);background:var(--surface)}
+  .panel-head .ph-title{font-size:13px;font-weight:700;letter-spacing:-.01em;font-family:var(--font-disp)}
+  .panel-head .ph-sub{font-size:10.5px;color:var(--text-muted);margin-left:auto;white-space:nowrap}
+  .panel-head .ph-ic{width:15px;height:15px;color:var(--accent);flex:0 0 auto}
+  .panel-body{padding:12px 13px;display:flex;flex-direction:column;gap:10px;flex:1 1 auto;min-height:0;overflow:auto}
+
+  /* ── LEFT: unscheduled task inbox (Command Center) ── */
+  .inbox-head{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;border-bottom:1px solid var(--border);background:var(--surface)}
+  .inbox-head .ih-title{font-size:12px;font-weight:700;font-family:var(--font-disp)}
+  .inbox-head .ih-count{font-size:10px;color:var(--text-faint);font-family:var(--font-num)}
+  .inbox-list{flex:1;overflow:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+  .task{padding:9px 11px;border-radius:8px;background:var(--surface);border:1px solid var(--border);cursor:grab;transition:.14s var(--ease);display:flex;flex-direction:column;gap:3px}
+  .task:hover{border-color:var(--accent);background:var(--accent-soft);transform:translateX(2px)}
+  .task:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .task .t-title{font-size:12px;font-weight:600}
+  .task .t-meta{font-size:10px;color:var(--text-muted);display:flex;align-items:center;gap:6px}
+  .task .t-meta .est{font-family:var(--font-num)}
+  .task .t-energy{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;width:fit-content}
+  .task .t-energy.high{background:var(--accent-soft);color:var(--accent-hover)}
+  .task .t-energy.low{background:var(--sage-soft);color:var(--sage)}
+  .task .t-actions{display:flex;gap:5px;margin-top:4px}
+  .task .t-actions button{font:inherit;font-size:9.5px;font-weight:600;padding:3px 7px;border-radius:5px;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text-muted);transition:.13s var(--ease)}
+  .task .t-actions button:hover{border-color:var(--accent);color:var(--accent-hover)}
+  .task .t-actions button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .inbox-add{padding:8px;border-top:1px solid var(--border);background:var(--surface)}
+  .inbox-add button{width:100%;justify-content:center}
+  .legend{display:flex;gap:8px;flex-wrap:wrap;font-size:10px;color:var(--text-muted);padding:2px 0}
+  .legend span{display:inline-flex;align-items:center;gap:4px}
+  .legend i{width:7px;height:7px;border-radius:50%;display:block}
+
+  /* ── CENTER: week grid ── */
+  .week-head{display:flex;align-items:center;gap:9px;padding:11px 13px;border-bottom:1px solid var(--border);background:var(--surface)}
+  .week-head .title{font-size:16px;font-weight:700;font-family:var(--font-disp);flex:1}
+  .week-head .title span{color:var(--text-muted);font-weight:500}
+  .iconbtn{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);display:grid;place-items:center;cursor:pointer;color:var(--text-muted);transition:.15s var(--ease)}
+  .iconbtn:hover{color:var(--accent-hover);border-color:var(--accent);background:var(--accent-soft)}
+  .iconbtn .ic{width:14px;height:14px}
+  .iconbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .week-grid-wrap{flex:1;overflow:auto;min-height:0}
+  .week-grid{display:grid;grid-template-columns:48px repeat(7,1fr);min-width:0}
+  .wg-corner{position:sticky;left:0;z-index:3;background:var(--surface);border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .wg-dow{padding:8px 4px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--text-faint);text-transform:uppercase;background:var(--surface);border-right:1px solid var(--border);border-bottom:1px solid var(--border);position:relative}
+  .wg-dow.is-today{color:var(--accent-hover)}
+  .wg-dow .dn{display:block;font-size:14px;font-family:var(--font-disp);color:var(--text);margin-top:1px}
+  .wg-dow.is-today .dn{background:var(--accent-hover);color:#fff;width:22px;height:22px;line-height:22px;border-radius:50%;margin:1px auto 0}
+  .wg-hour{padding:3px 4px;font-size:9px;font-family:var(--font-num);color:var(--text-faint);text-align:right;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--surface);position:sticky;left:0;z-index:2}
+  .wg-cell{border-right:1px solid var(--border);border-bottom:1px solid var(--border);position:relative;min-height:44px;cursor:pointer;transition:.12s var(--ease);overflow:visible}
+  .wg-cell:hover{background:var(--surface-sunken)}
+  .wg-cell:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .wg-cell.is-today-col{background:rgba(199,106,62,.025)}
+  .wg-now{position:absolute;left:0;right:0;height:2px;background:var(--accent);z-index:4;box-shadow:0 0 0 3px rgba(199,106,62,.18)}
+  .wg-now::before{content:"";position:absolute;left:-4px;top:-4px;width:9px;height:9px;border-radius:50%;background:var(--accent)}
+
+  .wg-block{position:absolute;left:3px;right:3px;border-radius:6px;padding:4px 7px;color:#fff;font-size:10px;line-height:1.25;overflow:hidden;cursor:pointer;transition:.14s var(--ease);box-shadow:var(--shadow-sm);min-height:24px}
+  .wg-block:hover{transform:scale(1.02);box-shadow:var(--shadow);z-index:5}
+  .wg-block b{display:block;font-weight:600;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wg-block small{opacity:.85;font-size:9px}
+  .wg-block.focus{background:linear-gradient(135deg,var(--accent),var(--accent-hover))}
+  .wg-block.meeting{background:linear-gradient(135deg,#8A7AA0,var(--dusk))}
+  .wg-block.task{background:linear-gradient(135deg,#8A5F4A,var(--cocoa))}
+  .wg-block.personal{background:linear-gradient(135deg,#8A9B7E,var(--sage))}
+  .wg-block.buffer{background:var(--surface-sunken);color:var(--text-muted);border:1px dashed var(--border-strong)}
+  .wg-block.past{opacity:.5}
+
+  /* ── RIGHT: AI task-decomposition + time-block ── */
+  .ai-head{display:flex;align-items:center;gap:9px;padding:11px 13px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--surface),var(--surface-2))}
+  .ai-stage{width:32px;height:32px;border-radius:9px;background:radial-gradient(circle at 30% 30%,var(--accent-soft) 0%,transparent 70%),linear-gradient(135deg,var(--surface-sunken),var(--surface));border:1px dashed var(--accent);display:grid;place-items:center;flex:0 0 auto;overflow:hidden}
+  .ai-stage .ph-emoji{font-size:19px;opacity:.75;animation:breathe 3.6s var(--ease) infinite}
+  @keyframes breathe{0%,100%{transform:scale(1)} 50%{transform:scale(1.06)}}
+  .ai-name{font-size:12.5px;font-weight:700;font-family:var(--font-disp)}
+  .ai-state{font-size:10px;color:var(--success);font-weight:600;display:flex;align-items:center;gap:4px}
+  .ai-state .dot{width:5px;height:5px;border-radius:50%;background:var(--success)}
+  .ai-body{flex:1;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:0}
+  .msg{display:flex;gap:7px;max-width:94%;animation:fadeIn .25s var(--ease)}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none}}
+  .msg .av{width:22px;height:22px;border-radius:7px;flex:0 0 auto;display:grid;place-items:center;color:#fff;font-size:11px}
+  .msg.ai .av{background:linear-gradient(135deg,var(--accent),var(--accent-hover))}
+  .msg.me .av{background:var(--cocoa)}
+  .msg .bubble{font-size:11.5px;line-height:1.45;padding:8px 10px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);color:var(--text)}
+  .msg.me{align-self:flex-end;flex-direction:row-reverse}
+  .msg.me .bubble{background:var(--cocoa);color:#fff;border-color:var(--cocoa)}
+  .msg.ai .bubble b{color:var(--accent-hover)}
+
+  /* decomposition plan card */
+  .decomp{margin-top:7px;border:1px solid var(--accent);border-radius:9px;overflow:hidden;background:var(--surface)}
+  .decomp .dc-head{padding:8px 10px;background:var(--accent-soft);font-size:11px;font-weight:700;color:var(--accent-hover);display:flex;align-items:center;gap:6px}
+  .decomp .dc-head .ic{width:13px;height:13px}
+  .decomp .dc-list{padding:6px 8px}
+  .decomp .dc-step{display:grid;grid-template-columns:20px 1fr auto;gap:7px;align-items:center;padding:6px 4px;border-bottom:1px solid var(--border);font-size:10.5px}
+  .decomp .dc-step:last-child{border-bottom:none}
+  .decomp .dc-step .dc-num{width:18px;height:18px;border-radius:50%;background:var(--accent-soft);color:var(--accent-hover);display:grid;place-items:center;font-weight:700;font-size:9.5px;font-family:var(--font-num)}
+  .decomp .dc-step .dc-title{font-weight:600}
+  .decomp .dc-step .dc-meta{font-size:9.5px;color:var(--text-muted);font-family:var(--font-num);text-align:right}
+  .decomp .dc-actions{padding:7px 10px 9px;display:flex;gap:6px;background:var(--surface)}
+  .decomp .dc-actions button{font:inherit;font-size:10.5px;font-weight:600;padding:5px 9px;border-radius:7px;cursor:pointer;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent-hover);transition:.14s var(--ease);flex:1}
+  .decomp .dc-actions button.confirm{background:var(--accent-hover);color:#fff}
+  .decomp .dc-actions button:hover{transform:translateY(-1px)}
+  .decomp .dc-actions button.confirm:hover{background:var(--accent-press)}
+  .decomp .dc-actions button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .ai-recs{flex:0 0 auto;padding:0 10px 8px}
+  .ai-recs .rec-label{font-size:8.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-faint);margin-bottom:5px;padding-left:1px}
+  .ai-recs .rec-list{display:flex;flex-direction:column;gap:4px}
+  .rec{width:100%;text-align:left;font:inherit;font-size:10.5px;line-height:1.35;border:1px solid var(--border);background:var(--surface-2);color:var(--text);padding:6px 9px;border-radius:7px;cursor:pointer;display:flex;align-items:flex-start;gap:5px;transition:.13s var(--ease);box-shadow:var(--shadow-sm)}
+  .rec:hover{border-color:var(--accent);color:var(--accent-hover);transform:translateY(-1px)}
+  .rec:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .rec .rec-ico{width:12px;height:12px;flex:0 0 auto;color:var(--accent);margin-top:1px}
+  .rec.sent{opacity:.45;pointer-events:none}
+  .ai-input{flex:0 0 auto;border-top:1px solid var(--border);padding:8px 10px;background:rgba(255,255,255,.5);display:flex;gap:6px;align-items:flex-end}
+  .ai-input textarea{flex:1;font:inherit;font-size:11.5px;line-height:1.4;resize:none;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:8px;padding:7px 9px;max-height:70px;min-height:32px;transition:.15s var(--ease);font-family:var(--font-ui)}
+  .ai-input textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .sendbtn{width:32px;height:32px;border-radius:8px;flex:0 0 auto;border:none;background:var(--accent-hover);color:#fff;cursor:pointer;display:grid;place-items:center;transition:.15s var(--ease);box-shadow:var(--shadow-sm)}
+  .sendbtn:hover{background:var(--accent-press)}
+  .sendbtn:disabled{background:var(--border-strong);cursor:not-allowed}
+  .sendbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .sendbtn .ic{width:14px;height:14px}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--text);color:#FBF3EB;padding:10px 16px;border-radius:999px;font-size:12.5px;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.22s var(--ease);z-index:300}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="rail">
+    <div class="brand">
+      <span class="mark"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
+      FocusPath <small>· Calendar</small>
+    </div>
+    <div class="spacer"></div>
+    <span class="meta-tag"><span class="dot"></span>Buddy online · Kitsu</span>
+    <span class="date">Template 3 · Week View + AI</span>
+    <button class="btn" id="prevWeek" aria-label="Previous week"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <button class="btn btn-sm" id="todayBtn">Today</button>
+    <button class="btn" id="nextWeek" aria-label="Next week"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+    <button class="btn primary" id="addBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add event</button>
+  </div>
+
+  <div class="dash">
+    <!-- LEFT: unscheduled task inbox -->
+    <div class="panel">
+      <div class="panel-head">
+        <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span class="ph-title">To schedule</span>
+        <span class="ph-sub" id="inboxCount">4 tasks</span>
+      </div>
+      <div class="inbox-list" id="inboxList"></div>
+      <div class="inbox-add"><button class="btn btn-sm" id="addTask"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add task</button></div>
+    </div>
+
+    <!-- CENTER: week grid -->
+    <div class="panel">
+      <div class="week-head">
+        <span class="title" id="weekTitle">July 21–27 <span>2025</span></span>
+        <button class="btn btn-sm" id="autoBlock" title="Let Kitsu auto-block your unscheduled tasks into open slots"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>Auto-block</button>
+      </div>
+      <div class="week-grid-wrap">
+        <div class="week-grid" id="weekGrid"></div>
+      </div>
+      <div style="padding:7px 13px;border-top:1px solid var(--border);background:var(--surface)">
+        <div class="legend">
+          <span><i style="background:var(--c-focus)"></i>Focus</span>
+          <span><i style="background:var(--c-meeting)"></i>Meeting</span>
+          <span><i style="background:var(--c-task)"></i>Task</span>
+          <span><i style="background:var(--c-personal)"></i>Personal</span>
+          <span><i style="background:var(--c-buffer)"></i>Buffer</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: AI task decomposition -->
+    <div class="panel">
+      <div class="panel-head">
+        <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>
+        <span class="ph-title">Kitsu — decompose & block</span>
+      </div>
+      <div class="ai-head">
+        <div class="ai-stage" aria-label="Buddy placeholder — Kitsu the Fox"><span class="ph-emoji">🦊</span></div>
+        <div><div class="ai-name">Break it down, then schedule</div><div class="ai-state"><span class="dot"></span>You approve every block</div></div>
+      </div>
+      <div class="ai-body" id="aiBody"></div>
+      <div class="ai-recs">
+        <div class="rec-label">Try asking</div>
+        <div class="rec-list" id="recList"></div>
+      </div>
+      <div class="ai-input">
+        <textarea id="aiInput" placeholder="e.g. 'Break down my history essay into blocks'" rows="1"></textarea>
+        <button class="sendbtn" id="aiSend" aria-label="Send"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const toast=document.getElementById("toast");
+function showToast(m){toast.textContent=m;toast.classList.add("show");clearTimeout(window._t);window._t=setTimeout(()=>toast.classList.remove("show"),1700);}
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML;}
+const DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const DOW_FULL=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const MONTHS_SHORT=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const TODAY=new Date(2025,6,22);TODAY.setHours(0,0,0,0);
+const WK_START=8*60,WK_END=20*60; // 8am–8pm visible
+const NOW_MIN=13*60+45;
+const TYPE_COLOR={focus:"var(--c-focus)",meeting:"var(--c-meeting)",task:"var(--c-task)",personal:"var(--c-personal)",buffer:"var(--c-buffer)"};
+const IC={
+  list:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
+  clock:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
+  spark:'<svg class="rec-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>',
+  scissors:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/></svg>',
+};
+
+// Week of July 21-27, 2025 (Mon-Sun). weekOffset 0 = current.
+let weekStart=new Date(2025,6,21); weekStart.setHours(0,0,0,0);
+
+// events keyed by day offset (0=Mon ... 6=Sun), each {min,dur,type,title,...}
+let weekEvents={
+  0:[{min:540,dur:30,type:"meeting",title:"Standup"},{min:1140,dur:60,type:"task",title:"Email backlog"}],
+  1:[{min:780,dur:60,type:"focus",title:"Ch.4 practice",energy:"high"},{min:870,dur:45,type:"personal",title:"Dentist"},{min:1140,dur:90,type:"personal",title:"Dinner · Maya's bday"}],
+  2:[{min:600,dur:60,type:"personal",title:"Gym"},{min:1140,dur:60,type:"meeting",title:"Study group"}],
+  3:[{min:780,dur:90,type:"focus",title:"Essay research",energy:"high"}],
+  4:[{min:900,dur:120,type:"focus",title:"Chem exam prep",energy:"high"}],
+  5:[],
+  6:[],
+};
+let taskSeq=100;
+
+// unscheduled task inbox
+let inbox=[
+  {id:"t1",title:"Write history essay draft",est:"3h",energy:"high",deadline:"Fri"},
+  {id:"t2",title:"Email professor about extension",est:"15m",energy:"low",deadline:"today"},
+  {id:"t3",title:"Apply to 3 internships",est:"2h",energy:"high",deadline:"Sun"},
+  {id:"t4",title:"Clean room",est:"30m",energy:"low",deadline:"this week"},
+];
+
+function fmtTime(min){const h=Math.floor(min/60),m=min%60;const ap=h<12?"am":"pm";const hr=h===0?12:(h>12?h-12:h);return `${hr}:${String(m).padStart(2,"0")}${ap}`;}
+function dayDate(offset){return new Date(weekStart.getFullYear(),weekStart.getMonth(),weekStart.getDate()+offset);}
+
+/* ── Inbox ── */
+function renderInbox(){
+  document.getElementById("inboxCount").textContent=`${inbox.length} task${inbox.length===1?"":"s"}`;
+  const el=document.getElementById("inboxList");
+  if(!inbox.length){el.innerHTML=`<div style="text-align:center;color:var(--text-faint);font-size:11px;padding:18px 8px">All scheduled. Nice work 🦊</div>`;return;}
+  el.innerHTML=inbox.map(t=>`<div class="task" role="button" tabindex="0" data-tid="${t.id}" aria-label="${esc(t.title)}, ${t.est}, ${t.energy} energy, due ${t.deadline}">
+    <div class="t-title">${esc(t.title)}</div>
+    <div class="t-meta"><span class="est">${t.est}</span>·<span>${t.energy==="high"?"⚡ High focus":"🌿 Low energy"}</span>·<span>due ${esc(t.deadline)}</span></div>
+    <span class="t-energy ${t.energy}">${t.energy==="high"?"⚡ High":"🌿 Low"}</span>
+    <div class="t-actions">
+      <button data-sched="${t.id}">Schedule with Kitsu</button>
+      <button data-decomp="${t.id}">Break down</button>
+    </div>
+  </div>`).join("");
+  el.querySelectorAll(".task").forEach(card=>{
+    card.querySelectorAll("button").forEach(b=>{
+      b.onclick=e=>{
+        e.stopPropagation();
+        const tid=b.getAttribute("data-sched")||b.getAttribute("data-decomp");
+        const t=inbox.find(x=>x.id===tid);
+        if(b.getAttribute("data-sched")){sendMsg(`Schedule "${t.title}" — about ${t.est}, ${t.energy} energy`);}
+        else{sendMsg(`Break down "${t.title}" into blocks`);}
+      };
+    });
+  });
+}
+document.getElementById("addTask").onclick=()=>{const v=prompt("Task name?");if(v&&v.trim()){inbox.push({id:"t"+(taskSeq++),title:v.trim(),est:"1h",energy:"any",deadline:"this week"});renderInbox();showToast("Task added to inbox");}};
+
+/* ── Week grid ── */
+function renderWeek(){
+  const end=new Date(weekStart.getFullYear(),weekStart.getMonth(),weekStart.getDate()+6);
+  document.getElementById("weekTitle").innerHTML=`${MONTHS_SHORT[weekStart.getMonth()]} ${weekStart.getDate()}–${end.getDate()} <span>${weekStart.getFullYear()}</span>`;
+  const span=WK_END-WK_START;
+  const hrs=[];
+  for(let h=8;h<=20;h+=2){hrs.push(h);}
+  // header row: corner + 7 day headers
+  let html=`<div class="wg-corner"></div>`;
+  for(let d=0;d<7;d++){
+    const dt=dayDate(d);
+    const isToday=dt.getTime()===TODAY.getTime();
+    html+=`<div class="wg-dow${isToday?" is-today":""}">${DOW[dt.getDay()]}<span class="dn">${dt.getDate()}</span></div>`;
+  }
+  // hour rows
+  for(let hi=0;hi<hrs.length;hi++){
+    const h=hrs[hi];
+    html+=`<div class="wg-hour">${h<=12?h:h-12}${h<12?"a":"p"}</div>`;
+    for(let d=0;d<7;d++){
+      const isToday=dayDate(d).getTime()===TODAY.getTime();
+      const topPct=((h-WK_START)/span)*100;
+      html+=`<div class="wg-cell${isToday?" is-today-col":""}" data-day="${d}" data-min="${h*60}" role="button" tabindex="0" aria-label="Empty slot ${DOW_FULL[dayDate(d).getDay()]} ${fmtTime(h*60)}"></div>`;
+    }
+  }
+  const grid=document.getElementById("weekGrid");
+  grid.innerHTML=html;
+  // position absolute blocks inside their day column cells (use the first row's cells as reference per column)
+  // Simpler: append blocks positioned by absolute % within the grid using grid-column. We'll use a overlay approach:
+  // Build an overlay layer per column.
+  const wrap=grid;
+  // compute column width via the grid template (48px + 7 equal). We'll place blocks inside each day's first cell using top %.
+  for(let d=0;d<7;d++){
+    const evs=(weekEvents[d]||[]).slice().sort((a,b)=>a.min-b.min);
+    evs.forEach(e=>{
+      const topPct=((e.min-WK_START)/span)*100;
+      const hPct=(e.dur/span)*100;
+      const cell=wrap.querySelector(`.wg-cell[data-day="${d}"][data-min="${hrs[0]*60}"]`);
+      if(!cell)return;
+      const isPast=(e.min+e.dur<NOW_MIN)&&dayDate(d).getTime()<=TODAY.getTime();
+      const block=document.createElement("div");
+      block.className=`wg-block ${e.type}${isPast?" past":""}`;
+      block.style.top=`calc(${((e.min-WK_START)/span)*100}% * ${hrs.length})`;
+      block.style.height=`calc(${(e.dur/span)*100}% * ${hrs.length})`;
+      block.innerHTML=`<b>${esc(e.title)}</b><small>${fmtTime(e.min)} · ${e.dur}m</small>`;
+      block.setAttribute("role","button");block.setAttribute("tabindex","0");
+      block.setAttribute("aria-label",`${e.title} on ${DOW_FULL[dayDate(d).getDay()]} at ${fmtTime(e.min)}, ${e.dur} minutes`);
+      block.onclick=ev=>{ev.stopPropagation();showToast(`"${e.title}" — ${DOW_FULL[dayDate(d).getDay()]} ${fmtTime(e.min)}`);};
+      block.onkeydown=ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();ev.stopPropagation();showToast(`"${e.title}" — ${DOW_FULL[dayDate(d).getDay()]} ${fmtTime(e.min)}`);}};
+      cell.appendChild(block);
+    });
+    // now line for today
+    if(dayDate(d).getTime()===TODAY.getTime()){
+      const cell=wrap.querySelector(`.wg-cell[data-day="${d}"][data-min="${hrs[0]*60}"]`);
+      if(cell){
+        const nowLine=document.createElement("div");
+        nowLine.className="wg-now";
+        nowLine.style.top=`calc(${((NOW_MIN-WK_START)/span)*100}% * ${hrs.length})`;
+        cell.appendChild(nowLine);
+      }
+    }
+  }
+  // wire empty-cell clicks
+  wrap.querySelectorAll(".wg-cell").forEach(c=>{
+    const act=()=>{const d=+c.getAttribute("data-day");const m=+c.getAttribute("data-min");showToast(`New event on ${DOW_FULL[dayDate(d).getDay()]} at ${fmtTime(m)} — form opens here`);};
+    c.onclick=act;c.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act();}};
+  });
+}
+
+/* ── Week nav ── */
+function shiftWeek(n){weekStart=new Date(weekStart.getFullYear(),weekStart.getMonth(),weekStart.getDate()+n*7);renderWeek();}
+document.getElementById("prevWeek").onclick=()=>shiftWeek(-1);
+document.getElementById("nextWeek").onclick=()=>shiftWeek(1);
+document.getElementById("todayBtn").onclick=()=>{const t=new Date(TODAY);const dow=(t.getDay()+6)%7;weekStart=new Date(t.getFullYear(),t.getMonth(),t.getDate()-dow);renderWeek();showToast("Jumped to this week");};
+document.getElementById("addBtn").onclick=()=>showToast("Add-event form opens here (placeholder)");
+
+/* ── Auto-block: AI fills open slots with inbox tasks ── */
+document.getElementById("autoBlock").onclick=()=>{
+  // find open slots in the week and place inbox tasks (high-energy first into high-energy morning slots)
+  const placed=[];
+  const sortedInbox=inbox.slice().sort((a,b)=>(b.energy==="high"?1:0)-(a.energy==="high"?1:0));
+  sortedInbox.forEach(t=>{
+    const durMin=parseInt(t.est)*60||60;
+    // try mornings (9-11am) first for high-energy, afternoons for low
+    const tryHours=t.energy==="high"?[9*60,10*60,11*60]:[14*60,15*60,16*60];
+    let placedThis=false;
+    for(let d=1;d<6 && !placedThis;d++){
+      for(const startMin of tryHours){
+        const evs=weekEvents[d]||[];
+        const conflict=evs.some(e=>startMin<e.min+e.dur && startMin+durMin>e.min);
+        if(!conflict){
+          if(!weekEvents[d])weekEvents[d]=[];
+          weekEvents[d].push({min:startMin,dur:durMin,type:t.energy==="high"?"focus":"task",title:t.title,energy:t.energy});
+          placed.push(t.id);
+          placedThis=true;
+          break;
+        }
+      }
+    }
+  });
+  if(placed.length){
+    inbox=inbox.filter(t=>!placed.includes(t.id));
+    renderInbox();renderWeek();
+    showToast(`Kitsu blocked ${placed.length} task${placed.length===1?"":"s"} into open slots — review & confirm`);
+    addMsg("ai",`I auto-blocked <b>${placed.length}</b> task${placed.length===1?"":"s"} into your open slots. High-energy tasks went to mornings (your peak), low-energy to afternoons. Buffers auto-inserted. Review the week and tell me if anything should move.`);
+  } else {
+    showToast("No open slots found this week — try clearing something or asking Kitsu to reschedule");
+  }
+};
+
+/* ── AI chat ── */
+const aiBody=document.getElementById("aiBody");
+const aiInput=document.getElementById("aiInput");
+const aiSend=document.getElementById("aiSend");
+const recList=document.getElementById("recList");
+const recs=[
+  "Break down 'write history essay' into blocks",
+  "Schedule 'email professor' into my lightest slot",
+  "Find a 2-hour focus window this week",
+  "Add buffers between my busy days",
+  "Clear Wednesday afternoon",
+];
+function addMsg(role,html){const div=document.createElement("div");div.className=`msg ${role}`;const av=role==="ai"?"🦊":"Y";div.innerHTML=`<span class="av">${av}</span><div class="bubble">${html}</div>`;aiBody.appendChild(div);aiBody.scrollTop=aiBody.scrollHeight;return div;}
+function decompCardHTML(title,steps){
+  const stepHTML=steps.map((s,i)=>`<div class="dc-step"><span class="dc-num">${i+1}</span><span class="dc-title">${esc(s.title)}</span><span class="dc-meta">${s.dur}<br>${s.when}</span></div>`).join("");
+  return `<div class="decomp"><div class="dc-head">${IC.scissors} Breaking down "${esc(title)}"</div><div class="dc-list">${stepHTML}</div><div class="dc-actions"><button class="confirm" data-confirm="decomp">Add all to week</button><button data-edit="decomp">Adjust</button><button data-cancel="decomp">Cancel</button></div></div>`;
+}
+let pendingDecomp=null;
+function aiReply(text){
+  const t=text.toLowerCase();
+  let html;
+  if(t.includes("essay")||t.includes("break down")||t.includes("decompose")){
+    pendingDecomp={title:"Write history essay draft",steps:[
+      {title:"Research · find 5 sources",dur:"2h",when:"Tue 3pm"},
+      {title:"Outline · thesis + 3 sections",dur:"1h",when:"Wed 7pm"},
+      {title:"Draft · write body",dur:"3h",when:"Thu 1pm"},
+      {title:"Edit · polish + citations",dur:"1h",when:"Fri 4pm"},
+    ]};
+    html=`Breaking <b>"write history essay"</b> into 4 tiny steps. I matched them to your free high-energy slots this week. Confirm and I'll add all 4 blocks (with buffers between):${decompCardHTML(pendingDecomp.title,pendingDecomp.steps)}`;
+  } else if(t.includes("email professor")||t.includes("lightest")){
+    pendingDecomp={type:"single",ev:{min:960,dur:15,type:"task",title:"Email professor",energy:"low",day:2}};
+    html=`Your lightest slot is <b>Wednesday 4pm</b> — you only have gym at 10am that day. A 15-min email fits perfectly.${decompCardHTML("Email professor",[{title:"Email professor about extension",dur:"15m",when:"Wed 4pm"}])}`;
+  } else if(t.includes("focus window")||t.includes("2-hour")){
+    pendingDecomp={type:"single",ev:{min:600,dur:120,type:"focus",title:"Focus block",energy:"high",day:3}};
+    html=`Your best 2-hour focus window is <b>Thursday 10am–12pm</b> — completely open and matches your peak energy.${decompCardHTML("Focus block",[{title:"Deep focus block",dur:"2h",when:"Thu 10am"}])}`;
+  } else if(t.includes("buffer")){
+    html=`Scanning your week... you've got back-to-backs on <b>Tuesday</b> (1pm focus → 2:30pm dentist). I'd add a <b>15-min buffer at 2:15pm</b>. <div class="decomp"><div class="dc-head">${IC.clock} Buffer proposal</div><div class="dc-list"><div class="dc-step"><span class="dc-num">+</span><span class="dc-title">Buffer · decompress</span><span class="dc-meta">15m<br>Tue 2:15p</span></div></div><div class="dc-actions"><button class="confirm" data-confirm="buffer">Add buffer</button><button data-cancel="buffer">Skip</button></div></div>`;
+  } else if(t.includes("clear")&&t.includes("wed")){
+    html=`Wednesday afternoon you have <b>1 event</b> (essay research at 1pm). Want me to move it to Thursday morning, or just snooze it?`;
+  } else {
+    html=`I can break down big tasks into small blocks, find focus windows, or auto-block your whole inbox. Try a chip below — I propose, you confirm.`;
+  }
+  setTimeout(()=>{
+    const node=addMsg("ai",html);
+    node.querySelectorAll(".decomp button").forEach(b=>{
+      b.onclick=()=>{
+        if(b.classList.contains("confirm")){
+          if(pendingDecomp&&pendingDecomp.steps){
+            // add all steps as events
+            pendingDecomp.steps.forEach(s=>{
+              const dayMap={Tue:1,Wed:2,Thu:3,Fri:4};
+              const day=dayMap[s.when.split(" ")[0]]||1;
+              const hourMap={["1pm"]:13*60,["3pm"]:15*60,["4pm"]:16*60,["7pm"]:19*60,["10am"]:10*60};
+              const min=hourMap[s.when.split(" ")[1]]||600;
+              const durMin=parseInt(s.dur)*60||60;
+              if(!weekEvents[day])weekEvents[day]=[];
+              weekEvents[day].push({min,dur:durMin,type:"focus",title:s.title,energy:"high"});
+            });
+            inbox=inbox.filter(t=>t.title!==pendingDecomp.title);
+            renderInbox();renderWeek();
+            showToast(`Added ${pendingDecomp.steps.length} blocks to your week`);
+            addMsg("ai",`Done — <b>${pendingDecomp.steps.length} blocks</b> added with buffers between. Your essay now has a real path to Friday 🦊`);
+            pendingDecomp=null;
+          } else if(pendingDecomp&&pendingDecomp.type==="single"){
+            const ev=pendingDecomp.ev;
+            if(!weekEvents[ev.day])weekEvents[ev.day]=[];
+            weekEvents[ev.day].push(ev);
+            renderWeek();
+            showToast(`Added: ${ev.title}`);
+            addMsg("ai",`Added. Buffer auto-inserted after.`);
+            pendingDecomp=null;
+          } else {
+            // buffer case
+            if(!weekEvents[1])weekEvents[1]=[];
+            weekEvents[1].push({min:13*60+75,dur:15,type:"buffer",title:"Buffer"});
+            renderWeek();showToast("Buffer added Tuesday 2:15pm");
+            addMsg("ai",`Buffer in. Nice — that'll help you switch gears.`);
+          }
+        } else {
+          showToast("Cancelled — nothing changed");
+        }
+      };
+    });
+  },380);
+}
+function sendMsg(text){if(!text.trim())return;addMsg("me",esc(text));aiInput.value="";aiSend.disabled=true;aiInput.style.height="auto";aiReply(text);}
+aiSend.onclick=()=>sendMsg(aiInput.value);
+aiInput.oninput=()=>{aiSend.disabled=!aiInput.value.trim();aiInput.style.height="auto";aiInput.style.height=Math.min(aiInput.scrollHeight,70)+"px";};
+aiInput.onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMsg(aiInput.value);}};
+addMsg("ai",`Hey — this is your <b>week command center</b>. Drop tasks in the inbox (left), drag them onto the week, or ask me to <b>break down</b> big ones and <b>auto-block</b> them into your open slots. I always propose — you confirm.`);
+aiSend.disabled=true;
+function renderRecs(){recList.innerHTML=recs.map(r=>`<button class="rec" data-rec="${esc(r)}">${IC.spark}<span>${esc(r)}</span></button>`).join("");recList.querySelectorAll(".rec").forEach(b=>{b.onclick=()=>{sendMsg(b.getAttribute("data-rec"));b.classList.add("sent");};});}
+renderRecs();
+renderInbox();
+renderWeek();
+</script>
+</body>
+</html>

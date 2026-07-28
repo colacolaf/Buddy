@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FocusPath — Dashboard</title>
+<style>
+  /* ═══════════════════════════════════════════════════════════
+     TERRACOTTA BLOOM PALETTE — Warm blush + terracotta + cocoa
+     Creative, humanistic, warm-minimal. WCAG AA verified.
+     ═══════════════════════════════════════════════════════════ */
+  :root{
+    --bg:#F7EDE4; --surface:#FBF3EB; --surface-2:#FFFFFF; --surface-sunken:#ECD9C8;
+    --border:#E0C7B2; --border-strong:#C8A88C;
+    --text:#3B2A22; --text-muted:#6E574A; --text-faint:#907A6B;
+    --accent:#C76A3E; --accent-hover:#A8562E; --accent-press:#8A4624; --accent-soft:#F2D8C5;
+    --terracotta:#C76A3E; --terracotta-soft:#F2D8C5;
+    --cocoa:#7A4F3A; --cocoa-soft:#E8D9CC;
+    --sage:#7A8A6E; --sage-soft:#DDE3D4;
+    --dusk:#7A6A8A; --dusk-soft:#E2DCE6;
+    --success:#7A8A6E; --warning:#B89366; --danger:#B05A4E; --danger-soft:#EBD6D0;
+    --shadow-sm:0 1px 2px rgba(59,42,34,.05), 0 2px 6px rgba(59,42,34,.05);
+    --shadow:0 1px 2px rgba(59,42,34,.05), 0 6px 18px rgba(59,42,34,.08);
+    --shadow-lg:0 2px 8px rgba(59,42,34,.07), 0 18px 48px rgba(59,42,34,.14);
+    --radius:14px; --radius-sm:9px; --radius-xs:6px;
+    --ease:cubic-bezier(.4,0,.2,1);
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+    --font-num:"SF Mono","ui-monospace","Menlo","Consolas",monospace;
+    --font-disp:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0; padding:0; height:100%; overflow:hidden}
+  body{
+    font-family:var(--font-ui); color:var(--text);
+    background:
+      radial-gradient(1100px 600px at 80% -10%, #F0D8C2 0%, transparent 60%),
+      radial-gradient(900px 500px at -10% 25%, #F4E0CE 0%, transparent 55%), var(--bg);
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; line-height:1.5;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     APP SHELL — 100vh, no scroll on body. Three rows:
+       1. status rail (slim, top — buddy online + date only)
+       2. dashboard grid (fills remaining height, internal scroll only)
+       3. feature dock (bottom — fullscreen feature entry points)
+     ═══════════════════════════════════════════════════════════ */
+  .app{display:flex; flex-direction:column; height:100vh; height:100dvh; overflow:hidden}
+
+  /* ── Status rail (replaces the old heavy toolbar) ── */
+  .rail{
+    flex:0 0 auto; display:flex; align-items:center; gap:14px; padding:9px 22px;
+    background:rgba(251,243,235,.82);
+    backdrop-filter:saturate(140%) blur(14px); -webkit-backdrop-filter:saturate(140%) blur(14px);
+    border-bottom:1px solid var(--border);
+  }
+  .brand{display:flex; align-items:center; gap:9px; font-weight:700; letter-spacing:-.01em; font-size:14px}
+  .brand .mark{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent-hover));display:grid;place-items:center;color:#fff;box-shadow:var(--shadow-sm)}
+  .brand small{color:var(--text-muted); font-weight:500; margin-left:2px; font-size:12px}
+  .rail .spacer{flex:1}
+  .rail .meta-tag{font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:6px}
+  .rail .meta-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+  .rail .date{font-family:var(--font-disp); font-size:13px; color:var(--text-muted); font-style:italic}
+
+  /* ── Dashboard body (fills space, no body scroll) ── */
+  .dash{flex:1 1 auto; min-height:0; padding:14px 18px 8px; overflow:hidden; display:flex; flex-direction:column; gap:12px}
+  .cmd{flex:1 1 auto; min-height:0; display:grid; grid-template-columns:248px 1fr 290px; gap:12px}
+  .cmd > *{min-width:0; min-height:0}
+
+  /* ── Feature dock (bottom — fullscreen feature entry points) ── */
+  .dock{
+    flex:0 0 auto; display:flex; align-items:center; gap:6px; padding:10px 22px;
+    background:rgba(251,243,235,.9);
+    backdrop-filter:saturate(140%) blur(14px); -webkit-backdrop-filter:saturate(140%) blur(14px);
+    border-top:1px solid var(--border); flex-wrap:wrap;
+  }
+  .dock-label{font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text-faint); margin-right:8px; white-space:nowrap}
+  .dock-btn{
+    font:inherit; font-size:12px; font-weight:600; cursor:pointer;
+    border:1px solid var(--border-strong); background:var(--surface-2);
+    color:var(--text); padding:7px 12px; border-radius:9px;
+    display:inline-flex; align-items:center; gap:7px;
+    transition:.15s var(--ease); box-shadow:var(--shadow-sm); white-space:nowrap;
+  }
+  .dock-btn:hover{transform:translateY(-1px); border-color:var(--accent); color:var(--accent-hover); background:var(--accent-soft)}
+  .dock-btn:active{transform:translateY(0)}
+  .dock-btn.primary{background:var(--accent-hover); border-color:var(--accent-hover); color:#fff}
+  .dock-btn.primary:hover{background:var(--accent-press); border-color:var(--accent-press); color:#fff}
+  .dock-btn .ic{width:14px;height:14px}
+  .dock-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .dock .spacer{flex:1}
+  .dock .dock-btn.dock-icon{padding:7px; width:32px; height:32px; justify-content:center}
+
+  /* ── Panel ── */
+  .panel{background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; min-height:0}
+  .panel-head{display:flex; align-items:center; gap:9px; padding:11px 13px; border-bottom:1px solid var(--border); background:var(--surface)}
+  .panel-head .ph-title{font-size:13px; font-weight:700; letter-spacing:-.01em; font-family:var(--font-disp)}
+  .panel-head .ph-sub{font-size:10px; color:var(--text-muted); margin-left:auto; white-space:nowrap}
+  .panel-head .ph-ic{width:15px;height:15px; color:var(--accent); flex:0 0 auto}
+  /* expand button — leads to fullscreen page */
+  .ph-expand{
+    width:26px; height:26px; border-radius:7px; flex:0 0 auto;
+    border:1px solid var(--border); background:var(--surface-2); cursor:pointer;
+    color:var(--text-muted); display:grid; place-items:center; transition:.15s var(--ease);
+  }
+  .ph-expand:hover{color:var(--accent-hover); border-color:var(--accent); background:var(--accent-soft)}
+  .ph-expand:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .ph-expand .ic{width:13px;height:13px}
+  .panel-body{padding:12px 14px; display:flex; flex-direction:column; gap:10px; flex:1 1 auto; min-height:0; overflow:auto}
+
+  /* ── Left column: mini month + vertical KPI stack ── */
+  .left-col{display:flex; flex-direction:column; gap:12px; min-height:0}
+
+  .mini-month{flex:1 1 auto; display:flex; flex-direction:column; min-height:0}
+  .mm-head{display:flex; align-items:center; gap:7px; padding:10px 12px; border-bottom:1px solid var(--border); background:var(--surface)}
+  .mm-head .mm-title{font-size:13px; font-weight:700; font-family:var(--font-disp); flex:1}
+  .mm-head .iconbtn{width:24px; height:24px; border-radius:6px; border:1px solid var(--border); background:var(--surface-2); display:grid; place-items:center; cursor:pointer; color:var(--text-muted); transition:.15s var(--ease)}
+  .mm-head .iconbtn:hover{color:var(--accent-hover); border-color:var(--accent); background:var(--accent-soft)}
+  .mm-head .iconbtn .ic{width:12px;height:12px}
+  .mm-dow{display:grid; grid-template-columns:repeat(7,1fr); border-bottom:1px solid var(--border); background:var(--surface)}
+  .mm-dow span{padding:5px 2px; font-size:9px; font-weight:700; letter-spacing:.06em; color:var(--text-faint); text-align:center; text-transform:uppercase}
+  .mm-grid{flex:1 1 auto; display:grid; grid-template-columns:repeat(7,1fr); grid-auto-rows:1fr; min-height:0}
+  .mmc{border-right:1px solid var(--border); border-bottom:1px solid var(--border); padding:2px 3px; cursor:pointer; transition:.13s var(--ease); display:flex; flex-direction:column; gap:1px; min-width:0; overflow:hidden}
+  .mmc:nth-child(7n){border-right:none}
+  .mmc:hover{background:var(--surface-sunken)}
+  .mmc.is-today{background:var(--accent-soft)}
+  .mmc.is-outside{color:var(--text-faint); background:rgba(0,0,0,.012)}
+  .mmc .dnum{font-size:11px; font-weight:600; font-family:var(--font-disp); width:16px; height:16px; display:grid; place-items:center; border-radius:50%; line-height:1}
+  .mmc.is-today .dnum{background:var(--accent-hover); color:#fff}
+  .mm-dots{display:flex; gap:2px; flex-wrap:wrap}
+  .mm-dots i{width:4px; height:4px; border-radius:50%; display:block}
+
+  /* ── Vertical KPI stack ── */
+  .kpi-stack{display:flex; flex-direction:column; gap:8px}
+  .kpi{padding:10px; border-radius:var(--radius-sm); background:var(--surface); border:1px solid var(--border); display:flex; align-items:center; gap:10px; transition:.14s var(--ease); cursor:pointer}
+  .kpi:hover{border-color:var(--accent); background:var(--accent-soft); transform:translateX(2px)}
+  .kpi:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .kpi-ic{width:34px; height:34px; border-radius:9px; display:grid; place-items:center; flex:0 0 auto; color:#fff}
+  .kpi-ic .ic{width:17px;height:17px}
+  .kpi-ic.a{background:linear-gradient(135deg,var(--accent),var(--accent-hover))}
+  .kpi-ic.b{background:linear-gradient(135deg,var(--sage),#62755A)}
+  .kpi-ic.c{background:linear-gradient(135deg,var(--cocoa),#5E3D2D)}
+  .kpi-ic.d{background:linear-gradient(135deg,var(--dusk),#5E4E6E)}
+  .kpi-body{flex:1; min-width:0}
+  .kpi-lab{font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); font-weight:600}
+  .kpi-val{font-size:19px; font-weight:700; color:var(--accent-hover); font-family:var(--font-num); line-height:1.1; margin-top:1px}
+  .kpi-sub{font-size:10.5px; color:var(--text-muted); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .kpi-delta{font-size:10px; font-weight:700; padding:2px 6px; border-radius:5px; flex:0 0 auto}
+  .kpi-delta.up{background:var(--sage-soft); color:var(--sage)}
+  .kpi-delta.flat{background:var(--surface-sunken); color:var(--text-faint)}
+
+  /* ── Center column: big chart + categories + goals ── */
+  .center-col{display:flex; flex-direction:column; gap:12px; min-height:0}
+  .center-col .panel{flex:0 0 auto}
+  .center-col .panel.grow{flex:1 1 auto}
+
+  /* Big area chart — fixed aspect, no distortion */
+  .area-chart-wrap{position:relative; width:100%; flex:1 1 auto; min-height:120px}
+  .area-svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible}
+  .area-grid line{stroke:var(--border); stroke-width:1; stroke-dasharray:2 3}
+  .area-axis{font-size:10px; fill:var(--text-faint); font-family:var(--font-num)}
+  .area-line{fill:none; stroke:var(--accent); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke}
+  .area-fill{fill:url(#areaGrad)}
+  .area-point{fill:var(--accent); stroke:#fff; stroke-width:2; cursor:pointer; transition:.14s var(--ease)}
+  .area-point:hover{r:7}
+  .area-point.today{fill:var(--accent-hover)}
+  .chart-legend{display:flex; gap:12px; flex-wrap:wrap; font-size:11px; color:var(--text-muted); padding:2px 2px 0}
+  .chart-legend span{display:inline-flex; align-items:center; gap:5px}
+  .chart-legend i{width:9px; height:9px; border-radius:3px; display:block}
+
+  /* category hbars */
+  .hbar{display:flex; align-items:center; gap:10px}
+  .hbar-track{flex:1; height:9px; background:var(--surface-sunken); border-radius:999px; overflow:hidden}
+  .hbar-fill{height:100%; border-radius:999px; transition:width .4s var(--ease)}
+  .hbar-label{font-size:11.5px; white-space:nowrap; width:78px}
+  .hbar-val{font-size:11.5px; color:var(--text-muted); width:40px; text-align:right; font-family:var(--font-num)}
+
+  /* goal tree */
+  .tree{display:flex; flex-direction:column; gap:5px}
+  .tree-node{display:grid; grid-template-columns:16px 1fr auto; gap:9px; align-items:center; padding:6px 8px; border-radius:7px; transition:.13s var(--ease); cursor:pointer}
+  .tree-node:hover{background:var(--surface)}
+  .tree-node.root{font-weight:700; font-family:var(--font-disp); font-size:13px; padding:8px 8px; background:var(--accent-soft); border:1px solid var(--accent)}
+  .tree-node .tn-dot{width:10px; height:10px; border-radius:50%; border:2px solid; flex:0 0 auto}
+  .tree-node.done .tn-dot{background:var(--success); border-color:var(--success)}
+  .tree-node.active .tn-dot{border-color:var(--accent); background:var(--accent)}
+  .tree-node.locked .tn-dot{border-color:var(--border-strong); background:transparent}
+  .tree-node .tn-label{font-size:12px; min-width:0}
+  .tree-node.done .tn-label{color:var(--text-muted); text-decoration:line-through; text-decoration-color:var(--border-strong)}
+  .tree-node.locked .tn-label{color:var(--text-faint)}
+  .tree-node .tn-meta{font-size:10px; color:var(--text-muted); font-family:var(--font-num); flex:0 0 auto}
+  .tree-node.child{margin-left:20px}
+
+  /* ── Right column: buddy chat + done list + reset ── */
+  .right-col{display:flex; flex-direction:column; gap:12px; min-height:0}
+
+  /* buddy chat panel */
+  .buddy-chat{flex:1 1 auto; display:flex; flex-direction:column; min-height:0}
+  .bc-head{display:flex; align-items:center; gap:9px; padding:10px 12px; border-bottom:1px solid var(--border); background:linear-gradient(180deg, var(--surface), var(--surface-2))}
+  .bc-stage{width:34px; height:34px; border-radius:9px; background:radial-gradient(circle at 30% 30%, var(--accent-soft) 0%, transparent 70%), linear-gradient(135deg, var(--surface-sunken), var(--surface)); border:1px dashed var(--accent); display:grid; place-items:center; flex:0 0 auto; overflow:hidden}
+  .bc-stage .ph-emoji{font-size:20px; opacity:.75; animation:breathe 3.6s var(--ease) infinite}
+  @keyframes breathe{0%,100%{transform:scale(1)} 50%{transform:scale(1.06)}}
+  .bc-name{font-size:12.5px; font-weight:700; font-family:var(--font-disp)}
+  .bc-state{font-size:10px; color:var(--success); font-weight:600; display:flex; align-items:center; gap:4px}
+  .bc-state .dot{width:5px;height:5px;border-radius:50%;background:var(--success)}
+  .bc-body{flex:1 1 auto; overflow:auto; padding:10px; display:flex; flex-direction:column; gap:8px; min-height:0}
+  .msg{display:flex; gap:7px; max-width:94%; animation:fadeIn .25s var(--ease)}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+  .msg .av{width:20px; height:20px; border-radius:6px; flex:0 0 auto; display:grid; place-items:center; color:#fff; font-size:10px}
+  .msg.ai .av{background:linear-gradient(135deg,var(--accent),var(--accent-hover))}
+  .msg.me .av{background:var(--cocoa)}
+  .msg .bubble{font-size:11.5px; line-height:1.45; padding:8px 10px; border-radius:10px; background:var(--surface-2); border:1px solid var(--border); color:var(--text)}
+  .msg.me{align-self:flex-end; flex-direction:row-reverse}
+  .msg.me .bubble{background:var(--cocoa); color:#fff; border-color:var(--cocoa)}
+  .msg.ai .bubble b{color:var(--accent-hover)}
+  .msg.ai .bubble .plan{margin-top:7px; padding:7px; border:1px solid var(--border); border-radius:7px; background:var(--surface)}
+  .msg.ai .bubble .plan b{display:block; font-size:10.5px; margin-bottom:3px}
+  .msg.ai .bubble .plan .row{font-size:10.5px; color:var(--text-muted); padding:2px 0}
+  .msg.ai .bubble .plan .acts{margin-top:6px; display:flex; gap:5px}
+  .msg.ai .bubble .plan .acts button{font:inherit; font-size:10px; font-weight:600; padding:4px 8px; border-radius:6px; cursor:pointer; border:1px solid var(--accent); background:var(--accent-soft); color:var(--accent-hover); transition:.14s var(--ease)}
+  .msg.ai .bubble .plan .acts button:hover{background:var(--accent); color:#fff}
+  .bc-recs{flex:0 0 auto; padding:0 10px 8px}
+  .bc-recs .rec-label{font-size:9px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--text-faint); margin-bottom:5px; padding-left:1px}
+  .bc-recs .rec-list{display:flex; flex-direction:column; gap:4px}
+  .rec{width:100%; text-align:left; font:inherit; font-size:10.5px; line-height:1.35; border:1px solid var(--border); background:var(--surface-2); color:var(--text); padding:6px 9px; border-radius:7px; cursor:pointer; display:flex; align-items:flex-start; gap:5px; transition:.13s var(--ease); box-shadow:var(--shadow-sm)}
+  .rec:hover{border-color:var(--accent); color:var(--accent-hover); transform:translateY(-1px)}
+  .rec:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .rec .rec-ico{width:12px; height:12px; flex:0 0 auto; color:var(--accent); margin-top:1px}
+  .rec.sent{opacity:.45; pointer-events:none}
+  .bc-input{flex:0 0 auto; border-top:1px solid var(--border); padding:8px 10px; background:rgba(255,255,255,.5); display:flex; gap:6px; align-items:flex-end}
+  .bc-input textarea{flex:1; font:inherit; font-size:11.5px; line-height:1.4; resize:none; border:1px solid var(--border); background:var(--surface-2); color:var(--text); border-radius:8px; padding:7px 9px; max-height:70px; min-height:32px; transition:.15s var(--ease); font-family:var(--font-ui)}
+  .bc-input textarea:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+  .sendbtn{width:32px; height:32px; border-radius:8px; flex:0 0 auto; border:none; background:var(--accent-hover); color:#fff; cursor:pointer; display:grid; place-items:center; transition:.15s var(--ease); box-shadow:var(--shadow-sm)}
+  .sendbtn:hover{background:var(--accent-press)}
+  .sendbtn:disabled{background:var(--border-strong); cursor:not-allowed}
+  .sendbtn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .sendbtn .ic{width:14px;height:14px}
+
+  /* compact done list */
+  .cdone-panel{flex:0 0 auto}
+  .cdone{display:flex; flex-direction:column; gap:5px; max-height:130px; overflow:auto}
+  .cdone-item{display:flex; align-items:center; gap:8px; padding:7px 9px; border-radius:7px; background:var(--surface); border:1px solid var(--border); transition:.12s var(--ease)}
+  .cdone-item:hover{border-color:var(--accent); background:var(--accent-soft)}
+  .cdone-check{width:16px; height:16px; border-radius:50%; background:var(--accent); color:#fff; display:grid; place-items:center; flex:0 0 auto}
+  .cdone-check .ic{width:9px; height:9px}
+  .cdone-text{flex:1; min-width:0; font-size:11.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .cdone-time{font-size:10px; color:var(--text-faint); font-family:var(--font-num); flex:0 0 auto}
+
+  /* reset strip */
+  .reset-strip{flex:0 0 auto; padding:11px 13px; border-radius:var(--radius-sm); background:linear-gradient(135deg, var(--surface-sunken), var(--surface)); border:1px dashed var(--accent); display:flex; align-items:center; gap:10px}
+  .reset-strip .rs-ic{width:30px; height:30px; border-radius:8px; background:var(--accent-soft); color:var(--accent-hover); display:grid; place-items:center; flex:0 0 auto}
+  .reset-strip .rs-ic .ic{width:16px; height:16px}
+  .reset-strip .rs-body{flex:1; min-width:0}
+  .reset-strip .rs-title{font-size:12px; font-weight:700; font-family:var(--font-disp)}
+  .reset-strip .rs-sub{font-size:10.5px; color:var(--text-muted); margin-top:1px}
+  .reset-strip .rs-actions{display:flex; gap:5px; flex:0 0 auto}
+  .reset-strip .rs-btn{font:inherit; font-size:11px; font-weight:600; cursor:pointer; border:1px solid var(--accent); background:var(--surface-2); color:var(--accent-hover); padding:6px 11px; border-radius:7px; transition:.14s var(--ease); flex:0 0 auto}
+  .reset-strip .rs-btn:hover{background:var(--accent); color:#fff}
+  .reset-strip .rs-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .reset-strip .rs-expand{width:28px; height:28px; border-radius:7px; flex:0 0 auto; border:1px solid var(--accent); background:var(--surface-2); cursor:pointer; color:var(--accent-hover); display:grid; place-items:center; transition:.15s var(--ease)}
+  .reset-strip .rs-expand:hover{color:#fff; background:var(--accent)}
+  .reset-strip .rs-expand:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .reset-strip .rs-expand .ic{width:13px;height:13px}
+
+  /* toast */
+  .toast{position:fixed; left:50%; bottom:64px; transform:translateX(-50%) translateY(20px); background:var(--text); color:#FBF3EB; padding:10px 16px; border-radius:999px; font-size:12.5px; font-weight:500; box-shadow:var(--shadow-lg); opacity:0; pointer-events:none; transition:.22s var(--ease); z-index:300}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     APP SHELL — 100vh, no scroll
+     ═══════════════════════════════════════════════════════════ -->
+<div class="app">
+
+  <!-- ───────────── Status rail (replaces heavy toolbar) ───────────── -->
+  <div class="rail">
+    <div class="brand">
+      <span class="mark"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+      FocusPath <small>· Dashboard</small>
+    </div>
+    <div class="spacer"></div>
+    <span class="meta-tag"><span class="dot"></span>Buddy online · Kitsu</span>
+    <span class="date">Tuesday, July 22, 2025</span>
+  </div>
+
+  <!-- ───────────── Dashboard body (fills space, internal scroll only) ───────────── -->
+  <div class="dash">
+    <div class="cmd">
+
+      <!-- ───────────── LEFT COLUMN ───────────── -->
+      <div class="left-col">
+        <!-- Widget A: mini month — expands to full Calendar fullscreen -->
+        <div class="panel mini-month">
+          <div class="panel-head">
+            <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <span class="ph-title">Calendar</span>
+            <span class="ph-sub">July 2025</span>
+            <button class="ph-expand" data-fs="calendar" aria-label="Open full Calendar view"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+          </div>
+          <div class="mm-head">
+            <span class="mm-title">July 2025</span>
+            <button class="iconbtn" id="mmPrev" aria-label="Previous month"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <button class="iconbtn" id="mmNext" aria-label="Next month"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+          </div>
+          <div class="mm-dow" id="mmDow"></div>
+          <div class="mm-grid" id="mmGrid"></div>
+        </div>
+
+        <!-- Widget B: vertical KPI stack — expands to full Stats fullscreen -->
+        <div class="panel">
+          <div class="panel-head">
+            <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
+            <span class="ph-title">Vitals</span>
+            <span class="ph-sub">today</span>
+            <button class="ph-expand" data-fs="stats" aria-label="Open full Stats & Insights view"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+          </div>
+          <div class="panel-body">
+            <div class="kpi-stack">
+              <div class="kpi" role="button" tabindex="0" data-kpi="Focus today: 3h 12m"><span class="kpi-ic a"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg></span><div class="kpi-body"><div class="kpi-lab">Focus today</div><div class="kpi-val">3h 12m</div><div class="kpi-sub">+42 min vs yesterday</div></div><span class="kpi-delta up">▲ 22%</span></div>
+              <div class="kpi" role="button" tabindex="0" data-kpi="Tasks done: 5 of 7"><span class="kpi-ic b"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><div class="kpi-body"><div class="kpi-lab">Tasks done</div><div class="kpi-val">5 / 7</div><div class="kpi-sub">2 remaining · no rush</div></div><span class="kpi-delta up">▲ 71%</span></div>
+              <div class="kpi" role="button" tabindex="0" data-kpi="Streak: 12 days"><span class="kpi-ic c"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><div class="kpi-body"><div class="kpi-lab">Streak</div><div class="kpi-val">12d</div><div class="kpi-sub">1 freeze left · forgiving</div></div><span class="kpi-delta flat">—</span></div>
+              <div class="kpi" role="button" tabindex="0" data-kpi="Wins today: 8"><span class="kpi-ic d"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg></span><div class="kpi-body"><div class="kpi-lab">Wins today</div><div class="kpi-val">8</div><div class="kpi-sub">see Done List →</div></div><span class="kpi-delta up">▲ 60%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ───────────── CENTER COLUMN ───────────── -->
+      <div class="center-col">
+        <!-- Widget C: big trend area chart — expands to full Stats fullscreen -->
+        <div class="panel">
+          <div class="panel-head">
+            <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
+            <span class="ph-title">Focus momentum · 7 days</span>
+            <span class="ph-sub">no judgment</span>
+            <button class="ph-expand" data-fs="stats" aria-label="Open full Stats & Insights view"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+          </div>
+          <div class="panel-body">
+            <div class="area-chart-wrap">
+              <svg class="area-svg" id="areaSvg" viewBox="0 0 700 200" preserveAspectRatio="xMidYMid meet"></svg>
+            </div>
+            <div class="chart-legend">
+              <span><i style="background:var(--accent)"></i>Focus hours</span>
+              <span><i style="background:var(--surface-sunken)"></i>Avg 3.3h/day</span>
+              <span style="margin-left:auto; color:var(--accent-hover); font-weight:700">Total 23.0h this week</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Widget D: category breakdown — expands to full Stats fullscreen -->
+        <div class="panel">
+          <div class="panel-head">
+            <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <span class="ph-title">Where your time went</span>
+            <span class="ph-sub">this week</span>
+            <button class="ph-expand" data-fs="stats" aria-label="Open full Stats & Insights view"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+          </div>
+          <div class="panel-body" id="catBars"></div>
+        </div>
+
+        <!-- Widget E: goal progress tree — expands to full Goals fullscreen -->
+        <div class="panel grow">
+          <div class="panel-head">
+            <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+            <span class="ph-title">Goal tree — A in Chemistry</span>
+            <span class="ph-sub">implementation intentions</span>
+            <button class="ph-expand" data-fs="goals" aria-label="Open full Goals view"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+          </div>
+          <div class="panel-body">
+            <div class="tree" id="goalTree"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ───────────── RIGHT COLUMN ───────────── -->
+      <div class="right-col">
+        <!-- Widget F: buddy chat — expands to full Buddy fullscreen -->
+        <div class="panel buddy-chat">
+          <div class="panel-head">
+            <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>
+            <span class="ph-title">Buddy — Kitsu</span>
+            <span class="ph-sub">online</span>
+            <button class="ph-expand" data-fs="buddy" aria-label="Open full Buddy view"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+          </div>
+          <div class="bc-head">
+            <div class="bc-stage" aria-label="Buddy placeholder — character renders here">
+              <span class="ph-emoji">🦊</span>
+            </div>
+            <div>
+              <div class="bc-name">Kitsu the Fox</div>
+              <div class="bc-state"><span class="dot"></span>Focused · here to help</div>
+            </div>
+          </div>
+          <div class="bc-body" id="bcBody"></div>
+          <div class="bc-recs" id="bcRecs">
+            <div class="rec-label">Suggested</div>
+            <div class="rec-list" id="recList"></div>
+          </div>
+          <div class="bc-input">
+            <textarea id="bcInput" placeholder="Ask Kitsu anything…" rows="1"></textarea>
+            <button class="sendbtn" id="bcSend" aria-label="Send"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+          </div>
+        </div>
+
+        <!-- Widget G: compact done list — expands to full Done List fullscreen -->
+        <div class="panel cdone-panel">
+          <div class="panel-head">
+            <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            <span class="ph-title">Done today</span>
+            <span class="ph-sub" id="cdoneCount">3 wins</span>
+            <button class="ph-expand" data-fs="done" aria-label="Open full Done List view"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+          </div>
+          <div class="panel-body">
+            <div class="cdone" id="cdone"></div>
+          </div>
+        </div>
+
+        <!-- Widget H: reset strip — expands to full Planning Ritual fullscreen -->
+        <div class="reset-strip">
+          <div class="rs-ic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg></div>
+          <div class="rs-body">
+            <div class="rs-title">Fresh start available</div>
+            <div class="rs-sub">3 overdue tasks · clear with no guilt</div>
+          </div>
+          <div class="rs-actions">
+            <button class="rs-btn" id="resetBtn">Reset</button>
+            <button class="rs-expand" data-fs="planning" aria-label="Open full Planning Ritual view"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ───────────── Feature dock (bottom — fullscreen feature entry points) ───────────── -->
+  <div class="dock">
+    <span class="dock-label">Open</span>
+    <button class="dock-btn" data-fs="calendar"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Calendar</button>
+    <button class="dock-btn" data-fs="planning"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Planning ritual</button>
+    <button class="dock-btn" data-fs="goals"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>Goals</button>
+    <button class="dock-btn" data-fs="done"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Done list</button>
+    <button class="dock-btn" data-fs="stats"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>Analytics</button>
+    <button class="dock-btn" data-fs="blocking"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Blocking</button>
+    <button class="dock-btn" data-fs="buddy"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>Buddy</button>
+    <div class="spacer"></div>
+    <button class="dock-btn" data-fs="settings"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.2A1.6 1.6 0 0 0 7 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 2.6 14H2a2 2 0 1 1 0-4h.2A1.6 1.6 0 0 0 4 8.6a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 10 2.6V2a2 2 0 1 1 4 0v.2A1.6 1.6 0 0 0 16 4a1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.6 1.6 0 0 0 21.4 10H22a2 2 0 1 1 0 4h-.2a1.6 1.6 0 0 0-1.4 1z"/></svg>Settings</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─────────────────────────────────────────────────────────
+   DATA + helpers
+   ───────────────────────────────────────────────────────── */
+const toast = document.getElementById("toast");
+function showToast(m){ toast.textContent = m; toast.classList.add("show"); clearTimeout(window._t); window._t = setTimeout(()=>toast.classList.remove("show"), 1700); }
+function esc(s){ const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+
+const IC = {
+  check:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+  spark:'<svg class="rec-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>',
+};
+
+/* ── Fullscreen feature entry points ──
+   Each expand button + dock button carries data-fs="<feature>"
+   Wired features open their built template in a new tab; unbuilt ones show a toast. */
+const FS_LABELS = {
+  calendar: "Calendar — full month + day detail + AI sidebar",
+  planning: "Planning Ritual — 60-second micro-plan",
+  goals: "Goals — implementation-intention breakdown",
+  done: "Done List — growing record of wins",
+  stats: "Stats & Insights — momentum, trends, energy map",
+  blocking: "System Blocking — friction tiers + task-gated unlock",
+  buddy: "Buddy — full companion view with Kitsu",
+  settings: "Settings — BYOK, block lists, schedules, theme",
+};
+/* Maps a feature key to its built fullscreen template filename (relative to prototype/).
+   When a feature has no built template yet, it stays undefined and the button shows a toast. */
+const FS_FILES = {
+  calendar: "calendar-template-1-month-grid.html",
+};
+/* Resolve the absolute file:// URL of this dashboard, then swap in the target template filename. */
+function fsUrl(filename){
+  const here = new URL(document.baseURI);
+  return new URL(filename, here).href;
+}
+document.querySelectorAll("[data-fs]").forEach(b=>{
+  const feat = b.getAttribute("data-fs");
+  const fire = ()=>{
+    const file = FS_FILES[feat];
+    if(file){
+      window.open(fsUrl(file), "_blank", "noopener");
+      showToast(`Opening ${FS_LABELS[feat]||feat}…`);
+    } else {
+      showToast(`Opening: ${FS_LABELS[feat]||feat} (fullscreen page — coming next)`);
+    }
+  };
+  b.addEventListener("click", fire);
+});
+
+/* ── Widget A: mini month ── */
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const DOW = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const TODAY = new Date(2025, 6, 22);
+let mmView = new Date(2025, 6, 1);
+const evDays = { "2025-07-03":1, "2025-07-07":2, "2025-07-10":2, "2025-07-14":2, "2025-07-17":1, "2025-07-22":3, "2025-07-23":1, "2025-07-28":1, "2025-07-31":2 };
+function mmKey(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+function renderMM(){
+  document.querySelector(".mm-title").textContent = `${MONTHS[mmView.getMonth()]} ${mmView.getFullYear()}`;
+  document.getElementById("mmDow").innerHTML = DOW.map(d=>`<span>${d}</span>`).join("");
+  const year = mmView.getFullYear(), month = mmView.getMonth();
+  const startWk = (new Date(year, month, 1).getDay() + 6) % 7;
+  let html = "";
+  for(let i=0;i<42;i++){
+    const d = new Date(year, month, i - startWk + 1); d.setHours(0,0,0,0);
+    const outside = d.getMonth() !== month;
+    const isToday = d.getTime() === TODAY.getTime();
+    const count = evDays[mmKey(d)] || 0;
+    const dots = Array.from({length:Math.min(count,3)},()=>`<i style="background:var(--accent)"></i>`).join("");
+    const cls = `mmc${outside?" is-outside":""}${isToday?" is-today":""}`;
+    html += `<div class="${cls}" data-date="${mmKey(d)}"><span class="dnum">${d.getDate()}</span><span class="mm-dots">${dots}</span></div>`;
+  }
+  document.getElementById("mmGrid").innerHTML = html;
+  document.querySelectorAll(".mmc").forEach(c=>c.onclick=()=>showToast(`${c.getAttribute("data-date")} — ${evDays[c.getAttribute("data-date")]||0} event(s)`));
+}
+renderMM();
+document.getElementById("mmPrev").onclick = ()=>{ mmView = new Date(mmView.getFullYear(), mmView.getMonth()-1, 1); renderMM(); };
+document.getElementById("mmNext").onclick = ()=>{ mmView = new Date(mmView.getFullYear(), mmView.getMonth()+1, 1); renderMM(); };
+
+/* ── Widget B: KPI cards ── */
+document.querySelectorAll(".kpi").forEach(k=>{
+  const act = ()=>showToast(k.getAttribute("data-kpi"));
+  k.onclick = act; k.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); act(); } };
+});
+
+/* ── Widget C: area chart — recomputes on resize so it fills width AND keeps circles round ── */
+const weekData = [2.4, 3.1, 1.8, 4.2, 3.5, 5.1, 2.9];
+const wLabels = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const areaWrap = document.querySelector(".area-chart-wrap");
+const areaSvg = document.getElementById("areaSvg");
+let areaPointHandler = null;
+function renderArea(){
+  const rect = areaWrap.getBoundingClientRect();
+  const W = Math.max(rect.width, 320), H = Math.max(rect.height, 120);
+  areaSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  areaSvg.setAttribute("preserveAspectRatio", "none"); // fill container; circles drawn with absolute radii stay round
+  const padX = 36, padY = 14;
+  const max = 6, min = 0;
+  const x = i => padX + (i/(weekData.length-1)) * (W - padX - 12);
+  const y = v => padY + (1 - (v-min)/(max-min)) * (H - padY - 22);
+  const pts = weekData.map((v,i)=>[x(i), y(v)]);
+  const line = pts.map((p,i)=>`${i===0?"M":"L"} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" ");
+  const fill = `${line} L ${pts[pts.length-1][0].toFixed(1)} ${H-22} L ${pts[0][0].toFixed(1)} ${H-22} Z`;
+  const grid = [0, 2, 4, 6].map(v=>`<line x1="${padX}" y1="${y(v)}" x2="${W-12}" y2="${y(v)}"/><text class="area-axis" x="${padX-6}" y="${y(v)+3}" text-anchor="end">${v}h</text>`).join("");
+  // circles: r is in user units = pixels here, so they stay perfectly round despite preserveAspectRatio="none"
+  const points = pts.map((p,i)=>`<circle class="area-point ${i===weekData.length-1?'today':''}" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="5" data-i="${i}"><title>${wLabels[i]}: ${weekData[i]}h</title></circle>`).join("");
+  const xLabels = wLabels.map((l,i)=>`<text class="area-axis" x="${x(i).toFixed(1)}" y="${H-6}" text-anchor="middle">${l}</text>`).join("");
+  areaSvg.innerHTML =
+    `<defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#C76A3E" stop-opacity="0.28"/><stop offset="100%" stop-color="#C76A3E" stop-opacity="0.02"/></linearGradient></defs>` +
+    `<g class="area-grid">${grid}</g>` +
+    `<path class="area-fill" d="${fill}"/>` +
+    `<path class="area-line" d="${line}"/>` +
+    `<g>${points}</g>` +
+    `<g>${xLabels}</g>`;
+  document.querySelectorAll(".area-point").forEach(p=>p.onclick=()=>{
+    const i = +p.getAttribute("data-i");
+    showToast(`${wLabels[i]}: ${weekData[i]}h focused`);
+  });
+}
+renderArea();
+// recompute on container resize (debounced) — keeps chart filling width with round circles
+let areaRaf = null;
+const areaRO = new ResizeObserver(()=>{
+  if(areaRaf) cancelAnimationFrame(areaRaf);
+  areaRaf = requestAnimationFrame(renderArea);
+});
+areaRO.observe(areaWrap);
+
+/* ── Widget D: category hbars ── */
+const cats = [
+  {n:"Study", v:12, c:"var(--accent)"},
+  {n:"Work", v:8, c:"var(--cocoa)"},
+  {n:"Creative", v:4, c:"var(--sage)"},
+  {n:"Rest", v:6, c:"var(--dusk)"},
+  {n:"Admin", v:3, c:"var(--warning)"}
+];
+document.getElementById("catBars").innerHTML = cats.map(c=>`<div class="hbar"><span class="hbar-label">${esc(c.n)}</span><div class="hbar-track"><div class="hbar-fill" style="width:${Math.min(c.v*5,100)}%;background:${c.c}"></div></div><span class="hbar-val">${c.v}h</span></div>`).join("");
+
+/* ── Widget E: goal tree ── */
+const tree = [
+  { type:"root", label:"A in Chemistry (Semester)", meta:"Dec 15 · 35%", state:"active" },
+  { type:"child", label:"Ch.1-3 Foundation · Week 1-2", meta:"done", state:"done" },
+  { type:"child", label:"Ch.4 practice problems", meta:"today · 1pm", state:"active" },
+  { type:"child", label:"Ch.5 reading + notes", meta:"Wed 7pm", state:"locked" },
+  { type:"child", label:"Ch.6 lab session", meta:"Fri 4pm", state:"locked" },
+  { type:"child", label:"Exam prep + summary sheet", meta:"Aug 1", state:"locked" }
+];
+function renderTree(){
+  document.getElementById("goalTree").innerHTML = tree.map(n=>`<div class="tree-node ${n.type} ${n.state}" data-tree="${esc(n.label)}"><span class="tn-dot"></span><span class="tn-label">${esc(n.label)}</span><span class="tn-meta">${esc(n.meta)}</span></div>`).join("");
+  document.querySelectorAll(".tree-node").forEach(n=>n.onclick=()=>showToast(n.getAttribute("data-tree")));
+}
+renderTree();
+
+/* ── Widget F: buddy chat ── */
+const bcBody = document.getElementById("bcBody");
+const bcInput = document.getElementById("bcInput");
+const bcSend = document.getElementById("bcSend");
+const recList = document.getElementById("recList");
+const recs = [
+  "Start a 25-min focus sprint",
+  "What should I do next?",
+  "Break down the essay goal",
+  "Mark task done"
+];
+function addMsg(role, html){
+  const div = document.createElement("div");
+  div.className = `msg ${role}`;
+  const av = role === "ai" ? "🦊" : "Y";
+  div.innerHTML = `<span class="av">${av}</span><div class="bubble">${html}</div>`;
+  bcBody.appendChild(div);
+  bcBody.scrollTop = bcBody.scrollHeight;
+  return div; // return so we can scope plan-button wiring
+}
+function aiReply(userText){
+  const t = userText.toLowerCase();
+  let html;
+  if(t.includes("sprint") || t.includes("focus") || t.includes("start")){
+    html = `On it. Starting a <b>25-minute focus sprint</b> for Chem Ch.4 practice. I'll block distractions until you're done. <div class="plan"><b>Plan</b><div class="row">• Block reddit, youtube, discord</div><div class="row">• Timer: 25 min</div><div class="row">• Goal: problems 4.1–4.10</div><div class="acts"><button data-act="confirm">Confirm</button><button data-act="edit">Edit</button></div></div>`;
+  } else if(t.includes("next") || t.includes("do")){
+    html = `Your one thing today is <b>Chem Ch.4 practice</b> at 1pm. After that: dentist at 2:30, dinner at 7. Two tasks left after Ch.4 — the essay outline and emailing your professor. Want me to start the sprint now?`;
+  } else if(t.includes("essay") || t.includes("break")){
+    html = `Let's break the essay into tiny steps. <div class="plan"><b>History essay draft</b><div class="row">1. Re-read prompt (10 min)</div><div class="row">2. Brainstorm 3 thesis options (15 min)</div><div class="row">3. Outline 3 body sections (20 min)</div><div class="acts"><button data-act="add">Add to calendar</button></div></div>`;
+  } else if(t.includes("done") || t.includes("mark")){
+    html = `Nice — which task? I'll log it to your <b>Done List</b> and Kitsu will celebrate. 🎉`;
+  } else {
+    html = `I'm here. You've focused <b>3h 12m</b> today — above your average. Chemistry is on track, essay needs a little love. What feels doable right now?`;
+  }
+  setTimeout(()=>{
+    const node = addMsg("ai", html);
+    // scope plan-button wiring to THIS message only (fixes duplicate-handler bug)
+    node.querySelectorAll(".plan button").forEach(b=>{
+      b.onclick = ()=>showToast(`Kitsu: ${b.getAttribute("data-act")==="confirm"?"Sprint started — distractions blocked":"Got it — let's adjust"}`);
+    });
+  }, 380);
+}
+function sendMsg(text){
+  if(!text.trim()) return;
+  addMsg("me", esc(text));
+  bcInput.value = ""; bcSend.disabled = true;
+  bcInput.style.height = "auto";
+  aiReply(text);
+}
+bcSend.onclick = ()=>sendMsg(bcInput.value);
+bcInput.oninput = ()=>{ bcSend.disabled = !bcInput.value.trim(); bcInput.style.height = "auto"; bcInput.style.height = Math.min(bcInput.scrollHeight, 70) + "px"; };
+bcInput.onkeydown = e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); sendMsg(bcInput.value); } };
+// seed conversation
+addMsg("ai", `Hey friend. Kitsu here. You've been on task for <b>2h 14m</b> — that's solid. Chem Ch.4 practice is your one thing. Want to start a sprint?`);
+bcSend.disabled = true;
+// suggestions
+function renderRecs(){
+  recList.innerHTML = recs.map(r=>`<button class="rec" data-rec="${esc(r)}">${IC.spark}<span>${esc(r)}</span></button>`).join("");
+  recList.querySelectorAll(".rec").forEach(b=>{
+    b.onclick = ()=>{
+      sendMsg(b.getAttribute("data-rec"));
+      b.classList.add("sent");
+    };
+  });
+}
+renderRecs();
+
+/* ── Widget G: compact done list ── */
+let cdone = [
+  { id:1, title:"Read chem chapter 4 sections 4.1-4.3", time:"2h ago" },
+  { id:2, title:"Sent email to professor", time:"4h ago" },
+  { id:3, title:"15 min meditation", time:"6h ago" }
+];
+function renderCDone(){
+  document.getElementById("cdoneCount").textContent = `${cdone.length} win${cdone.length===1?"":"s"}`;
+  document.getElementById("cdone").innerHTML = cdone.map(i=>`<div class="cdone-item"><span class="cdone-check">${IC.check}</span><span class="cdone-text">${esc(i.title)}</span><span class="cdone-time">${esc(i.time)}</span></div>`).join("");
+}
+renderCDone();
+
+/* ── Widget H: reset strip ── */
+document.getElementById("resetBtn").onclick = ()=>{
+  cdone = [];
+  renderCDone();
+  addMsg("ai", `Fresh start. No guilt, no backlog. What's your one thing for the rest of today? 🌱`);
+  showToast("All overdue cleared — Kitsu: 'Clean slate. What's your one thing?'");
+};
+</script>
+</body>
+</html>

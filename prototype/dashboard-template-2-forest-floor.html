@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FocusPath Dashboard — Forest Floor</title>
+<style>
+  /* ═══════════════════════════════════════════════════════════
+     FOREST FLOOR PALETTE — Botanical sage, grounding, stable
+     Nature-inspired, quiet, reduces digital anxiety. WCAG AA verified.
+     ═══════════════════════════════════════════════════════════ */
+  :root{
+    --bg:#EEF1EA; --surface:#F5F7F0; --surface-2:#FFFFFF; --surface-sunken:#E0E5D6;
+    --border:#C9D3B8; --border-strong:#A7B594;
+    --text:#2F332D; --text-muted:#545952; --text-faint:#7F857C;
+    --accent:#5E7A5E; --accent-hover:#4D664D; --accent-press:#3D5340; --accent-soft:#DDE7D4;
+    --moss:#5E7A5E; --moss-soft:#DDE7D4;
+    --mushroom:#7A6C5E; --mushroom-soft:#E4DDD2;
+    --bluegray:#5E6C7A; --bluegray-soft:#DCE2E6;
+    --driedrose:#8A6A78; --driedrose-soft:#E6DCE2;
+    --success:#6B8F5E; --warning:#A38E66; --danger:#A85A56; --danger-soft:#EBD9D6;
+    --shadow-sm:0 1px 2px rgba(47,51,45,.05), 0 2px 6px rgba(47,51,45,.05);
+    --shadow:0 1px 2px rgba(47,51,45,.05), 0 6px 18px rgba(47,51,45,.08);
+    --shadow-lg:0 2px 8px rgba(47,51,45,.07), 0 18px 48px rgba(47,51,45,.14);
+    --radius:16px; --radius-sm:10px; --radius-xs:7px;
+    --ease:cubic-bezier(.4,0,.2,1);
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+    --font-num:"SF Mono","ui-monospace","Menlo","Consolas",monospace;
+    --font-disp:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0}
+  body{
+    font-family:var(--font-ui); color:var(--text);
+    background:
+      radial-gradient(1100px 600px at 70% -10%, #E2E8D4 0%, transparent 60%),
+      radial-gradient(900px 500px at -10% 30%, #DDE5D0 0%, transparent 55%), var(--bg);
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; line-height:1.5;
+  }
+
+  /* ── Toolbar ── */
+  .toolbar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:14px; padding:12px 22px;
+    background:rgba(245,247,240,.82);
+    backdrop-filter:saturate(140%) blur(14px); -webkit-backdrop-filter:saturate(140%) blur(14px);
+    border-bottom:1px solid var(--border);
+  }
+  .brand{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:-.01em}
+  .brand .mark{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-hover));display:grid;place-items:center;color:#fff;box-shadow:var(--shadow-sm)}
+  .brand small{color:var(--text-muted); font-weight:500; margin-left:2px}
+  .toolbar .spacer{flex:1}
+  .toolbar .meta-tag{font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:6px}
+  .toolbar .meta-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+  .btn{
+    font:inherit; font-size:13px; font-weight:600; cursor:pointer;
+    border:1px solid var(--border-strong); background:var(--surface-2);
+    color:var(--text); padding:8px 14px; border-radius:10px;
+    display:inline-flex; align-items:center; gap:8px;
+    transition:.16s var(--ease); box-shadow:var(--shadow-sm);
+  }
+  .btn:hover{transform:translateY(-1px); border-color:var(--accent); color:var(--accent-hover)}
+  .btn:active{transform:translateY(0)}
+  .btn.primary{background:var(--accent-hover); border-color:var(--accent-hover); color:#fff}
+  .btn.primary:hover{background:var(--accent-press); border-color:var(--accent-press); color:#fff}
+  .btn .ic{width:15px;height:15px}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+  /* ── Page shell — centered, calm, single-focus ── */
+  .wrap{max-width:1180px; margin:0 auto; padding:28px 22px 120px}
+  .intro{display:flex; align-items:baseline; gap:14px; margin-bottom:22px}
+  .intro .h{flex:1}
+  .intro h1{font-size:30px; letter-spacing:-.02em; margin:0 0 4px; font-family:var(--font-disp)}
+  .intro .sub{color:var(--text-muted); margin:0; font-size:14px}
+  .intro .right{display:flex; gap:8px; align-items:center}
+  .intro .date{font-family:var(--font-disp); font-size:14px; color:var(--text-muted); font-style:italic}
+  .palchip{display:inline-flex; align-items:center; gap:10px; font-size:12px; color:var(--text-muted); background:var(--surface-2); border:1px solid var(--border); border-radius:999px; padding:5px 12px; box-shadow:var(--shadow-sm)}
+  .palchip .sw{display:flex; gap:3px}
+  .palchip .sw i{width:12px; height:12px; border-radius:4px; display:block}
+
+  /* ── Layout: centered column with a 2-col split lower ── */
+  .grid{display:grid; grid-template-columns:repeat(12,1fr); gap:16px}
+  .col-12{grid-column:span 12} .col-8{grid-column:span 8} .col-7{grid-column:span 7}
+  .col-6{grid-column:span 6} .col-5{grid-column:span 5} .col-4{grid-column:span 4}
+  .col-3{grid-column:span 3}
+
+  /* ── Panel ── */
+  .panel{background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column}
+  .panel-head{display:flex; align-items:center; gap:10px; padding:14px 18px; border-bottom:1px solid var(--border); background:var(--surface)}
+  .panel-head .ph-title{font-size:14px; font-weight:700; letter-spacing:-.01em; font-family:var(--font-disp)}
+  .panel-head .ph-sub{font-size:11px; color:var(--text-muted); margin-left:auto}
+  .panel-head .ph-ic{width:18px;height:18px; color:var(--accent)}
+  .panel-body{padding:16px 18px; display:flex; flex-direction:column; gap:14px}
+
+  /* ── Widget: 60-second ritual card ── */
+  .ritual{padding:22px 24px; background:linear-gradient(135deg, var(--accent-soft) 0%, var(--surface) 100%); border:1px solid var(--accent); border-radius:var(--radius)}
+  .ritual-steps{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:14px}
+  .rstep{display:flex; flex-direction:column; gap:8px; padding:14px; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm)}
+  .rstep .rnum{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700;font-family:var(--font-num)}
+  .rstep .rtitle{font-size:13.5px; font-weight:700; font-family:var(--font-disp)}
+  .rstep .rbody{font-size:12px; color:var(--text-muted); line-height:1.45}
+  .rstep.done{border-color:var(--accent); background:var(--accent-soft)}
+  .rstep .rcheck{color:var(--success); font-size:11px; font-weight:700; display:flex; align-items:center; gap:4px}
+  .ritual-foot{display:flex; gap:10px; margin-top:16px; align-items:center}
+  .ritual-foot .lab{font-size:12px; color:var(--text-muted); margin-right:auto}
+
+  /* ── Widget: focus rings ── */
+  .rings{display:flex; justify-content:center; gap:36px; padding:8px 0 4px}
+  .ring{position:relative; width:130px; height:130px; display:flex; flex-direction:column; align-items:center}
+  .ring svg{width:130px; height:130px; transform:rotate(-90deg)}
+  .ring-bg{fill:none; stroke:var(--surface-sunken); stroke-width:11}
+  .ring-fg{fill:none; stroke-width:11; stroke-linecap:round; transition:stroke-dasharray .7s var(--ease)}
+  .ring-text{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center}
+  .ring-text .big{font-size:26px; font-weight:700; font-family:var(--font-num); line-height:1}
+  .ring-text .small{font-size:11px; color:var(--text-muted); margin-top:3px}
+  .ring-cap{font-size:11.5px; color:var(--text-muted); text-align:center; margin-top:8px; font-weight:600}
+  .ring-cap b{color:var(--text); font-weight:700}
+
+  /* ── Widget: done garden ── */
+  .garden{display:flex; gap:8px; flex-wrap:wrap; padding:6px 0; min-height:120px; align-content:flex-start}
+  .gplant{width:42px; height:42px; border-radius:50%; display:grid; place-items:center; font-size:22px; border:2px solid var(--accent); background:var(--accent-soft); cursor:pointer; transition:.14s var(--ease); position:relative}
+  .gplant:hover{transform:translateY(-3px) scale(1.06); box-shadow:var(--shadow)}
+  .gplant .tip{position:absolute; bottom:110%; left:50%; transform:translateX(-50%); background:var(--text); color:var(--surface); padding:5px 9px; border-radius:6px; font-size:10.5px; white-space:nowrap; opacity:0; pointer-events:none; transition:.14s var(--ease); z-index:5}
+  .gplant:hover .tip{opacity:1}
+  .gplant.new{animation:grow .5s var(--ease)}
+  @keyframes grow{from{transform:scale(0) rotate(-12deg)} to{transform:scale(1) rotate(0)}}
+  .gempty{color:var(--text-faint); font-size:13px; padding:20px; text-align:center; width:100%}
+  .garden-foot{font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:8px; justify-content:space-between}
+  .garden-add{font:inherit; font-size:12px; font-weight:600; padding:6px 11px; border-radius:8px; cursor:pointer; border:1px solid var(--border-strong); background:var(--surface-2); color:var(--text); transition:.14s var(--ease); display:inline-flex; align-items:center; gap:6px}
+  .garden-add:hover{border-color:var(--accent); color:var(--accent-hover); background:var(--accent-soft)}
+  .garden-add .ic{width:13px;height:13px}
+  .garden-add:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+  /* ── Widget: vertical timeline agenda ── */
+  .timeline{display:flex; flex-direction:column; gap:0; padding:4px 0}
+  .tev{display:grid; grid-template-columns:62px 18px 1fr; gap:12px; padding:10px 0; align-items:start; position:relative}
+  .tev .ttime{font-size:11.5px; color:var(--text-muted); font-family:var(--font-num); padding-top:2px; text-align:right}
+  .tev .tdot{width:12px; height:12px; border-radius:50%; margin:5px auto 0; position:relative; z-index:2; border:2px solid var(--surface-2)}
+  .tev::before{content:""; position:absolute; left:73px; top:18px; bottom:-10px; width:2px; background:var(--border)}
+  .tev:last-child::before{display:none}
+  .tev.now .tdot{background:var(--accent); box-shadow:0 0 0 4px var(--accent-soft)}
+  .tev.now::before{background:var(--accent)}
+  .tev.past .tdot{background:var(--surface-sunken); border-color:var(--surface-sunken)}
+  .tev.past .ttitle{color:var(--text-faint); text-decoration:line-through; text-decoration-color:var(--border-strong)}
+  .tev.focus .tdot{background:var(--accent)} .tev.slate .tdot{background:var(--bluegray)} .tev.olive .tdot{background:var(--mushroom)} .tev.rose .tdot{background:var(--driedrose)}
+  .tev .tbody{min-width:0}
+  .tev .ttitle{font-size:13.5px; font-weight:600}
+  .tev .tmeta{font-size:11.5px; color:var(--text-muted); margin-top:2px}
+  .tev .tchip{display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:600; padding:3px 8px; border-radius:6px; margin-top:5px}
+  .tev.focus .tchip{background:var(--accent-soft); color:var(--accent-hover)}
+  .tev.slate .tchip{background:var(--bluegray-soft); color:var(--bluegray)}
+  .tev.olive .tchip{background:var(--mushroom-soft); color:var(--mushroom)}
+  .tev.rose .tchip{background:var(--driedrose-soft); color:var(--driedrose)}
+
+  /* ── Widget: energy heatmap ── */
+  .heatmap{display:grid; grid-template-columns:38px repeat(12,1fr); gap:3px}
+  .heatmap .hml{font-size:9.5px; font-weight:700; text-align:center; color:var(--text-faint); padding:3px 0}
+  .heatmap .hmh{font-size:9px; color:var(--text-faint); font-family:var(--font-num); text-align:right; padding-right:5px; display:flex; align-items:center; justify-content:flex-end}
+  .hm-cell{height:22px; border-radius:5px; transition:.12s var(--ease); cursor:pointer}
+  .hm-cell:hover{outline:2px solid var(--accent); outline-offset:1px}
+  .heat-legend{display:flex; align-items:center; gap:6px; font-size:10.5px; color:var(--text-muted); margin-top:8px}
+  .heat-legend .scale{display:flex; gap:2px}
+  .heat-legend .scale i{width:14px; height:14px; border-radius:3px; display:block}
+
+  /* ── Widget: buddy insight split ── */
+  .bsplit{display:grid; grid-template-columns:200px 1fr; gap:16px; padding:4px 0}
+  .buddy-stage{
+    width:140px; height:140px; border-radius:20px;
+    background:
+      radial-gradient(circle at 30% 30%, var(--accent-soft) 0%, transparent 60%),
+      linear-gradient(135deg, var(--surface-sunken), var(--surface));
+    border:1px dashed var(--accent);
+    display:grid; place-items:center; position:relative; overflow:hidden;
+    margin:0 auto;
+  }
+  .buddy-stage .placeholder{display:flex; flex-direction:column; align-items:center; gap:6px; color:var(--text-faint)}
+  .buddy-stage .placeholder .lbl{font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase}
+  .buddy-stage .ph-emoji{font-size:52px; opacity:.7; animation:breathe 3.6s var(--ease) infinite}
+  @keyframes breathe{0%,100%{transform:scale(1)} 50%{transform:scale(1.04)}}
+  .buddy-meta{text-align:center; margin-top:10px}
+  .buddy-meta .bn{font-size:14px; font-weight:700; font-family:var(--font-disp)}
+  .buddy-meta .bs{font-size:11px; color:var(--success); font-weight:600; display:flex; align-items:center; gap:5px; justify-content:center; margin-top:2px}
+  .buddy-meta .bs .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+  .buddy-insight{display:flex; flex-direction:column; gap:10px}
+  .buddy-msg{font-size:12.5px; color:var(--text-muted); line-height:1.55; padding:12px 14px; background:var(--surface); border:1px solid var(--border); border-radius:10px; border-left:3px solid var(--accent)}
+  .buddy-msg b{color:var(--accent-hover)}
+  .buddy-pat{padding:12px 14px; background:var(--accent-soft); border:1px solid var(--accent); border-radius:10px; font-size:12.5px; line-height:1.5}
+  .buddy-pat b{color:var(--accent-hover)}
+  .buddy-quick{display:flex; gap:7px; flex-wrap:wrap}
+  .qb{font:inherit; font-size:11px; font-weight:600; padding:6px 10px; border-radius:8px; cursor:pointer; border:1px solid var(--border-strong); background:var(--surface-2); color:var(--text); transition:.14s var(--ease)}
+  .qb:hover{border-color:var(--accent); color:var(--accent-hover); background:var(--accent-soft)}
+  .qb.primary{background:var(--accent-soft); border-color:var(--accent); color:var(--accent-hover)}
+  .qb:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+  /* ── Widget: unlock status (task-gated blocking tier) ── */
+  .unlock{display:flex; flex-direction:column; gap:10px}
+  .unlock-row{display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:var(--radius-sm); background:var(--surface); border:1px solid var(--border); transition:.14s var(--ease)}
+  .unlock-row.active{border-color:var(--accent); background:var(--accent-soft)}
+  .unlock-row .utier{width:34px; height:34px; border-radius:9px; display:grid; place-items:center; font-size:14px; font-weight:700; font-family:var(--font-num); flex:0 0 auto; background:var(--surface-sunken); color:var(--text-muted)}
+  .unlock-row.active .utier{background:var(--accent); color:#fff}
+  .unlock-row .uinfo{flex:1; min-width:0}
+  .unlock-row .utitle{font-size:13px; font-weight:600}
+  .unlock-row .usub{font-size:11.5px; color:var(--text-muted)}
+  .unlock-row .ustate{font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; flex:0 0 auto}
+  .unlock-row .ustate.done{background:var(--accent); color:#fff}
+  .unlock-row .ustate.next{background:var(--accent-soft); color:var(--accent-hover)}
+  .unlock-row .ustate.locked{background:var(--surface-sunken); color:var(--text-faint)}
+  .unlock-foot{font-size:11.5px; color:var(--text-muted); padding:6px 4px 0; line-height:1.5}
+  .unlock-foot b{color:var(--accent-hover)}
+
+  /* toast */
+  .toast{position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(20px); background:var(--text); color:#F5F7F0; padding:10px 16px; border-radius:999px; font-size:12.5px; font-weight:500; box-shadow:var(--shadow-lg); opacity:0; pointer-events:none; transition:.22s var(--ease); z-index:300}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+  footer.foot{margin-top:48px; padding-top:18px; border-top:1px solid var(--border); color:var(--text-faint); font-size:12px; text-align:center}
+</style>
+</head>
+<body>
+
+<!-- ───────────────────── Toolbar ───────────────────── -->
+<div class="toolbar">
+  <div class="brand">
+    <span class="mark"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg></span>
+    FocusPath <small>· Dashboard</small>
+  </div>
+  <div class="spacer"></div>
+  <span class="meta-tag"><span class="dot"></span>Buddy online · Scout</span>
+  <button class="btn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Today</button>
+  <button class="btn primary"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg> Start focus</button>
+</div>
+
+<div class="wrap">
+
+  <!-- ───────────────────── Intro ───────────────────── -->
+  <div class="intro">
+    <div class="h">
+      <h1>One thing at a time</h1>
+      <p class="sub">A calm view of today — your ritual, your rings, your wins. No noise, no shame.</p>
+    </div>
+    <div class="right">
+      <span class="date">July 22, 2025</span>
+      <span class="palchip">
+        <span class="sw"><i style="background:#EEF1EA"></i><i style="background:#5E7A5E"></i><i style="background:#7A6C5E"></i><i style="background:#5E6C7A"></i><i style="background:#8A6A78"></i></span>
+        Forest Floor
+      </span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       ROW 1 — 60-Second Ritual (full width, hero)
+       Widget A: ritual card (anchor + single win + launch check)
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="grid" style="margin-bottom:16px">
+    <div class="col-12">
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span class="ph-title">60-Second Micro-Plan</span>
+          <span class="ph-sub">today's ritual · 2 of 3 steps done</span>
+        </div>
+        <div class="panel-body">
+          <div class="ritual">
+            <div style="display:flex; align-items:baseline; gap:10px">
+              <span style="font-family:var(--font-disp); font-size:17px; font-weight:700">Anchor · Single Win · Launch</span>
+              <span style="font-size:12px; color:var(--text-muted); margin-left:auto">~45 seconds left</span>
+            </div>
+            <div class="ritual-steps">
+              <div class="rstep done">
+                <span class="rnum">1</span>
+                <span class="rtitle">Anchor</span>
+                <span class="rbody">2pm dentist · 7pm dinner w/ friends. 5 free hours for tasks.</span>
+                <span class="rcheck">✓ Done</span>
+              </div>
+              <div class="rstep done">
+                <span class="rnum">2</span>
+                <span class="rtitle">Single Win</span>
+                <span class="rbody">"Chem Ch.4 practice" — locked in from your A-in-Chemistry goal.</span>
+                <span class="rcheck">✓ Locked</span>
+              </div>
+              <div class="rstep">
+                <span class="rnum">3</span>
+                <span class="rtitle">Launch check</span>
+                <span class="rbody">Textbook p.142 · notebook · calculator. I'll block distractions until 3pm.</span>
+                <button class="btn primary" id="ritualStart" style="margin-top:6px; justify-content:center"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>Start focus block</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       ROW 2 — Focus rings (5) + Done garden (7)
+       Widget B: focus rings   Widget C: done garden
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="grid" style="margin-bottom:16px">
+    <div class="col-5">
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          <span class="ph-title">Today's rings</span>
+          <span class="ph-sub">progress, not perfection</span>
+        </div>
+        <div class="panel-body">
+          <div class="rings" id="rings"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-7">
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg>
+          <span class="ph-title">Done Garden</span>
+          <span class="ph-sub" id="gardenCount">5 wins today · each one grew a plant</span>
+        </div>
+        <div class="panel-body">
+          <div class="garden" id="garden"></div>
+          <div class="garden-foot">
+            <span>Your garden grows with every win — visible proof of progress.</span>
+            <button class="garden-add" id="gardenAdd"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Plant a win</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       ROW 3 — Vertical timeline agenda (5) + Unlock status (4) + energy map (3)
+       Widget D: vertical timeline   Widget E: unlock tiers   Widget F: energy heatmap
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="grid" style="margin-bottom:16px">
+    <div class="col-5">
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+          <span class="ph-title">Today's timeline</span>
+          <span class="ph-sub">vertical · gentle</span>
+        </div>
+        <div class="panel-body">
+          <div class="timeline" id="timeline"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span class="ph-title">Unlock tiers</span>
+          <span class="ph-sub">task-gated, not time-gated</span>
+        </div>
+        <div class="panel-body">
+          <div class="unlock" id="unlock"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-3">
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
+          <span class="ph-title">Energy map</span>
+          <span class="ph-sub">when you focus best</span>
+        </div>
+        <div class="panel-body">
+          <div class="heatmap" id="heatmap"></div>
+          <div class="heat-legend">
+            <span>less</span>
+            <span class="scale" id="heatScale"></span>
+            <span>more</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       ROW 4 — Buddy insight split (full width)
+       Widget G: buddy insight (buddy placeholder + pattern + chart)
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="grid" style="margin-bottom:16px">
+    <div class="col-12">
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="ph-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>
+          <span class="ph-title">Your buddy — Scout</span>
+          <span class="ph-sub">pattern insight + chat</span>
+        </div>
+        <div class="panel-body">
+          <div class="bsplit">
+            <div>
+              <div class="buddy-stage" aria-label="Buddy placeholder — character renders here">
+                <div class="placeholder">
+                  <span class="ph-emoji">🐶</span>
+                  <span class="lbl">Buddy</span>
+                </div>
+              </div>
+              <div class="buddy-meta">
+                <div class="bn">Scout the Dog</div>
+                <div class="bs"><span class="dot"></span>Focused · proud of you</div>
+              </div>
+            </div>
+            <div class="buddy-insight">
+              <div class="buddy-msg">You focused <b>3h 12m</b> today — that's above your weekday average. Chemistry is on track. The essay goal needs a little attention, but no rush.</div>
+              <div class="buddy-pat"><b>Pattern found:</b> You focus best between <b>9am and 12pm</b> on weekdays, especially Tuesday and Friday. Consider scheduling your hardest task before lunch tomorrow.</div>
+              <div class="buddy-quick">
+                <button class="qb primary" data-qb="Start a 25-min focus sprint">Start sprint</button>
+                <button class="qb" data-qb="Break down the essay goal">Break down essay</button>
+                <button class="qb" data-qb="Log this pattern insight">Log insight</button>
+                <button class="qb" data-qb="What's my one thing tomorrow?">One thing tomorrow?</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    FocusPath dashboard · Template 2 of 3 · Forest Floor palette · 7 widgets (ritual card, focus rings, done garden, vertical timeline, unlock tiers, energy map, buddy insight) · every button functional.
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const toast = document.getElementById("toast");
+function showToast(m){ toast.textContent = m; toast.classList.add("show"); clearTimeout(window._t); window._t = setTimeout(()=>toast.classList.remove("show"), 1700); }
+function esc(s){ const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+
+/* ── Widget A: ritual ── */
+document.getElementById("ritualStart").onclick = ()=>showToast("Focus block started · distractions blocked until 3pm · Scout is watching proudly");
+
+/* ── Widget B: focus rings ── */
+function ringHTML(value, max, color, label, cap){
+  const pct = Math.min(value/max, 1);
+  const dash = 2 * Math.PI * 52;
+  const offset = dash * (1 - pct);
+  return `<div class="ring"><svg viewBox="0 0 130 130"><circle class="ring-bg" cx="65" cy="65" r="52"/><circle class="ring-fg" cx="65" cy="65" r="52" stroke="${color}" style="stroke-dasharray:${dash}; stroke-dashoffset:${offset}"/></svg><div class="ring-text"><div class="big">${value}</div><div class="small">${esc(label)}</div></div><div class="ring-cap">of <b>${max}</b></div></div>`;
+}
+document.getElementById("rings").innerHTML =
+  ringHTML(192, 240, "var(--accent)", "focus min") +
+  ringHTML(5, 7, "var(--mushroom)", "tasks") +
+  ringHTML(12, 14, "var(--driedrose)", "day streak");
+
+/* ── Widget C: done garden ── */
+const plantEmojis = ["🌱","🌿","☘️","🍃","🌷","🌻","🌹","🪻","💐"];
+let wins = [
+  { id:1, title:"Read chem chapter 4 sections 4.1-4.3" },
+  { id:2, title:"Sent email to professor" },
+  { id:3, title:"15 min meditation" },
+  { id:4, title:"Reviewed math problem set" },
+  { id:5, title:"Cleaned desk before studying" }
+];
+function renderGarden(){
+  document.getElementById("gardenCount").textContent = `${wins.length} win${wins.length===1?"":"s"} today · each one grew a plant`;
+  const g = document.getElementById("garden");
+  if(!wins.length){ g.innerHTML = `<div class="gempty">No plants yet — log a win to grow one.</div>`; return; }
+  g.innerHTML = wins.map((w,i)=>`<div class="gplant ${i===0?'new':''}" data-w="${w.id}" title="${esc(w.title)}">${plantEmojis[i % plantEmojis.length]}<span class="tip">${esc(w.title)}</span></div>`).join("");
+  g.querySelectorAll(".gplant").forEach(p=>p.onclick=()=>showToast(p.getAttribute("title")));
+}
+renderGarden();
+document.getElementById("gardenAdd").onclick = ()=>{
+  const title = prompt("What did you finish? (anything counts)");
+  if(title && title.trim()){ wins.unshift({ id:Date.now(), title:title.trim() }); renderGarden(); showToast("New plant grew — nice work 🌱"); }
+};
+
+/* ── Widget D: vertical timeline ── */
+const tlEvents = [
+  { time:"9:00am", title:"Standup", meta:"15 min · done", type:"slate", state:"past" },
+  { time:"1:00pm", title:"Chem Ch.4 practice", meta:"1 hour · focus block · your one thing", type:"focus", state:"now" },
+  { time:"2:30pm", title:"Dentist", meta:"45 min · appointment", type:"slate", state:"future" },
+  { time:"7:00pm", title:"Dinner w/ friends", meta:"Maya's birthday · 90 min", type:"olive", state:"future" }
+];
+function renderTimeline(){
+  const typeLabel = { focus:"Focus block", slate:"Appointment", olive:"Personal", rose:"Reminder" };
+  document.getElementById("timeline").innerHTML = tlEvents.map(e=>`<div class="tev ${e.type} ${e.state}">
+    <span class="ttime">${e.time}</span>
+    <span class="tdot"></span>
+    <div class="tbody">
+      <div class="ttitle">${esc(e.title)}</div>
+      <div class="tmeta">${esc(e.meta)}</div>
+      <span class="tchip">${typeLabel[e.type]}</span>
+    </div>
+  </div>`).join("");
+}
+renderTimeline();
+
+/* ── Widget E: unlock tiers ── */
+const tiers = [
+  { n:1, title:"1 task done", sub:"+30 min leisure", state:"done" },
+  { n:2, title:"2 tasks done", sub:"+30 more (60 total)", state:"done" },
+  { n:3, title:"3+ tasks done", sub:"Unlimited leisure today", state:"next" },
+  { n:"∞", title:"All daily tasks", sub:"Full unlock + buddy celebration", state:"locked" }
+];
+function renderUnlock(){
+  document.getElementById("unlock").innerHTML = tiers.map(t=>{
+    const active = t.state === "next";
+    return `<div class="unlock-row ${active?'active':''}">
+      <span class="utier">${t.n}</span>
+      <div class="uinfo"><div class="utitle">${esc(t.title)}</div><div class="usub">${esc(t.sub)}</div></div>
+      <span class="ustate ${t.state}">${t.state==='done'?'unlocked':t.state==='next'?'next up':'locked'}</span>
+    </div>`;
+  }).join("") + `<div class="unlock-foot"><b>2 of 3</b> tasks done — one more unlocks unlimited leisure. No hard walls ever; you can always override with a typed commitment.</div>`;
+}
+renderUnlock();
+
+/* ── Widget F: energy heatmap ── */
+const heatData = [
+  [0,1,2,4,5,3,2,1,0,0,1,2],
+  [1,2,3,5,4,3,2,2,1,0,1,1],
+  [0,1,1,3,4,5,4,3,2,1,0,0],
+  [0,0,1,2,3,4,3,2,1,0,0,0],
+  [1,2,3,4,4,3,2,1,1,0,0,1],
+  [2,3,4,5,5,4,3,2,1,1,2,2],
+  [1,1,2,3,3,2,1,1,0,0,1,1]
+];
+const hours = ["6a","7a","8a","9a","10a","11a","12p","1p","2p","3p","4p","5p"];
+const days = ["M","T","W","T","F","S","S"];
+function heatColor(v){
+  if(v===0) return "var(--surface-sunken)";
+  if(v<=2) return "#DDE7D4";
+  if(v<=3) return "#B5CFA0";
+  if(v<=4) return "#8AB37A";
+  if(v<=5) return "#5E7A5E";
+  return "#3D5340";
+}
+function renderHeat(){
+  let html = `<div class="hmh"></div>${hours.map(h=>`<div class="hml">${h}</div>`).join("")}`;
+  days.forEach((d,idx)=>{
+    html += `<div class="hmh">${d}</div>${heatData[idx].map((v,h)=>`<div class="hm-cell" style="background:${heatColor(v)}" title="${d} ${hours[h]}: ${v===0?'no focus':v+' units'}"></div>`).join("")}`;
+  });
+  document.getElementById("heatmap").innerHTML = html;
+  document.getElementById("heatScale").innerHTML = [0,2,3,4,5].map(v=>`<i style="background:${heatColor(v)}"></i>`).join("");
+  document.querySelectorAll(".hm-cell").forEach(c=>c.onclick=()=>showToast(c.title));
+}
+renderHeat();
+
+/* ── Widget G: buddy quick actions ── */
+document.querySelectorAll(".buddy-quick .qb").forEach(b=>b.onclick=()=>showToast(b.getAttribute("data-qb")));
+</script>
+</body>
+</html>
