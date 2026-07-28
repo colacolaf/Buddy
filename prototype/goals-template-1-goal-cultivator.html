@@ -387,6 +387,8 @@ function renderEditor(){
     document.getElementById("itThen").textContent="what you'll do instead";
   }
   document.getElementById("brainDump").value=g.brainDump||"";
+  // reset inline if-then editing state when switching steps (prevents saving to wrong step)
+  if(ifThenEditing){ ifThenEditing=false; document.getElementById("itIf").contentEditable="false"; document.getElementById("itThen").contentEditable="false"; document.getElementById("editIfThen").textContent="Edit"; }
   document.getElementById("markDoneBtn").innerHTML=s.state==="done"?'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg>Reopen step':'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Mark step done';
 }
 
