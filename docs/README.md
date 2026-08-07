@@ -1,6 +1,6 @@
 # FocusPath — Documentation
 
-> A native desktop app that helps people with ADHD stay on task — built by someone who lives the problem, open-sourced for others to use and contribute.
+> A native desktop app that helps people with ADHD stay on task — built by someone who lives the problem, with source available for review; licensing and contribution terms are TBD.
 
 ## Docs Index
 
